@@ -127,6 +127,36 @@
     <string name="download_state_failed">Échec du téléchargement</string>
     <string name="download_state_cancelled">Annulé</string>
 
+    <!-- Widgets et tuiles -->
+    <string name="widget_quota_label">Quota mobile</string>
+    <string name="widget_quota_picker_description">Data mobile restante et jours restants</string>
+    <string name="widget_savings_label">Économies Wi‑Fi</string>
+    <string name="widget_savings_picker_description">Data passée par le Wi‑Fi ce mois-ci</string>
+    <string name="widget_quota_bar_label">Quota mobile (barre)</string>
+    <string name="widget_quota_bar_picker_description">Quota consommé et estimation de fin de mois</string>
+    <string name="widget_remaining">restants</string>
+    <string name="widget_exceeded">de dépassement</string>
+    <plurals name="widget_days_left">
+        <item quantity="one">%d jour restant</item>
+        <item quantity="many">%d jours restants</item>
+        <item quantity="other">%d jours restants</item>
+    </plurals>
+    <string name="widget_quota_description">%1$s restants sur %2$s, %3$d %% utilisés</string>
+    <string name="widget_quota_exceeded_description">Quota mobile dépassé de %1$s</string>
+    <string name="widget_no_access">Ouvre DataKeeper pour autoriser l’accès</string>
+    <string name="widget_no_quota">Définis ton quota</string>
+    <string name="widget_saved_this_month">Économisé ce mois</string>
+    <string name="widget_wifi_share">%1$d %% en Wi‑Fi</string>
+    <string name="widget_used_of_mobile">%1$s mobiles</string>
+    <string name="widget_projection">Fin de mois estimée : %1$s</string>
+    <string name="tile_no_access">Accès requis</string>
+    <string name="tile_downloads_none">Rien en attente</string>
+    <plurals name="tile_downloads_pending">
+        <item quantity="one">%d en attente</item>
+        <item quantity="many">%d en attente</item>
+        <item quantity="other">%d en attente</item>
+    </plurals>
+
     <string name="notification_channel_quota">Alertes de quota mobile</string>
     <string name="notification_quota_title">%1$d %% de ton quota mobile consommé</string>
     <string name="notification_quota_text">%1$s utilisés sur %2$s ce mois-ci. Passe en Wi-Fi pour économiser ta data.</string>

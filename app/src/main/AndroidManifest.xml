@@ -42,6 +42,63 @@
             </intent-filter>
         </activity>
 
+        <!-- Widgets de l'écran d'accueil (Glance). -->
+        <receiver
+            android:name=".presentation.widget.QuotaWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_quota_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_quota_info" />
+        </receiver>
+        <receiver
+            android:name=".presentation.widget.SavingsWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_savings_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_savings_info" />
+        </receiver>
+        <receiver
+            android:name=".presentation.widget.QuotaBarWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_quota_bar_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_quota_bar_info" />
+        </receiver>
+
+        <!-- Tuiles des réglages rapides. -->
+        <service
+            android:name=".presentation.tile.QuotaTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_cell"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+        <service
+            android:name=".presentation.tile.DownloadsTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_download"
+            android:label="@string/tab_downloads"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
         <!-- WorkManager est configuré par DataKeeperApplication (HiltWorkerFactory). -->
         <provider
             android:name="androidx.startup.InitializationProvider"

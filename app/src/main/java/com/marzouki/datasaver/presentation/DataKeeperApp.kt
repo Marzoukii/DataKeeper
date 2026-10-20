@@ -20,6 +20,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -48,14 +49,21 @@ import com.marzouki.datasaver.presentation.quota.QuotaScreen
 import com.marzouki.datasaver.presentation.usage.UsageScreen
 
 private enum class Destination(val route: String, @param:StringRes val labelRes: Int, val icon: ImageVector) {
-    USAGE("usage", R.string.tab_usage, Icons.Rounded.BarChart),
-    QUOTA("quota", R.string.tab_quota, Icons.Rounded.Speed),
-    DOWNLOADS("downloads", R.string.tab_downloads, Icons.Rounded.Download),
+    USAGE(AppRoutes.USAGE, R.string.tab_usage, Icons.Rounded.BarChart),
+    QUOTA(AppRoutes.QUOTA, R.string.tab_quota, Icons.Rounded.Speed),
+    DOWNLOADS(AppRoutes.DOWNLOADS, R.string.tab_downloads, Icons.Rounded.Download),
 }
 
-/** Racine : écran d'accès aux données d'usage tant que la permission manque, sinon l'appli à onglets. */
+/**
+ * Racine : écran d'accès aux données d'usage tant que la permission manque, sinon l'appli à onglets.
+ * [requestedTab] (route d'[AppRoutes]) ouvre un onglet précis, à la demande d'un widget ou d'une tuile.
+ */
 @Composable
-fun DataKeeperApp(onboardingViewModel: OnboardingViewModel = hiltViewModel()) {
+fun DataKeeperApp(
+    requestedTab: String? = null,
+    onTabRequestHandled: () -> Unit = {},
+    onboardingViewModel: OnboardingViewModel = hiltViewModel(),
+) {
     val onboarding by onboardingViewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
@@ -76,16 +84,21 @@ fun DataKeeperApp(onboardingViewModel: OnboardingViewModel = hiltViewModel()) {
                 onLater = { onboardingViewModel.onIntent(OnboardingIntent.LaterClicked) },
             )
         } else {
-            MainScaffold()
+            MainScaffold(requestedTab, onTabRequestHandled)
         }
     }
 }
 
 @Composable
-private fun MainScaffold() {
+private fun MainScaffold(requestedTab: String?, onTabRequestHandled: () -> Unit) {
     val navController = rememberNavController()
     val snackbarHostState = remember { SnackbarHostState() }
     val backStackEntry by navController.currentBackStackEntryAsState()
+
+    LaunchedEffect(requestedTab) {
+        Destination.entries.firstOrNull { it.route == requestedTab }?.let { navController.navigateToTab(it) }
+        if (requestedTab != null) onTabRequestHandled()
+    }
     val current = Destination.entries.firstOrNull { it.route == backStackEntry?.destination?.route } ?: Destination.USAGE
 
     Scaffold(
