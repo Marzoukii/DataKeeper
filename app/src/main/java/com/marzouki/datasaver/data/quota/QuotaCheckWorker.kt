@@ -9,6 +9,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.marzouki.datasaver.domain.repository.QuotaMonitorScheduler
 import com.marzouki.datasaver.domain.usecase.CheckQuotaAndAlertUseCase
+import com.marzouki.datasaver.presentation.widget.refreshHomeSurfaces
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.util.concurrent.TimeUnit
@@ -23,8 +24,11 @@ class QuotaCheckWorker @AssistedInject constructor(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result =
-        runCatching { checkQuotaAndAlert() }
-            .fold(onSuccess = { Result.success() }, onFailure = { Result.failure() })
+        runCatching {
+            checkQuotaAndAlert()
+            // Profite du passage horaire pour garder widgets et tuiles à jour.
+            refreshHomeSurfaces(applicationContext)
+        }.fold(onSuccess = { Result.success() }, onFailure = { Result.failure() })
 }
 
 class WorkManagerQuotaMonitorScheduler @Inject constructor(
