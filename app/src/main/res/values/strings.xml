@@ -1,3 +1,60 @@
 <resources>
     <string name="app_name">DataKeeper</string>
+
+    <string name="tab_usage">Consommation</string>
+    <string name="tab_quota">Quota mobile</string>
+    <string name="tab_downloads">Téléchargements</string>
+
+    <string name="action_refresh">Actualiser</string>
+    <string name="action_save">Enregistrer</string>
+    <string name="action_cancel">Annuler</string>
+    <string name="unit_gb">Go</string>
+
+    <string name="usage_access_title">Accès aux données d\'utilisation requis</string>
+    <string name="usage_access_body">Pour mesurer votre consommation Wi-Fi et mobile, autorisez DataKeeper dans « Accès aux données d\'utilisation ». Aucune donnée ne quitte votre téléphone.</string>
+    <string name="usage_access_button">Ouvrir les réglages</string>
+
+    <string name="usage_period">Depuis le %1$s</string>
+    <string name="usage_wifi">Wi-Fi</string>
+    <string name="usage_mobile">Data mobile</string>
+    <string name="usage_insight">Ce mois-ci, %1$d %% de votre trafic est passé par le Wi-Fi.</string>
+    <string name="usage_load_failed">Impossible de lire les statistiques réseau.</string>
+
+    <string name="quota_month_title">Data mobile ce mois-ci</string>
+    <string name="quota_used_of">%1$s / %2$s</string>
+    <string name="quota_percent_remaining">%1$d %% utilisé · reste %2$s</string>
+    <string name="quota_banner_alert">Vous avez consommé %1$d %% de votre quota mobile. Privilégiez le Wi-Fi jusqu\'à la fin du mois.</string>
+    <string name="quota_banner_exceeded">Quota mobile dépassé (%1$d %%). Passez en Wi-Fi pour éviter les surcoûts.</string>
+    <string name="quota_edit_title">Quota mensuel</string>
+    <string name="quota_input_label">Quota de data mobile</string>
+    <string name="quota_input_error">Saisissez une valeur positive, par ex. 5 ou 2,5</string>
+    <string name="quota_remove">Supprimer le quota</string>
+    <string name="quota_alert_explanation">Une notification vous prévient dès %1$d %% du quota (vérification toutes les heures).</string>
+    <string name="quota_saved">Quota enregistré</string>
+    <string name="quota_removed">Quota supprimé</string>
+
+    <string name="downloads_form_title">Planifier un téléchargement</string>
+    <string name="downloads_form_explanation">Le fichier ne sera téléchargé que sur un réseau Wi-Fi non facturé, puis restera disponible hors ligne.</string>
+    <string name="downloads_url_label">URL du fichier</string>
+    <string name="downloads_url_error">Saisissez une URL http(s) valide</string>
+    <string name="downloads_file_name_label">Nom du fichier (facultatif)</string>
+    <string name="downloads_submit">Planifier sur Wi-Fi</string>
+    <string name="downloads_scheduled">« %1$s » sera téléchargé sur Wi-Fi</string>
+    <string name="downloads_list_title">Mes téléchargements</string>
+    <string name="downloads_clear_finished">Effacer les terminés</string>
+    <string name="downloads_empty">Aucun téléchargement planifié.</string>
+    <string name="schedule_asap">Dès que possible</string>
+    <string name="schedule_one_hour">Dans 1 h</string>
+    <string name="schedule_tonight">Cette nuit (2 h)</string>
+    <string name="download_state_waiting">En attente du Wi-Fi</string>
+    <string name="download_state_scheduled">Prévu à %1$s (sur Wi-Fi)</string>
+    <string name="download_state_running">Téléchargement…</string>
+    <string name="download_state_running_progress">Téléchargement… %1$d %%</string>
+    <string name="download_state_done">Disponible hors ligne</string>
+    <string name="download_state_failed">Échec du téléchargement</string>
+    <string name="download_state_cancelled">Annulé</string>
+
+    <string name="notification_channel_quota">Alertes de quota mobile</string>
+    <string name="notification_quota_title">%1$d %% de votre quota mobile consommé</string>
+    <string name="notification_quota_text">%1$s utilisés sur %2$s ce mois-ci. Basculez sur le Wi-Fi pour économiser votre data.</string>
 </resources>
