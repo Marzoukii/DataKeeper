@@ -1,5 +1,6 @@
 package com.marzouki.datasaver.presentation
 
+import android.os.Build
 import androidx.annotation.StringRes
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.WindowInsets
@@ -39,6 +40,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.marzouki.datasaver.R
 import com.marzouki.datasaver.presentation.common.CollectEffects
+import com.marzouki.datasaver.presentation.common.openAppDetailsSettings
 import com.marzouki.datasaver.presentation.common.openUsageAccessSettings
 import com.marzouki.datasaver.presentation.downloads.DownloadsScreen
 import com.marzouki.datasaver.presentation.onboarding.OnboardingEffect
@@ -74,6 +76,7 @@ fun DataKeeperApp(
     CollectEffects(onboardingViewModel.effects) { effect ->
         when (effect) {
             OnboardingEffect.OpenUsageAccessSettings -> openUsageAccessSettings(context)
+            OnboardingEffect.OpenAppDetailsSettings -> openAppDetailsSettings(context)
         }
     }
 
@@ -82,6 +85,9 @@ fun DataKeeperApp(
             UsageAccessScreen(
                 onOpenSettings = { onboardingViewModel.onIntent(OnboardingIntent.OpenSettingsClicked) },
                 onLater = { onboardingViewModel.onIntent(OnboardingIntent.LaterClicked) },
+                // Les « paramètres restreints » n'existent qu'à partir d'Android 13.
+                showRestrictedHelp = onboarding.settingsOpened && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU,
+                onOpenAppInfo = { onboardingViewModel.onIntent(OnboardingIntent.OpenAppInfoClicked) },
             )
         } else {
             MainScaffold(requestedTab, onTabRequestHandled)
