@@ -94,6 +94,11 @@ class WorkManagerDownloadRepository @Inject constructor(
             earliestStartMillis = nextScheduleTimeMillis
                 .takeIf { state == WorkInfo.State.ENQUEUED && it != Long.MAX_VALUE },
             createdAtMillis = tagValue(TAG_CREATED)?.toLongOrNull() ?: 0L,
+            totalBytes = when (state) {
+                WorkInfo.State.RUNNING -> progress.getLong(DownloadWorker.KEY_TOTAL_BYTES, -1L)
+                WorkInfo.State.SUCCEEDED -> outputData.getLong(DownloadWorker.KEY_TOTAL_BYTES, -1L)
+                else -> -1L
+            }.takeIf { it > 0 },
         )
     }
 

@@ -10,6 +10,15 @@
         android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
 
+    <!-- Android 11+ : rend visibles les applis lançables, pour afficher le nom et l'icône
+         des applis les plus gourmandes en data mobile. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+    </queries>
+
     <application
         android:name=".DataKeeperApplication"
         android:allowBackup="true"
