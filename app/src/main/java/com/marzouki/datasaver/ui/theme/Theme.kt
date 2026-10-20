@@ -12,7 +12,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 // Le secondaire reprend le bleu : chips, onglets et indicateurs restent dans la palette Wi-Fi.
-private val LightColorScheme = lightColorScheme(
+internal val LightColorScheme = lightColorScheme(
     primary = LightPrimary,
     onPrimary = LightOnPrimary,
     primaryContainer = LightPrimaryContainer,
@@ -46,7 +46,7 @@ private val LightColorScheme = lightColorScheme(
     onErrorContainer = LightOnErrorContainer,
 )
 
-private val DarkColorScheme = darkColorScheme(
+internal val DarkColorScheme = darkColorScheme(
     primary = DarkPrimary,
     onPrimary = DarkOnPrimary,
     primaryContainer = DarkPrimaryContainer,
