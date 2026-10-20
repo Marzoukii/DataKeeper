@@ -5,11 +5,13 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.work.WorkManager
+import com.marzouki.datasaver.data.connectivity.ConnectivityRepositoryImpl
 import com.marzouki.datasaver.data.download.WorkManagerDownloadRepository
 import com.marzouki.datasaver.data.quota.NotificationQuotaAlertNotifier
 import com.marzouki.datasaver.data.quota.QuotaRepositoryImpl
 import com.marzouki.datasaver.data.quota.WorkManagerQuotaMonitorScheduler
 import com.marzouki.datasaver.data.usage.UsageRepositoryImpl
+import com.marzouki.datasaver.domain.repository.ConnectivityRepository
 import com.marzouki.datasaver.domain.repository.DownloadRepository
 import com.marzouki.datasaver.domain.repository.QuotaAlertNotifier
 import com.marzouki.datasaver.domain.repository.QuotaMonitorScheduler
@@ -64,6 +66,10 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindDownloadRepository(impl: WorkManagerDownloadRepository): DownloadRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindConnectivityRepository(impl: ConnectivityRepositoryImpl): ConnectivityRepository
 
     @Binds
     abstract fun bindQuotaMonitorScheduler(impl: WorkManagerQuotaMonitorScheduler): QuotaMonitorScheduler

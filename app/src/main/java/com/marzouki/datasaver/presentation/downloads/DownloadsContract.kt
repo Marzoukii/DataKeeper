@@ -9,6 +9,8 @@ data class DownloadsState(
     val schedule: DownloadSchedule = DownloadSchedule.AS_SOON_AS_WIFI,
     val urlError: Boolean = false,
     val downloads: List<ScheduledDownload> = emptyList(),
+    /** Réseau non facturé disponible : les téléchargements peuvent tourner. */
+    val isOnWifi: Boolean = false,
 )
 
 sealed interface DownloadsIntent {

@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.marzouki.datasaver.domain.usecase.CancelDownloadUseCase
 import com.marzouki.datasaver.domain.usecase.ClearFinishedDownloadsUseCase
 import com.marzouki.datasaver.domain.usecase.ObserveDownloadsUseCase
+import com.marzouki.datasaver.domain.usecase.ObserveWifiConnectionUseCase
 import com.marzouki.datasaver.domain.usecase.ScheduleDownloadUseCase
 import com.marzouki.datasaver.presentation.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,6 +15,7 @@ import javax.inject.Inject
 @HiltViewModel
 class DownloadsViewModel @Inject constructor(
     observeDownloads: ObserveDownloadsUseCase,
+    observeWifiConnection: ObserveWifiConnectionUseCase,
     private val scheduleDownload: ScheduleDownloadUseCase,
     private val cancelDownload: CancelDownloadUseCase,
     private val clearFinishedDownloads: ClearFinishedDownloadsUseCase,
@@ -22,6 +24,9 @@ class DownloadsViewModel @Inject constructor(
     init {
         observeDownloads()
             .onEach { downloads -> setState { copy(downloads = downloads) } }
+            .launchIn(viewModelScope)
+        observeWifiConnection()
+            .onEach { onWifi -> setState { copy(isOnWifi = onWifi) } }
             .launchIn(viewModelScope)
     }
 
