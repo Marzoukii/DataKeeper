@@ -64,7 +64,7 @@ class DownloadWorker @AssistedInject constructor(
                                 val progress = (copied * 100 / totalBytes).toInt()
                                 if (progress != lastProgress) {
                                     lastProgress = progress
-                                    setProgress(workDataOf(KEY_PROGRESS to progress))
+                                    setProgress(workDataOf(KEY_PROGRESS to progress, KEY_TOTAL_BYTES to totalBytes))
                                 }
                             }
                         }
@@ -75,7 +75,7 @@ class DownloadWorker @AssistedInject constructor(
             }
             if (target.exists()) target.delete()
             if (!partial.renameTo(target)) return@withContext Result.failure()
-            Result.success(workDataOf(KEY_FILE_PATH to target.absolutePath))
+            Result.success(workDataOf(KEY_FILE_PATH to target.absolutePath, KEY_TOTAL_BYTES to target.length()))
         } catch (e: CancellationException) {
             partial.delete()
             throw e
@@ -95,6 +95,7 @@ class DownloadWorker @AssistedInject constructor(
         const val KEY_FILE_NAME = "file_name"
         const val KEY_FILE_PATH = "file_path"
         const val KEY_PROGRESS = "progress"
+        const val KEY_TOTAL_BYTES = "total_bytes"
 
         private const val TIMEOUT_MS = 30_000
         private const val BUFFER_SIZE = 64 * 1024
