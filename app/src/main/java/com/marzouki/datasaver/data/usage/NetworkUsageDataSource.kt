@@ -1,6 +1,7 @@
 package com.marzouki.datasaver.data.usage
 
 import android.app.AppOpsManager
+import android.app.usage.NetworkStats
 import android.app.usage.NetworkStatsManager
 import android.content.Context
 import android.net.ConnectivityManager
@@ -45,6 +46,26 @@ class NetworkUsageDataSource @Inject constructor(
     fun mobileBytes(startMillis: Long, endMillis: Long): Long =
         @Suppress("DEPRECATION")
         totalBytes(ConnectivityManager.TYPE_MOBILE, startMillis, endMillis)
+
+    /** Data mobile (réception + émission) par UID sur la période. */
+    fun mobileBytesByUid(startMillis: Long, endMillis: Long): Map<Int, Long> =
+        try {
+            @Suppress("DEPRECATION")
+            val stats = networkStatsManager.querySummary(ConnectivityManager.TYPE_MOBILE, null, startMillis, endMillis)
+            val totals = HashMap<Int, Long>()
+            val bucket = NetworkStats.Bucket()
+            try {
+                while (stats.hasNextBucket()) {
+                    stats.getNextBucket(bucket)
+                    totals[bucket.uid] = (totals[bucket.uid] ?: 0L) + bucket.rxBytes + bucket.txBytes
+                }
+            } finally {
+                stats.close()
+            }
+            totals
+        } catch (_: SecurityException) {
+            throw UsageAccessDeniedException()
+        }
 
     private fun totalBytes(networkType: Int, startMillis: Long, endMillis: Long): Long =
         try {

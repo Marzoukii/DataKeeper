@@ -1,40 +1,62 @@
 package com.marzouki.datasaver.presentation.downloads
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.DeleteSweep
+import androidx.compose.material.icons.rounded.Wifi
+import androidx.compose.material.icons.rounded.WifiOff
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalResources
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -43,8 +65,21 @@ import com.marzouki.datasaver.domain.model.DownloadSchedule
 import com.marzouki.datasaver.domain.model.DownloadState
 import com.marzouki.datasaver.domain.model.ScheduledDownload
 import com.marzouki.datasaver.presentation.common.CollectEffects
-import java.text.DateFormat
-import java.util.Date
+import com.marzouki.datasaver.ui.components.DataKeeperCard
+import com.marzouki.datasaver.ui.components.DownloadItemCard
+import com.marzouki.datasaver.ui.components.HeaderIconButton
+import com.marzouki.datasaver.ui.components.InfoPill
+import com.marzouki.datasaver.ui.components.PreviewData
+import com.marzouki.datasaver.ui.components.PreviewSurface
+import com.marzouki.datasaver.ui.components.ScreenHeader
+import com.marzouki.datasaver.ui.components.ScreenPreviews
+import com.marzouki.datasaver.ui.components.isFinished
+import com.marzouki.datasaver.ui.components.toReadableSize
+import com.marzouki.datasaver.ui.theme.Spacing
+import com.marzouki.datasaver.ui.theme.numeric
+
+private const val TAB_PENDING = 0
+private const val TAB_AVAILABLE = 1
 
 @Composable
 fun DownloadsScreen(
@@ -54,60 +89,214 @@ fun DownloadsScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val resources = LocalResources.current
+    var showAddSheet by rememberSaveable { mutableStateOf(false) }
     CollectEffects(viewModel.effects) { effect ->
         when (effect) {
-            is DownloadsEffect.Scheduled ->
+            is DownloadsEffect.Scheduled -> {
+                showAddSheet = false
                 snackbarHostState.showSnackbar(resources.getString(R.string.downloads_scheduled, effect.fileName))
+            }
         }
     }
-    DownloadsContent(state, viewModel::onIntent, modifier)
+    DownloadsContent(
+        state = state,
+        onIntent = viewModel::onIntent,
+        showAddSheet = showAddSheet,
+        onShowAddSheet = { showAddSheet = it },
+        modifier = modifier,
+    )
 }
 
 @Composable
-private fun DownloadsContent(state: DownloadsState, onIntent: (DownloadsIntent) -> Unit, modifier: Modifier = Modifier) {
-    LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        item { ScheduleForm(state, onIntent) }
-        item {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    stringResource(R.string.downloads_list_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f),
-                )
-                if (state.downloads.any { it.state.isFinished }) {
-                    TextButton(onClick = { onIntent(DownloadsIntent.ClearFinished) }) {
-                        Text(stringResource(R.string.downloads_clear_finished))
+private fun DownloadsContent(
+    state: DownloadsState,
+    onIntent: (DownloadsIntent) -> Unit,
+    showAddSheet: Boolean,
+    onShowAddSheet: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var selectedTab by rememberSaveable { mutableIntStateOf(TAB_PENDING) }
+    val pending = state.downloads.filter { it.state != DownloadState.SUCCEEDED }
+    val available = state.downloads.filter { it.state == DownloadState.SUCCEEDED }
+    val shown = if (selectedTab == TAB_PENDING) pending else available
+    val listState = rememberLazyListState()
+    val fabExpanded by remember { derivedStateOf { listState.firstVisibleItemIndex == 0 } }
+
+    Box(modifier.fillMaxSize()) {
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxSize(),
+            // Le bas laisse la place au bouton flottant.
+            contentPadding = PaddingValues(start = Spacing.screenHorizontal, end = Spacing.screenHorizontal, top = 8.dp, bottom = 96.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            item {
+                ScreenHeader(
+                    overline = stringResource(R.string.downloads_overline),
+                    title = stringResource(R.string.downloads_title),
+                ) {
+                    if (state.downloads.any { it.state.isFinished }) {
+                        HeaderIconButton(
+                            Icons.Rounded.DeleteSweep,
+                            stringResource(R.string.downloads_clear_finished),
+                        ) { onIntent(DownloadsIntent.ClearFinished) }
                     }
                 }
             }
-        }
-        if (state.downloads.isEmpty()) {
+            item { WifiStatusCard(state.isOnWifi, pending, available, Modifier.padding(top = 4.dp)) }
             item {
-                Text(
-                    stringResource(R.string.downloads_empty),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                SingleChoiceSegmentedButtonRow(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                ) {
+                    val colors = SegmentedButtonDefaults.colors(
+                        activeContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                        activeContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        inactiveContainerColor = MaterialTheme.colorScheme.surface,
+                    )
+                    SegmentedButton(
+                        selected = selectedTab == TAB_PENDING,
+                        onClick = { selectedTab = TAB_PENDING },
+                        shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
+                        colors = colors,
+                    ) { Text(stringResource(R.string.downloads_tab_pending, pending.size)) }
+                    SegmentedButton(
+                        selected = selectedTab == TAB_AVAILABLE,
+                        onClick = { selectedTab = TAB_AVAILABLE },
+                        shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
+                        colors = colors,
+                    ) { Text(stringResource(R.string.downloads_tab_available, available.size)) }
+                }
+            }
+            if (shown.isEmpty()) {
+                item {
+                    Text(
+                        stringResource(
+                            if (selectedTab == TAB_PENDING) R.string.downloads_empty_pending
+                            else R.string.downloads_empty_available,
+                        ),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp, vertical = 32.dp),
+                    )
+                }
+            }
+            items(shown, key = { it.id }) { download ->
+                DownloadItemCard(
+                    item = download,
+                    onCancel = { onIntent(DownloadsIntent.Cancel(download.id)) },
+                    modifier = Modifier.animateItem(),
                 )
             }
         }
-        items(state.downloads, key = { it.id }) { download ->
-            DownloadItem(download, onCancel = { onIntent(DownloadsIntent.Cancel(download.id)) })
+
+        ExtendedFloatingActionButton(
+            onClick = { onShowAddSheet(true) },
+            expanded = fabExpanded,
+            icon = { Icon(Icons.Rounded.Add, contentDescription = null) },
+            text = { Text(stringResource(R.string.downloads_add_link), style = MaterialTheme.typography.labelLarge) },
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp),
+        )
+    }
+
+    if (showAddSheet) {
+        AddLinkSheet(state, onIntent, onDismiss = { onShowAddSheet(false) })
+    }
+}
+
+/** Carte d'état : pleine en bleu sur Wi-Fi, neutre en attente du Wi-Fi. */
+@Composable
+private fun WifiStatusCard(
+    isOnWifi: Boolean,
+    pending: List<ScheduledDownload>,
+    available: List<ScheduledDownload>,
+    modifier: Modifier = Modifier,
+) {
+    val colors = MaterialTheme.colorScheme
+    val container = if (isOnWifi) colors.primary else colors.surfaceVariant
+    val content = if (isOnWifi) colors.onPrimary else colors.onSurface
+    val running = pending.count { it.state == DownloadState.RUNNING }
+    val waiting = pending.count { it.state == DownloadState.WAITING_FOR_WIFI }
+    val queuedBytes = pending.sumOf { it.totalBytes ?: 0L }
+    val savedBytes = available.sumOf { it.totalBytes ?: 0L }
+
+    DataKeeperCard(
+        modifier = modifier,
+        shape = MaterialTheme.shapes.extraLarge,
+        containerColor = container,
+        contentColor = content,
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(content.copy(alpha = 0.16f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(if (isOnWifi) Icons.Rounded.Wifi else Icons.Rounded.WifiOff, contentDescription = null)
+            }
+            Spacer(Modifier.width(16.dp))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    stringResource(if (isOnWifi) R.string.downloads_wifi_connected else R.string.downloads_wifi_waiting),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    if (running + waiting == 0) {
+                        stringResource(R.string.downloads_queue_empty)
+                    } else {
+                        stringResource(R.string.downloads_queue_summary, running, waiting, queuedBytes.toReadableSize())
+                    },
+                    style = MaterialTheme.typography.bodyMedium.numeric(),
+                    color = content.copy(alpha = 0.85f),
+                )
+            }
+        }
+        Spacer(Modifier.height(16.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                stringResource(if (isOnWifi) R.string.downloads_mobile_used else R.string.downloads_wifi_waiting_body),
+                style = MaterialTheme.typography.bodySmall,
+                color = content.copy(alpha = 0.85f),
+                modifier = Modifier.weight(1f),
+            )
+            if (savedBytes > 0) {
+                Spacer(Modifier.width(12.dp))
+                InfoPill(
+                    stringResource(R.string.downloads_savings, savedBytes.toReadableSize()),
+                    containerColor = content.copy(alpha = 0.16f),
+                    contentColor = content,
+                )
+            }
         }
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-private fun ScheduleForm(state: DownloadsState, onIntent: (DownloadsIntent) -> Unit) {
-    Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text(stringResource(R.string.downloads_form_title), style = MaterialTheme.typography.titleMedium)
+private fun AddLinkSheet(state: DownloadsState, onIntent: (DownloadsIntent) -> Unit, onDismiss: () -> Unit) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        containerColor = MaterialTheme.colorScheme.surface,
+    ) {
+        Column(
+            Modifier.padding(start = 24.dp, end = 24.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(stringResource(R.string.downloads_add_link), style = MaterialTheme.typography.titleLarge)
             Text(
-                stringResource(R.string.downloads_form_explanation),
+                stringResource(R.string.downloads_sheet_explanation),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -120,6 +309,7 @@ private fun ScheduleForm(state: DownloadsState, onIntent: (DownloadsIntent) -> U
                     { Text(stringResource(R.string.downloads_url_error)) }
                 } else null,
                 singleLine = true,
+                shape = MaterialTheme.shapes.medium,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Next),
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -128,86 +318,44 @@ private fun ScheduleForm(state: DownloadsState, onIntent: (DownloadsIntent) -> U
                 onValueChange = { onIntent(DownloadsIntent.FileNameChanged(it)) },
                 label = { Text(stringResource(R.string.downloads_file_name_label)) },
                 singleLine = true,
+                shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
+            Text(stringResource(R.string.downloads_schedule_label), style = MaterialTheme.typography.titleSmall)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 DownloadSchedule.entries.forEach { schedule ->
                     FilterChip(
                         selected = state.schedule == schedule,
                         onClick = { onIntent(DownloadsIntent.ScheduleSelected(schedule)) },
                         label = { Text(stringResource(schedule.labelRes)) },
+                        shape = CircleShape,
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        ),
                     )
                 }
             }
-            Button(onClick = { onIntent(DownloadsIntent.Submit) }, modifier = Modifier.fillMaxWidth()) {
-                Icon(painterResource(R.drawable.ic_wifi), contentDescription = null)
-                Text(stringResource(R.string.downloads_submit), modifier = Modifier.padding(start = 8.dp))
+            Button(
+                onClick = { onIntent(DownloadsIntent.Submit) },
+                shape = CircleShape,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+            ) {
+                Icon(Icons.Rounded.Wifi, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    stringResource(
+                        if (state.schedule == DownloadSchedule.AS_SOON_AS_WIFI) R.string.downloads_submit_next_wifi
+                        else R.string.downloads_submit,
+                    ),
+                    style = MaterialTheme.typography.labelLarge,
+                )
             }
         }
     }
 }
-
-@Composable
-private fun DownloadItem(download: ScheduledDownload, onCancel: () -> Unit) {
-    Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
-                    Text(download.fileName, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    Text(
-                        download.url,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-                if (!download.state.isFinished) {
-                    IconButton(onClick = onCancel) {
-                        Icon(Icons.Default.Close, contentDescription = stringResource(R.string.action_cancel))
-                    }
-                }
-            }
-            Text(
-                statusText(download),
-                style = MaterialTheme.typography.labelMedium,
-                color = if (download.state == DownloadState.FAILED) MaterialTheme.colorScheme.error
-                else MaterialTheme.colorScheme.primary,
-            )
-            if (download.state == DownloadState.RUNNING) {
-                val progress = download.progress
-                if (progress != null) {
-                    LinearProgressIndicator(progress = { progress / 100f }, modifier = Modifier.fillMaxWidth())
-                } else {
-                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun statusText(download: ScheduledDownload): String = when (download.state) {
-    DownloadState.WAITING_FOR_WIFI -> {
-        val start = download.earliestStartMillis?.takeIf { it > System.currentTimeMillis() }
-        if (start != null) {
-            stringResource(
-                R.string.download_state_scheduled,
-                DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(start)),
-            )
-        } else {
-            stringResource(R.string.download_state_waiting)
-        }
-    }
-    DownloadState.RUNNING -> download.progress?.let { stringResource(R.string.download_state_running_progress, it) }
-        ?: stringResource(R.string.download_state_running)
-    DownloadState.SUCCEEDED -> stringResource(R.string.download_state_done)
-    DownloadState.FAILED -> stringResource(R.string.download_state_failed)
-    DownloadState.CANCELLED -> stringResource(R.string.download_state_cancelled)
-}
-
-private val DownloadState.isFinished: Boolean
-    get() = this == DownloadState.SUCCEEDED || this == DownloadState.FAILED || this == DownloadState.CANCELLED
 
 private val DownloadSchedule.labelRes: Int
     get() = when (this) {
@@ -215,3 +363,29 @@ private val DownloadSchedule.labelRes: Int
         DownloadSchedule.IN_ONE_HOUR -> R.string.schedule_one_hour
         DownloadSchedule.TONIGHT -> R.string.schedule_tonight
     }
+
+@ScreenPreviews
+@Composable
+private fun DownloadsContentPreview() {
+    PreviewSurface(padded = false) {
+        DownloadsContent(
+            state = DownloadsState(downloads = PreviewData.downloads, isOnWifi = true),
+            onIntent = {},
+            showAddSheet = false,
+            onShowAddSheet = {},
+        )
+    }
+}
+
+@ScreenPreviews
+@Composable
+private fun DownloadsContentOfflinePreview() {
+    PreviewSurface(padded = false) {
+        DownloadsContent(
+            state = DownloadsState(downloads = PreviewData.downloads, isOnWifi = false),
+            onIntent = {},
+            showAddSheet = false,
+            onShowAddSheet = {},
+        )
+    }
+}

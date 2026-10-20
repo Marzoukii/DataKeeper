@@ -10,6 +10,8 @@ data class ScheduledDownload(
     /** Heure au plus tôt à laquelle le téléchargement peut démarrer, si elle est connue. */
     val earliestStartMillis: Long?,
     val createdAtMillis: Long,
+    /** Taille du fichier, connue une fois le téléchargement démarré. */
+    val totalBytes: Long? = null,
 )
 
 enum class DownloadState { WAITING_FOR_WIFI, RUNNING, SUCCEEDED, FAILED, CANCELLED }
