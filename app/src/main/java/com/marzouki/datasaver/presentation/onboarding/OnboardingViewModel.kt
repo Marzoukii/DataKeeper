@@ -15,8 +15,12 @@ class OnboardingViewModel @Inject constructor(
     override fun onIntent(intent: OnboardingIntent) {
         when (intent) {
             OnboardingIntent.Refresh -> setState { copy(hasUsageAccess = hasUsageAccess()) }
-            OnboardingIntent.OpenSettingsClicked -> sendEffect(OnboardingEffect.OpenUsageAccessSettings)
+            OnboardingIntent.OpenSettingsClicked -> {
+                setState { copy(settingsOpened = true) }
+                sendEffect(OnboardingEffect.OpenUsageAccessSettings)
+            }
             OnboardingIntent.LaterClicked -> setState { copy(postponed = true) }
+            OnboardingIntent.OpenAppInfoClicked -> sendEffect(OnboardingEffect.OpenAppDetailsSettings)
         }
     }
 }
