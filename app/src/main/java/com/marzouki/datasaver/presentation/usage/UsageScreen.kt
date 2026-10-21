@@ -1,5 +1,9 @@
 package com.marzouki.datasaver.presentation.usage
 
+import android.Manifest
+import androidx.activity.compose.LocalActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,18 +22,24 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.marzouki.datasaver.R
 import com.marzouki.datasaver.domain.model.DataUsage
 import com.marzouki.datasaver.domain.model.MonthPeriod
+import com.marzouki.datasaver.domain.model.NetworkGeneration
 import com.marzouki.datasaver.presentation.common.CollectEffects
 import com.marzouki.datasaver.presentation.common.UsageAccessRequiredCard
+import com.marzouki.datasaver.presentation.common.openAppDetailsSettings
 import com.marzouki.datasaver.presentation.common.openUsageAccessSettings
 import com.marzouki.datasaver.ui.components.AppUsageRow
 import com.marzouki.datasaver.ui.components.DailyStackedBars
@@ -39,6 +49,7 @@ import com.marzouki.datasaver.ui.components.PlaceholderCard
 import com.marzouki.datasaver.ui.components.PreviewData
 import com.marzouki.datasaver.ui.components.PreviewSurface
 import com.marzouki.datasaver.ui.components.QuotaSummaryCard
+import com.marzouki.datasaver.ui.components.SavingsAndStreakRow
 import com.marzouki.datasaver.ui.components.ScreenHeader
 import com.marzouki.datasaver.ui.components.ScreenPreviews
 import com.marzouki.datasaver.ui.components.UsageSplitCard
@@ -55,6 +66,14 @@ fun UsageScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val activity = LocalActivity.current
+    // Après un second refus, Android n'affiche plus la demande : on ouvre alors les infos de l'appli.
+    var phonePermissionBlocked by rememberSaveable { mutableStateOf(false) }
+    val phonePermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        phonePermissionBlocked = !granted && activity != null &&
+            !ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.READ_PHONE_STATE)
+        viewModel.onIntent(UsageIntent.PhonePermissionResult)
+    }
 
     LifecycleResumeEffect(Unit) {
         viewModel.onIntent(UsageIntent.Refresh)
@@ -65,7 +84,19 @@ fun UsageScreen(
             UsageEffect.OpenUsageAccessSettings -> openUsageAccessSettings(context)
         }
     }
-    UsageContent(state, viewModel::onIntent, onOpenQuota, modifier)
+    UsageContent(
+        state = state,
+        onIntent = viewModel::onIntent,
+        onOpenQuota = onOpenQuota,
+        onRequestPhonePermission = {
+            if (phonePermissionBlocked) {
+                openAppDetailsSettings(context)
+            } else {
+                phonePermissionLauncher.launch(Manifest.permission.READ_PHONE_STATE)
+            }
+        },
+        modifier = modifier,
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -75,6 +106,7 @@ private fun UsageContent(
     onIntent: (UsageIntent) -> Unit,
     onOpenQuota: () -> Unit,
     modifier: Modifier = Modifier,
+    onRequestPhonePermission: () -> Unit = {},
 ) {
     val period = state.period ?: MonthPeriod.current()
     PullToRefreshBox(
@@ -111,7 +143,7 @@ private fun UsageContent(
                     item { PlaceholderCard(height = 140.dp) }
                 }
                 usage == null -> item { LoadFailedCard(onRetry = { onIntent(UsageIntent.Refresh) }) }
-                else -> dashboard(state, usage, period, onOpenQuota)
+                else -> dashboard(state, usage, period, onOpenQuota, onRequestPhonePermission)
             }
             item { Spacer(Modifier.height(8.dp)) }
         }
@@ -123,11 +155,31 @@ private fun androidx.compose.foundation.lazy.LazyListScope.dashboard(
     usage: DataUsage,
     period: MonthPeriod,
     onOpenQuota: () -> Unit,
+    onRequestPhonePermission: () -> Unit,
 ) {
     item {
-        if (usage.totalBytes == 0L) EmptyUsageCard() else UsageSplitCard(usage.wifiBytes, usage.mobileBytes)
+        if (usage.totalBytes == 0L) {
+            EmptyUsageCard()
+        } else {
+            UsageSplitCard(
+                wifiBytes = usage.wifiBytes,
+                mobileBytes = usage.mobileBytes,
+                operatorName = state.operatorName,
+                networkLabel = state.networkGeneration?.label,
+                onShowNetwork = if (state.hasPhonePermission) null else onRequestPhonePermission,
+            )
+        }
     }
     item { QuotaSummaryCard(state.quotaStatus, period, onClick = onOpenQuota) }
+    item {
+        SavingsAndStreakRow(
+            wifiBytes = usage.wifiBytes,
+            pricePerGb = state.pricePerGb,
+            streak = state.streak,
+            currentCycleExceeded = state.quotaStatus?.isExceeded == true,
+            onOpenQuota = onOpenQuota,
+        )
+    }
     if (state.dailyUsage.isNotEmpty()) {
         item {
             DataKeeperCard {
@@ -193,6 +245,10 @@ private fun UsageContentPreview() {
                 quota = PreviewData.quota,
                 dailyUsage = PreviewData.days,
                 topMobileApps = PreviewData.topApps,
+                pricePerGb = PreviewData.pricePerGb,
+                streak = PreviewData.streak,
+                operatorName = "Ooredoo",
+                networkGeneration = NetworkGeneration.G4,
             ),
             onIntent = {},
             onOpenQuota = {},

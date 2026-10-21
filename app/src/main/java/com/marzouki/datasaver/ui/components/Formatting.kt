@@ -44,6 +44,13 @@ fun formatUsedOf(usedBytes: Long, limitBytes: Long): String {
     return if (used.unit == limit.unit) "${used.value} / $limit" else "$used / $limit"
 }
 
+/** Montant en dinars tunisiens : "36,800 DT", "2 DT" quand il n'y a pas de millimes. */
+fun formatDinars(millimes: Long): String {
+    val pattern = if (millimes % 1_000 == 0L) "#,##0" else "#,##0.000"
+    val dinars = DecimalFormat(pattern, DecimalFormatSymbols(Locale.FRANCE)).format(millimes / 1_000.0)
+    return "$dinars${NBSP}DT"
+}
+
 /** "Octobre 2026". */
 fun formatMonthYear(millis: Long): String =
     SimpleDateFormat("LLLL yyyy", Locale.FRANCE).format(Date(millis))
@@ -76,3 +83,6 @@ fun dayInitial(millis: Long): String {
 
 /** "lundi". */
 fun dayName(millis: Long): String = SimpleDateFormat("EEEE", Locale.FRANCE).format(Date(millis))
+
+/** "31 oct.", "1 nov." : date courte des axes de graphique. */
+fun formatShortDate(millis: Long): String = SimpleDateFormat("d MMM", Locale.FRANCE).format(Date(millis))

@@ -27,6 +27,13 @@
     <string name="onboarding_open_settings">Ouvrir les paramètres</string>
     <string name="onboarding_later">Plus tard</string>
     <string name="onboarding_settings_path">Paramètres › Accès aux données d’usage › DataKeeper</string>
+    <string name="onboarding_restricted_title">Interrupteur grisé ou accès refusé ?</string>
+    <string name="onboarding_restricted_body">Depuis Android 15, l’accès est bloqué pour toute appli installée hors du Play Store, même depuis un gestionnaire de fichiers. Pour le débloquer :</string>
+    <string name="onboarding_restricted_step_toggle">Dans « Accès aux données d’usage », touche une fois l’interrupteur grisé de DataKeeper, puis OK. Sans ce passage, l’option suivante n’apparaît pas.</string>
+    <string name="onboarding_restricted_step_allow">Ouvre les infos de l’appli, touche ⋮ puis « Autoriser les paramètres restreints » et confirme.</string>
+    <string name="onboarding_restricted_step_retry">Reviens dans « Accès aux données d’usage » et active l’interrupteur.</string>
+    <string name="onboarding_restricted_missing">Toujours pas de ⋮ ? Désactive le Blocage automatique (Samsung) ou la Protection avancée dans Sécurité et confidentialité.</string>
+    <string name="onboarding_restricted_button">Ouvrir les infos de l’appli</string>
 
     <string name="usage_access_title">Accès aux données d’usage requis</string>
     <string name="usage_access_body">Sans cet accès, DataKeeper ne peut pas comparer ton Wi‑Fi et tes données mobiles. Rien ne quitte ton téléphone.</string>
@@ -40,6 +47,8 @@
     <string name="usage_total">Total %1$s</string>
     <string name="usage_wifi">Wi‑Fi</string>
     <string name="usage_mobile">Mobile</string>
+    <string name="usage_mobile_operator">Mobile · %1$s</string>
+    <string name="usage_show_network">Voir si tu es en 4G ou 5G</string>
     <string name="usage_share_of_total">%1$d %% du total</string>
     <string name="usage_last_7_days">7 derniers jours</string>
     <string name="usage_day_description">%1$s : %2$s en Wi‑Fi, %3$s en mobile</string>
@@ -51,6 +60,16 @@
     <string name="usage_empty_title">Rien à afficher pour l’instant</string>
     <string name="usage_empty_body">Aucun trafic mesuré depuis le début du cycle. Reviens un peu plus tard.</string>
     <string name="usage_load_failed">Impossible de lire les statistiques réseau.</string>
+    <string name="usage_savings_title">Économisé grâce au Wi‑Fi</string>
+    <string name="usage_savings_detail">%1$s × %2$s le Go</string>
+    <string name="usage_savings_no_price">Indique le prix du Go pour le chiffrer</string>
+    <string name="usage_streak_label">mois sans dépassement</string>
+    <string name="usage_streak_no_quota">Définis ton quota pour suivre ta série</string>
+    <string name="usage_streak_bars_description">Derniers cycles : %1$s. Cycle en cours : %2$s.</string>
+    <string name="usage_streak_outcome_within">sous le quota</string>
+    <string name="usage_streak_outcome_exceeded">dépassé</string>
+    <string name="usage_streak_outcome_unknown">pas de données</string>
+    <string name="usage_streak_current_running">en cours</string>
 
     <!-- Carte quota du tableau de bord -->
     <string name="quota_summary_title">Quota mobile : %1$s</string>
@@ -83,11 +102,42 @@
     <string name="quota_alert_subtitle">Notification quand %1$s sont utilisés</string>
     <string name="quota_alert_subtitle_no_quota">Choisis d’abord ton forfait</string>
     <string name="quota_cycle_title">Début du cycle</string>
-    <string name="quota_cycle_subtitle">Le %1$s de chaque mois</string>
+    <string name="quota_cycle_subtitle">Le %1$s de chaque mois · cycle en cours depuis le %2$s</string>
     <string name="quota_cycle_first">1er</string>
     <string name="quota_cycle_choose">Choisir le jour de début du cycle</string>
+    <string name="quota_cycle_hint">Touche la date où ton forfait repart à zéro. La plage surlignée est ton cycle en cours.</string>
+    <string name="quota_cycle_range">Du %1$s au %2$s</string>
+    <string name="quota_cycle_reset">%1$s · remise à zéro le %2$s</string>
+    <string name="quota_cycle_max_day">Les 29, 30 et 31 manquent certains mois : choisis au plus tard le 28.</string>
+    <string name="quota_cycle_previous_month">Mois précédent</string>
+    <string name="quota_cycle_next_month">Mois suivant</string>
+    <string name="quota_cycle_day_start">début du cycle</string>
+    <string name="quota_cycle_day_reset">prochaine remise à zéro</string>
+    <string name="quota_cycle_day_today">aujourd’hui</string>
+    <string name="quota_price_title">Prix du Go mobile</string>
+    <string name="quota_price_subtitle">%1$s le Go · sert à chiffrer tes économies</string>
+    <string name="quota_price_subtitle_none">Pour chiffrer ce que le Wi‑Fi te fait économiser</string>
+    <string name="quota_price_choose">Indiquer le prix du Go</string>
+    <string name="quota_price_hint">Prends le prix d’une recharge ou d’un Go hors forfait.</string>
+    <string name="quota_price_input_label">Prix d’un Go</string>
+    <string name="quota_price_input_error">Saisis un prix entre 0,001 et 100 DT, par ex. 2 ou 1,500</string>
+    <string name="quota_price_remove">Effacer</string>
+    <string name="quota_price_saved">Prix du Go enregistré</string>
+    <string name="unit_dinar">DT</string>
     <string name="quota_tip_label">Astuce :</string>
     <string name="quota_tip_body">planifie tes vidéos et podcasts dans « Hors ligne » pour les télécharger au prochain Wi‑Fi.</string>
+    <string name="forecast_title">Prévision fin de cycle</string>
+    <string name="forecast_badge_comfortable">Large marge</string>
+    <string name="forecast_badge_tight">De justesse</string>
+    <string name="forecast_badge_over">Dépassement prévu</string>
+    <string name="forecast_badge_exceeded">Dépassé</string>
+    <string name="forecast_body_comfortable">À ce rythme, tu finis à %1$s le %2$s. Tu gardes une bonne marge.</string>
+    <string name="forecast_body_tight">À ce rythme, tu finis à %1$s le %2$s. Reste sous %3$s par jour pour garder une marge.</string>
+    <string name="forecast_body_over">À ce rythme, tu finis à %1$s le %2$s, au-delà de ton forfait. Reste sous %3$s par jour pour ne pas le dépasser.</string>
+    <string name="forecast_body_exceeded">Forfait déjà dépassé : à ce rythme, tu finis à %1$s le %2$s. Passe en Wi‑Fi autant que possible.</string>
+    <string name="forecast_chart_limit">Forfait %1$s</string>
+    <string name="forecast_chart_today">Aujourd’hui</string>
+    <string name="forecast_chart_description">Courbe de data mobile : %1$s utilisés aujourd’hui, %2$s prévus le %3$s, forfait de %4$s.</string>
     <string name="quota_saved">Quota enregistré</string>
     <string name="quota_removed">Quota supprimé</string>
 
@@ -126,6 +176,36 @@
     <string name="download_state_done">Disponible hors ligne</string>
     <string name="download_state_failed">Échec du téléchargement</string>
     <string name="download_state_cancelled">Annulé</string>
+
+    <!-- Widgets et tuiles -->
+    <string name="widget_quota_label">Quota mobile</string>
+    <string name="widget_quota_picker_description">Data mobile restante et jours restants</string>
+    <string name="widget_savings_label">Économies Wi‑Fi</string>
+    <string name="widget_savings_picker_description">Data passée par le Wi‑Fi ce mois-ci</string>
+    <string name="widget_quota_bar_label">Quota mobile (barre)</string>
+    <string name="widget_quota_bar_picker_description">Quota consommé et estimation de fin de mois</string>
+    <string name="widget_remaining">restants</string>
+    <string name="widget_exceeded">de dépassement</string>
+    <plurals name="widget_days_left">
+        <item quantity="one">%d jour restant</item>
+        <item quantity="many">%d jours restants</item>
+        <item quantity="other">%d jours restants</item>
+    </plurals>
+    <string name="widget_quota_description">%1$s restants sur %2$s, %3$d %% utilisés</string>
+    <string name="widget_quota_exceeded_description">Quota mobile dépassé de %1$s</string>
+    <string name="widget_no_access">Ouvre DataKeeper pour autoriser l’accès</string>
+    <string name="widget_no_quota">Définis ton quota</string>
+    <string name="widget_saved_this_month">Économisé ce mois</string>
+    <string name="widget_wifi_share">%1$d %% en Wi‑Fi</string>
+    <string name="widget_used_of_mobile">%1$s mobiles</string>
+    <string name="widget_projection">Fin de mois estimée : %1$s</string>
+    <string name="tile_no_access">Accès requis</string>
+    <string name="tile_downloads_none">Rien en attente</string>
+    <plurals name="tile_downloads_pending">
+        <item quantity="one">%d en attente</item>
+        <item quantity="many">%d en attente</item>
+        <item quantity="other">%d en attente</item>
+    </plurals>
 
     <string name="notification_channel_quota">Alertes de quota mobile</string>
     <string name="notification_quota_title">%1$d %% de ton quota mobile consommé</string>

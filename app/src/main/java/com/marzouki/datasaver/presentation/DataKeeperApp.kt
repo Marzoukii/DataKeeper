@@ -1,5 +1,6 @@
 package com.marzouki.datasaver.presentation
 
+import android.os.Build
 import androidx.annotation.StringRes
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.WindowInsets
@@ -20,6 +21,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -38,6 +40,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.marzouki.datasaver.R
 import com.marzouki.datasaver.presentation.common.CollectEffects
+import com.marzouki.datasaver.presentation.common.openAppDetailsSettings
 import com.marzouki.datasaver.presentation.common.openUsageAccessSettings
 import com.marzouki.datasaver.presentation.downloads.DownloadsScreen
 import com.marzouki.datasaver.presentation.onboarding.OnboardingEffect
@@ -48,14 +51,21 @@ import com.marzouki.datasaver.presentation.quota.QuotaScreen
 import com.marzouki.datasaver.presentation.usage.UsageScreen
 
 private enum class Destination(val route: String, @param:StringRes val labelRes: Int, val icon: ImageVector) {
-    USAGE("usage", R.string.tab_usage, Icons.Rounded.BarChart),
-    QUOTA("quota", R.string.tab_quota, Icons.Rounded.Speed),
-    DOWNLOADS("downloads", R.string.tab_downloads, Icons.Rounded.Download),
+    USAGE(AppRoutes.USAGE, R.string.tab_usage, Icons.Rounded.BarChart),
+    QUOTA(AppRoutes.QUOTA, R.string.tab_quota, Icons.Rounded.Speed),
+    DOWNLOADS(AppRoutes.DOWNLOADS, R.string.tab_downloads, Icons.Rounded.Download),
 }
 
-/** Racine : écran d'accès aux données d'usage tant que la permission manque, sinon l'appli à onglets. */
+/**
+ * Racine : écran d'accès aux données d'usage tant que la permission manque, sinon l'appli à onglets.
+ * [requestedTab] (route d'[AppRoutes]) ouvre un onglet précis, à la demande d'un widget ou d'une tuile.
+ */
 @Composable
-fun DataKeeperApp(onboardingViewModel: OnboardingViewModel = hiltViewModel()) {
+fun DataKeeperApp(
+    requestedTab: String? = null,
+    onTabRequestHandled: () -> Unit = {},
+    onboardingViewModel: OnboardingViewModel = hiltViewModel(),
+) {
     val onboarding by onboardingViewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
@@ -66,6 +76,7 @@ fun DataKeeperApp(onboardingViewModel: OnboardingViewModel = hiltViewModel()) {
     CollectEffects(onboardingViewModel.effects) { effect ->
         when (effect) {
             OnboardingEffect.OpenUsageAccessSettings -> openUsageAccessSettings(context)
+            OnboardingEffect.OpenAppDetailsSettings -> openAppDetailsSettings(context)
         }
     }
 
@@ -74,18 +85,26 @@ fun DataKeeperApp(onboardingViewModel: OnboardingViewModel = hiltViewModel()) {
             UsageAccessScreen(
                 onOpenSettings = { onboardingViewModel.onIntent(OnboardingIntent.OpenSettingsClicked) },
                 onLater = { onboardingViewModel.onIntent(OnboardingIntent.LaterClicked) },
+                // Les « paramètres restreints » n'existent qu'à partir d'Android 13.
+                showRestrictedHelp = onboarding.settingsOpened && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU,
+                onOpenAppInfo = { onboardingViewModel.onIntent(OnboardingIntent.OpenAppInfoClicked) },
             )
         } else {
-            MainScaffold()
+            MainScaffold(requestedTab, onTabRequestHandled)
         }
     }
 }
 
 @Composable
-private fun MainScaffold() {
+private fun MainScaffold(requestedTab: String?, onTabRequestHandled: () -> Unit) {
     val navController = rememberNavController()
     val snackbarHostState = remember { SnackbarHostState() }
     val backStackEntry by navController.currentBackStackEntryAsState()
+
+    LaunchedEffect(requestedTab) {
+        Destination.entries.firstOrNull { it.route == requestedTab }?.let { navController.navigateToTab(it) }
+        if (requestedTab != null) onTabRequestHandled()
+    }
     val current = Destination.entries.firstOrNull { it.route == backStackEntry?.destination?.route } ?: Destination.USAGE
 
     Scaffold(

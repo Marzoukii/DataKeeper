@@ -5,6 +5,7 @@ import com.marzouki.datasaver.domain.model.DataQuota
 import com.marzouki.datasaver.domain.model.DayUsage
 import com.marzouki.datasaver.domain.model.DataUsage
 import com.marzouki.datasaver.domain.model.MonthPeriod
+import com.marzouki.datasaver.domain.model.PricePerGb
 import com.marzouki.datasaver.domain.model.QuotaStatus
 import com.marzouki.datasaver.domain.repository.QuotaAlertNotifier
 import com.marzouki.datasaver.domain.repository.QuotaRepository
@@ -31,6 +32,8 @@ class QuotaAlertTest {
         override suspend fun setLastAlertedMonth(monthKey: String?) { lastAlertedMonth.value = monthKey }
         override val cycleStartDay = MutableStateFlow(1)
         override suspend fun setCycleStartDay(day: Int) { cycleStartDay.value = day }
+        override val pricePerGb = MutableStateFlow<PricePerGb?>(null)
+        override suspend fun setPricePerGb(price: PricePerGb?) { pricePerGb.value = price }
     }
 
     private class FakeUsageRepository(var mobileBytes: Long) : UsageRepository {
