@@ -72,13 +72,16 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.marzouki.datasaver.R
 import com.marzouki.datasaver.domain.model.DataQuota
+import com.marzouki.datasaver.domain.model.ForecastOutlook
 import com.marzouki.datasaver.domain.model.MonthPeriod
 import com.marzouki.datasaver.domain.model.PricePerGb
+import com.marzouki.datasaver.domain.model.QuotaForecast
 import com.marzouki.datasaver.domain.model.QuotaStatus
 import com.marzouki.datasaver.presentation.common.CollectEffects
 import com.marzouki.datasaver.presentation.common.UsageAccessRequiredCard
 import com.marzouki.datasaver.presentation.common.openUsageAccessSettings
 import com.marzouki.datasaver.ui.components.DataKeeperCard
+import com.marzouki.datasaver.ui.components.ForecastChart
 import com.marzouki.datasaver.ui.components.InfoPill
 import com.marzouki.datasaver.ui.components.PreviewData
 import com.marzouki.datasaver.ui.components.PreviewSurface
@@ -90,12 +93,14 @@ import com.marzouki.datasaver.ui.components.SettingRow
 import com.marzouki.datasaver.ui.components.formatDayMonth
 import com.marzouki.datasaver.ui.components.formatDayOrdinal
 import com.marzouki.datasaver.ui.components.formatDinars
+import com.marzouki.datasaver.ui.components.formatShortDate
 import com.marzouki.datasaver.ui.components.toReadableSize
 import com.marzouki.datasaver.ui.components.toReadableSizeParts
 import com.marzouki.datasaver.ui.theme.SpaceGrotesk
 import com.marzouki.datasaver.ui.theme.Spacing
 import com.marzouki.datasaver.ui.theme.numeric
 import java.math.BigDecimal
+import java.util.Calendar
 import kotlin.math.roundToInt
 
 private val PRESETS_GB = listOf(2, 5, 10, 20)
@@ -164,6 +169,7 @@ private fun QuotaContent(
             item { UsageAccessRequiredCard(onGrantClick = { onIntent(QuotaIntent.GrantAccessClicked) }) }
         }
         item { QuotaGaugeCard(state.quota, state.status, period) }
+        state.forecast?.let { forecast -> item { ForecastCard(forecast) } }
         item { PlanCard(state, onIntent, onOtherClick = { showOtherDialog = true }) }
         item {
             SettingsCard(
@@ -263,6 +269,69 @@ private fun QuotaGaugeCard(quota: DataQuota?, status: QuotaStatus?, period: Mont
                 }
             }
         }
+    }
+}
+
+/** Prévision de fin de cycle : verdict, conseil de rythme quotidien et courbe. */
+@Composable
+private fun ForecastCard(forecast: QuotaForecast) {
+    val lastDayMillis = Calendar.getInstance().apply {
+        timeInMillis = forecast.period.nextStartMillis
+        add(Calendar.DAY_OF_MONTH, -1)
+    }.timeInMillis
+    val projected = forecast.projectedBytes.toReadableSize()
+    val endDate = formatDayMonth(lastDayMillis)
+    val safeDaily = forecast.safeDailyBytes.toReadableSize()
+    val (badgeRes, badgeColor) = when (forecast.outlook) {
+        ForecastOutlook.COMFORTABLE -> R.string.forecast_badge_comfortable to MaterialTheme.colorScheme.primaryContainer
+        ForecastOutlook.TIGHT -> R.string.forecast_badge_tight to MaterialTheme.colorScheme.tertiaryContainer
+        ForecastOutlook.OVER_QUOTA -> R.string.forecast_badge_over to MaterialTheme.colorScheme.errorContainer
+        ForecastOutlook.EXCEEDED -> R.string.forecast_badge_exceeded to MaterialTheme.colorScheme.errorContainer
+    }
+    val body = when (forecast.outlook) {
+        ForecastOutlook.COMFORTABLE -> stringResource(R.string.forecast_body_comfortable, projected, endDate)
+        ForecastOutlook.TIGHT -> stringResource(R.string.forecast_body_tight, projected, endDate, safeDaily)
+        ForecastOutlook.OVER_QUOTA -> stringResource(R.string.forecast_body_over, projected, endDate, safeDaily)
+        ForecastOutlook.EXCEEDED -> stringResource(R.string.forecast_body_exceeded, projected, endDate)
+    }
+
+    DataKeeperCard {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                stringResource(R.string.forecast_title),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f),
+            )
+            InfoPill(stringResource(badgeRes), badgeColor)
+        }
+        Spacer(Modifier.height(8.dp))
+        Text(
+            buildAnnotatedString {
+                append(body)
+                val start = body.indexOf(projected)
+                if (start >= 0) {
+                    addStyle(SpanStyle(fontFamily = SpaceGrotesk, fontWeight = FontWeight.Bold), start, start + projected.length)
+                }
+            },
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Spacer(Modifier.height(12.dp))
+        ForecastChart(
+            cumulativeBytes = forecast.cumulativeBytes,
+            totalDays = forecast.period.totalDays,
+            projectedBytes = forecast.projectedBytes,
+            limitBytes = forecast.quota.limitBytes,
+            alertPercent = forecast.quota.alertThresholdPercent,
+            startLabel = formatShortDate(forecast.period.startMillis),
+            endLabel = formatShortDate(lastDayMillis),
+            description = stringResource(
+                R.string.forecast_chart_description,
+                forecast.usedBytes.toReadableSize(),
+                projected,
+                endDate,
+                forecast.quota.limitBytes.toReadableSize(),
+            ),
+        )
     }
 }
 
@@ -540,6 +609,7 @@ private fun QuotaContentPreview() {
                 input = "5",
                 period = PreviewData.period,
                 pricePerGb = PreviewData.pricePerGb,
+                dailyMobileBytes = PreviewData.cycleDailyMobile,
             ),
             onIntent = {},
             onOpenDownloads = {},
@@ -557,6 +627,7 @@ private fun QuotaContentExceededPreview() {
                 usedMobileBytes = PreviewData.quotaExceededStatus.usedBytes,
                 input = "5",
                 period = PreviewData.period,
+                dailyMobileBytes = PreviewData.cycleDailyMobile.map { it * 54 / 32 },
             ),
             onIntent = {},
             onOpenDownloads = {},
