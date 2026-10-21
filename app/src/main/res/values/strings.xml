@@ -126,6 +126,18 @@
     <string name="unit_dinar">DT</string>
     <string name="quota_tip_label">Astuce :</string>
     <string name="quota_tip_body">planifie tes vidéos et podcasts dans « Hors ligne » pour les télécharger au prochain Wi‑Fi.</string>
+    <string name="forecast_title">Prévision fin de cycle</string>
+    <string name="forecast_badge_comfortable">Large marge</string>
+    <string name="forecast_badge_tight">De justesse</string>
+    <string name="forecast_badge_over">Dépassement prévu</string>
+    <string name="forecast_badge_exceeded">Dépassé</string>
+    <string name="forecast_body_comfortable">À ce rythme, tu finis à %1$s le %2$s. Tu gardes une bonne marge.</string>
+    <string name="forecast_body_tight">À ce rythme, tu finis à %1$s le %2$s. Reste sous %3$s par jour pour garder une marge.</string>
+    <string name="forecast_body_over">À ce rythme, tu finis à %1$s le %2$s, au-delà de ton forfait. Reste sous %3$s par jour pour ne pas le dépasser.</string>
+    <string name="forecast_body_exceeded">Forfait déjà dépassé : à ce rythme, tu finis à %1$s le %2$s. Passe en Wi‑Fi autant que possible.</string>
+    <string name="forecast_chart_limit">Forfait %1$s</string>
+    <string name="forecast_chart_today">Aujourd’hui</string>
+    <string name="forecast_chart_description">Courbe de data mobile : %1$s utilisés aujourd’hui, %2$s prévus le %3$s, forfait de %4$s.</string>
     <string name="quota_saved">Quota enregistré</string>
     <string name="quota_removed">Quota supprimé</string>
 

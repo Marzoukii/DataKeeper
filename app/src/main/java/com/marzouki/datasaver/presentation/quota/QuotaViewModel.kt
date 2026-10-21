@@ -3,6 +3,7 @@ package com.marzouki.datasaver.presentation.quota
 import androidx.lifecycle.viewModelScope
 import com.marzouki.datasaver.R
 import com.marzouki.datasaver.domain.usecase.GetCurrentPeriodUseCase
+import com.marzouki.datasaver.domain.usecase.GetDailyUsageUseCase
 import com.marzouki.datasaver.domain.usecase.GetMonthlyUsageUseCase
 import com.marzouki.datasaver.domain.usecase.HasUsageAccessUseCase
 import com.marzouki.datasaver.domain.usecase.ObserveCycleStartDayUseCase
@@ -34,7 +35,8 @@ class QuotaViewModel @Inject constructor(
     private val hasUsageAccess: HasUsageAccessUseCase,
     private val getCurrentPeriod: GetCurrentPeriodUseCase,
     private val getMonthlyUsage: GetMonthlyUsageUseCase,
-) : MviViewModel<QuotaState, QuotaIntent, QuotaEffect>(QuotaState()) {
+    private val getDailyUsage: GetDailyUsageUseCase,
+): MviViewModel<QuotaState, QuotaIntent, QuotaEffect>(QuotaState()) {
 
     init {
         observeQuota()
@@ -84,11 +86,14 @@ class QuotaViewModel @Inject constructor(
             val period = getCurrentPeriod()
             setState { copy(period = period) }
             if (!hasUsageAccess()) {
-                setState { copy(hasUsageAccess = false, usedMobileBytes = null) }
+                setState { copy(hasUsageAccess = false, usedMobileBytes = null, dailyMobileBytes = null) }
                 return@launch
             }
             setState { copy(hasUsageAccess = true) }
             getMonthlyUsage(period).onSuccess { usage -> setState { copy(usedMobileBytes = usage.mobileBytes) } }
+            // Un point par jour écoulé du cycle : du premier jour à aujourd'hui.
+            getDailyUsage(days = period.currentDay, nowMillis = period.endMillis)
+                .onSuccess { days -> setState { copy(dailyMobileBytes = days.map { it.mobileBytes }) } }
         }
     }
 
