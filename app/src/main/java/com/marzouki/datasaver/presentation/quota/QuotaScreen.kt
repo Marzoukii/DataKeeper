@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -350,7 +349,11 @@ private fun SettingsCard(state: QuotaState, onIntent: (QuotaIntent) -> Unit, onC
         SettingRow(
             icon = Icons.Rounded.CalendarMonth,
             title = stringResource(R.string.quota_cycle_title),
-            subtitle = stringResource(R.string.quota_cycle_subtitle, formatDayOrdinal(state.cycleStartDay)),
+            subtitle = stringResource(
+                R.string.quota_cycle_subtitle,
+                formatDayOrdinal(state.cycleStartDay),
+                formatDayMonth((state.period ?: MonthPeriod.current(cycleStartDay = state.cycleStartDay)).startMillis),
+            ),
             onClick = onCycleClick,
         ) {
             Icon(
@@ -424,45 +427,6 @@ private fun OtherQuotaDialog(state: QuotaState, onIntent: (QuotaIntent) -> Unit,
             }) { Text(stringResource(R.string.action_save)) }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } },
-    )
-}
-
-@Composable
-private fun CycleStartDialog(selected: Int, onSelect: (Int) -> Unit, onDismiss: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.quota_cycle_title)) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                (1..MonthPeriod.MAX_CYCLE_START_DAY).chunked(7).forEach { week ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        week.forEach { day ->
-                            val isSelected = day == selected
-                            Box(
-                                Modifier
-                                    .weight(1f)
-                                    .aspectRatio(1f)
-                                    .clip(CircleShape)
-                                    .background(
-                                        if (isSelected) MaterialTheme.colorScheme.primary
-                                        else MaterialTheme.colorScheme.surfaceVariant,
-                                    )
-                                    .clickable { onSelect(day) },
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Text(
-                                    day.toString(),
-                                    style = MaterialTheme.typography.labelLarge.numeric(),
-                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimary
-                                    else MaterialTheme.colorScheme.onSurface,
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } },
     )
 }
 
