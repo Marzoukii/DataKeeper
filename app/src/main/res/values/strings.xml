@@ -47,7 +47,7 @@
     <string name="usage_total">Total %1$s</string>
     <string name="usage_wifi">Wi‑Fi</string>
     <string name="usage_mobile">Mobile</string>
-    <string name="usage_mobile_operator">Mobile · %1$s</string>
+    <string name="usage_wifi_all_networks">Tous les réseaux</string>
     <string name="usage_show_network">Voir si tu es en 4G ou 5G</string>
     <string name="usage_share_of_total">%1$d %% du total</string>
     <string name="usage_last_7_days">7 derniers jours</string>
@@ -61,7 +61,8 @@
     <string name="usage_empty_body">Aucun trafic mesuré depuis le début du cycle. Reviens un peu plus tard.</string>
     <string name="usage_load_failed">Impossible de lire les statistiques réseau.</string>
     <string name="usage_savings_title">Économisé grâce au Wi‑Fi</string>
-    <string name="usage_savings_detail">%1$s × %2$s le Go</string>
+    <string name="usage_savings_detail">%1$s × %2$s</string>
+    <string name="usage_savings_detail_operator">%1$s × %2$s · %3$s</string>
     <string name="usage_savings_no_price">Indique le prix du Go pour le chiffrer</string>
     <string name="usage_streak_label">mois sans dépassement</string>
     <string name="usage_streak_no_quota">Définis ton quota pour suivre ta série</string>
