@@ -73,6 +73,9 @@ object PreviewData {
 
     val pricePerGb = PricePerGb(millimes = 2_000)
     val streak = QuotaStreak.from(List(3) { CycleOutcome.WITHIN_QUOTA } + CycleOutcome.EXCEEDED)
+    /** Data mobile de chaque jour du cycle jusqu'au 20 octobre, irrégulière, 3,2 Go en tout. */
+    val cycleDailyMobile: List<Long> = List(period.currentDay) { day -> 110L + (day * 37) % 100 }
+        .let { weights -> weights.map { it * 3_200 * MB / weights.sum() } }
 
     val days: List<DayUsage> = listOf(
         2_100L to 180L, 3_400L to 90L, 1_800L to 420L, 2_900L to 120L,

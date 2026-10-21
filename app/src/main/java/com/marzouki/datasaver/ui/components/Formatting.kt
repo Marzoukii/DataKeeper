@@ -83,3 +83,6 @@ fun dayInitial(millis: Long): String {
 
 /** "lundi". */
 fun dayName(millis: Long): String = SimpleDateFormat("EEEE", Locale.FRANCE).format(Date(millis))
+
+/** "31 oct.", "1 nov." : date courte des axes de graphique. */
+fun formatShortDate(millis: Long): String = SimpleDateFormat("d MMM", Locale.FRANCE).format(Date(millis))
