@@ -96,9 +96,10 @@ fun UsageAccessScreen(
                     CheckPoint(stringResource(R.string.onboarding_point_revoke))
                 }
                 Spacer(Modifier.height(24.dp))
-            }
-            if (showRestrictedHelp) {
-                RestrictedSettingsHelp(onOpenAppInfo, Modifier.padding(bottom = 16.dp))
+                // Dans la zone défilante : avec ses étapes, la carte ne tiendrait pas sur un petit écran.
+                if (showRestrictedHelp) {
+                    RestrictedSettingsHelp(onOpenAppInfo, Modifier.padding(bottom = 16.dp))
+                }
             }
             Button(
                 onClick = onOpenSettings,
@@ -151,6 +152,20 @@ private fun RestrictedSettingsHelp(onOpenAppInfo: () -> Unit, modifier: Modifier
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                Spacer(Modifier.height(8.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    listOf(
+                        R.string.onboarding_restricted_step_toggle,
+                        R.string.onboarding_restricted_step_allow,
+                        R.string.onboarding_restricted_step_retry,
+                    ).forEachIndexed { index, step -> RestrictedStep(index + 1, stringResource(step)) }
+                }
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    stringResource(R.string.onboarding_restricted_missing),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 TextButton(
                     onClick = onOpenAppInfo,
                     shape = CircleShape,
@@ -158,6 +173,19 @@ private fun RestrictedSettingsHelp(onOpenAppInfo: () -> Unit, modifier: Modifier
                 ) { Text(stringResource(R.string.onboarding_restricted_button), style = MaterialTheme.typography.labelLarge) }
             }
         }
+    }
+}
+
+@Composable
+private fun RestrictedStep(number: Int, text: String) {
+    Row(verticalAlignment = Alignment.Top) {
+        Text(
+            "$number.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.width(18.dp),
+        )
+        Text(text, style = MaterialTheme.typography.bodySmall)
     }
 }
 
