@@ -3,6 +3,7 @@ package com.marzouki.datasaver.presentation.quota
 import androidx.annotation.StringRes
 import com.marzouki.datasaver.domain.model.DataQuota
 import com.marzouki.datasaver.domain.model.MonthPeriod
+import com.marzouki.datasaver.domain.model.PricePerGb
 import com.marzouki.datasaver.domain.model.QuotaStatus
 
 data class QuotaState(
@@ -16,6 +17,7 @@ data class QuotaState(
     val cycleStartDay: Int = 1,
     /** Cycle en cours (date de remise à zéro, jours restants). */
     val period: MonthPeriod? = null,
+    val pricePerGb: PricePerGb? = null,
 ) {
     val status: QuotaStatus? get() = if (quota != null && usedMobileBytes != null) QuotaStatus(quota, usedMobileBytes) else null
 }
@@ -29,6 +31,8 @@ sealed interface QuotaIntent {
     data object GrantAccessClicked : QuotaIntent
     data class AlertToggled(val enabled: Boolean) : QuotaIntent
     data class CycleStartDaySelected(val day: Int) : QuotaIntent
+    /** Null efface le prix. */
+    data class PricePerGbSaved(val price: PricePerGb?) : QuotaIntent
 }
 
 sealed interface QuotaEffect {

@@ -6,8 +6,10 @@ import com.marzouki.datasaver.domain.usecase.GetCurrentPeriodUseCase
 import com.marzouki.datasaver.domain.usecase.GetMonthlyUsageUseCase
 import com.marzouki.datasaver.domain.usecase.HasUsageAccessUseCase
 import com.marzouki.datasaver.domain.usecase.ObserveCycleStartDayUseCase
+import com.marzouki.datasaver.domain.usecase.ObservePricePerGbUseCase
 import com.marzouki.datasaver.domain.usecase.ObserveQuotaUseCase
 import com.marzouki.datasaver.domain.usecase.SetCycleStartDayUseCase
+import com.marzouki.datasaver.domain.usecase.SetPricePerGbUseCase
 import com.marzouki.datasaver.domain.usecase.SetQuotaAlertEnabledUseCase
 import com.marzouki.datasaver.domain.usecase.SetQuotaUseCase
 import com.marzouki.datasaver.presentation.mvi.MviViewModel
@@ -24,6 +26,8 @@ import kotlin.math.roundToLong
 class QuotaViewModel @Inject constructor(
     observeQuota: ObserveQuotaUseCase,
     observeCycleStartDay: ObserveCycleStartDayUseCase,
+    observePricePerGb: ObservePricePerGbUseCase,
+    private val setPricePerGb: SetPricePerGbUseCase,
     private val setQuota: SetQuotaUseCase,
     private val setQuotaAlertEnabled: SetQuotaAlertEnabledUseCase,
     private val setCycleStartDay: SetCycleStartDayUseCase,
@@ -46,6 +50,9 @@ class QuotaViewModel @Inject constructor(
             .drop(1)
             .onEach { refreshUsage() }
             .launchIn(viewModelScope)
+        observePricePerGb()
+            .onEach { price -> setState { copy(pricePerGb = price) } }
+            .launchIn(viewModelScope)
     }
 
     override fun onIntent(intent: QuotaIntent) {
@@ -65,6 +72,10 @@ class QuotaViewModel @Inject constructor(
                 if (intent.enabled) sendEffect(QuotaEffect.RequestNotificationPermission)
             }
             is QuotaIntent.CycleStartDaySelected -> viewModelScope.launch { setCycleStartDay(intent.day) }
+            is QuotaIntent.PricePerGbSaved -> viewModelScope.launch {
+                setPricePerGb(intent.price)
+                if (intent.price != null) sendEffect(QuotaEffect.ShowMessage(R.string.quota_price_saved))
+            }
         }
     }
 

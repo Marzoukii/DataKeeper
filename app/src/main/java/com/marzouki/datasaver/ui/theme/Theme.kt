@@ -82,9 +82,9 @@ internal val DarkColorScheme = darkColorScheme(
 
 /** Couleurs hors du schéma Material 3. */
 @Immutable
-data class ExtendedColors(val success: Color)
+data class ExtendedColors(val success: Color, val successContainer: Color)
 
-val LocalExtendedColors = staticCompositionLocalOf { ExtendedColors(success = LightSuccess) }
+val LocalExtendedColors = staticCompositionLocalOf { ExtendedColors(LightSuccess, LightSuccessContainer) }
 
 /** Alias sémantiques : on parle de Wi-Fi et de mobile, jamais de « primary » ou « tertiary ». */
 object DataColors {
@@ -94,6 +94,8 @@ object DataColors {
         @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.tertiary
     val success: Color
         @Composable @ReadOnlyComposable get() = LocalExtendedColors.current.success
+    val successContainer: Color
+        @Composable @ReadOnlyComposable get() = LocalExtendedColors.current.successContainer
 }
 
 /** Pas de couleurs dynamiques (Android 12+) : le bleu et l'orange portent un sens. */
@@ -102,7 +104,11 @@ fun DataKeeperTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
-    val extendedColors = ExtendedColors(success = if (darkTheme) DarkSuccess else LightSuccess)
+    val extendedColors = if (darkTheme) {
+        ExtendedColors(DarkSuccess, DarkSuccessContainer)
+    } else {
+        ExtendedColors(LightSuccess, LightSuccessContainer)
+    }
     CompositionLocalProvider(LocalExtendedColors provides extendedColors) {
         MaterialTheme(
             colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme,
