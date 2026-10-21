@@ -1,15 +1,18 @@
 package com.marzouki.datasaver.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -44,9 +47,9 @@ fun UsageSplitCard(
     wifiBytes: Long,
     mobileBytes: Long,
     modifier: Modifier = Modifier,
-    /** Opérateur de la SIM des données, accolé au libellé Mobile. */
+    /** Opérateur de la SIM des données, sous le libellé Mobile. */
     operatorName: String? = null,
-    /** "4G", "5G"… ; null si inconnu. */
+    /** "4G", "5G"… en badge à côté de l'opérateur ; null si inconnu. */
     networkLabel: String? = null,
     /** Non null tant que la permission manque : propose d'afficher la 4G ou la 5G. */
     onShowNetwork: (() -> Unit)? = null,
@@ -77,17 +80,36 @@ fun UsageSplitCard(
                 bytes = wifiBytes,
                 percent = wifiPercent,
                 modifier = Modifier.weight(1f),
-            )
+            ) {
+                Text(
+                    stringResource(R.string.usage_wifi_all_networks),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             UsageColumn(
                 icon = Icons.Rounded.SignalCellularAlt,
-                label = listOfNotNull(operatorName, networkLabel).takeIf { it.isNotEmpty() }
-                    ?.let { stringResource(R.string.usage_mobile_operator, it.joinToString(" · ")) }
-                    ?: stringResource(R.string.usage_mobile),
+                label = stringResource(R.string.usage_mobile),
                 color = DataColors.mobile,
                 bytes = mobileBytes,
                 percent = mobilePercent,
                 modifier = Modifier.weight(1f),
-            )
+            ) {
+                if (operatorName != null) {
+                    Text(
+                        operatorName,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false),
+                    )
+                }
+                if (networkLabel != null) {
+                    if (operatorName != null) Spacer(Modifier.width(6.dp))
+                    NetworkBadge(networkLabel)
+                }
+            }
         }
         Spacer(Modifier.height(16.dp))
         SplitBar(wifiBytes, mobileBytes)
@@ -110,6 +132,7 @@ private fun UsageColumn(
     bytes: Long,
     percent: Int,
     modifier: Modifier = Modifier,
+    subtitle: @Composable RowScope.() -> Unit,
 ) {
     val size = bytes.toReadableSizeParts()
     val unitStyle = MaterialTheme.typography.titleMedium.numeric()
@@ -119,6 +142,8 @@ private fun UsageColumn(
             Spacer(Modifier.width(6.dp))
             Text(label, style = MaterialTheme.typography.labelLarge, color = color, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
+        // Hauteur minimale commune : les chiffres des deux colonnes restent alignés, sous-titre vide ou non.
+        Row(Modifier.heightIn(min = 22.dp), verticalAlignment = Alignment.CenterVertically, content = subtitle)
         Text(
             buildAnnotatedString {
                 append(size.value)
@@ -135,6 +160,19 @@ private fun UsageColumn(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
+}
+
+/** Petit badge cerclé d'orange : la génération du réseau mobile ("5G"). */
+@Composable
+private fun NetworkBadge(label: String) {
+    Text(
+        label,
+        style = MaterialTheme.typography.labelSmall.numeric(),
+        color = DataColors.mobile,
+        modifier = Modifier
+            .border(1.dp, DataColors.mobile, CircleShape)
+            .padding(horizontal = 6.dp, vertical = 1.dp),
+    )
 }
 
 /** Barre de 12 dp en deux segments arrondis séparés de 3 dp, proportionnels aux volumes. */
@@ -172,7 +210,7 @@ private fun UsageSplitCardPreview() {
             UsageSplitCard(
                 PreviewData.usage.wifiBytes,
                 PreviewData.usage.mobileBytes,
-                operatorName = "Tunisie Telecom",
+                operatorName = "Ooredoo",
                 networkLabel = "5G",
             )
             UsageSplitCard(PreviewData.usage.wifiBytes, PreviewData.usage.mobileBytes, operatorName = "Orange", onShowNetwork = {})
