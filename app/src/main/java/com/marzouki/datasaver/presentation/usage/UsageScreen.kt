@@ -178,6 +178,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.dashboard(
             streak = state.streak,
             currentCycleExceeded = state.quotaStatus?.isExceeded == true,
             onOpenQuota = onOpenQuota,
+            operatorName = state.operatorName,
         )
     }
     if (state.dailyUsage.isNotEmpty()) {
