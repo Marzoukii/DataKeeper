@@ -44,10 +44,9 @@ fun formatUsedOf(usedBytes: Long, limitBytes: Long): String {
     return if (used.unit == limit.unit) "${used.value} / $limit" else "$used / $limit"
 }
 
-/** Montant en dinars tunisiens : "36,800 DT", "2 DT" quand il n'y a pas de millimes. */
+/** Montant en dinars tunisiens, sans zéros inutiles : "27,6 DT", "1,25 DT", "2 DT". */
 fun formatDinars(millimes: Long): String {
-    val pattern = if (millimes % 1_000 == 0L) "#,##0" else "#,##0.000"
-    val dinars = DecimalFormat(pattern, DecimalFormatSymbols(Locale.FRANCE)).format(millimes / 1_000.0)
+    val dinars = DecimalFormat("#,##0.###", DecimalFormatSymbols(Locale.FRANCE)).format(millimes / 1_000.0)
     return "$dinars${NBSP}DT"
 }
 

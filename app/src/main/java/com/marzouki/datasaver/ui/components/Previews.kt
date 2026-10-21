@@ -71,7 +71,7 @@ object PreviewData {
     val quotaAlertStatus = QuotaStatus(quota, usedBytes = 4_300 * MB)
     val quotaExceededStatus = QuotaStatus(quota, usedBytes = 5_400 * MB)
 
-    val pricePerGb = PricePerGb(millimes = 2_000)
+    val pricePerGb = PricePerGb(millimes = 1_500)
     val streak = QuotaStreak.from(List(3) { CycleOutcome.WITHIN_QUOTA } + CycleOutcome.EXCEEDED)
     /** Data mobile de chaque jour du cycle jusqu'au 20 octobre, irrégulière, 3,2 Go en tout. */
     val cycleDailyMobile: List<Long> = List(period.currentDay) { day -> 110L + (day * 37) % 100 }
