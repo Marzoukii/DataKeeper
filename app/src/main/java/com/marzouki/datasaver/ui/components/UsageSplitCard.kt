@@ -4,11 +4,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -18,6 +20,7 @@ import androidx.compose.material.icons.rounded.Wifi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,6 +30,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.marzouki.datasaver.R
@@ -36,7 +40,17 @@ import kotlin.math.roundToInt
 
 /** Répartition Wi-Fi / mobile du cycle : deux colonnes chiffrées et une barre partagée. */
 @Composable
-fun UsageSplitCard(wifiBytes: Long, mobileBytes: Long, modifier: Modifier = Modifier) {
+fun UsageSplitCard(
+    wifiBytes: Long,
+    mobileBytes: Long,
+    modifier: Modifier = Modifier,
+    /** Opérateur de la SIM des données, accolé au libellé Mobile. */
+    operatorName: String? = null,
+    /** "4G", "5G"… ; null si inconnu. */
+    networkLabel: String? = null,
+    /** Non null tant que la permission manque : propose d'afficher la 4G ou la 5G. */
+    onShowNetwork: (() -> Unit)? = null,
+) {
     val total = wifiBytes + mobileBytes
     val wifiPercent = if (total == 0L) 0 else (wifiBytes * 100f / total).roundToInt()
     val mobilePercent = if (total == 0L) 0 else 100 - wifiPercent
@@ -66,7 +80,9 @@ fun UsageSplitCard(wifiBytes: Long, mobileBytes: Long, modifier: Modifier = Modi
             )
             UsageColumn(
                 icon = Icons.Rounded.SignalCellularAlt,
-                label = stringResource(R.string.usage_mobile),
+                label = listOfNotNull(operatorName, networkLabel).takeIf { it.isNotEmpty() }
+                    ?.let { stringResource(R.string.usage_mobile_operator, it.joinToString(" · ")) }
+                    ?: stringResource(R.string.usage_mobile),
                 color = DataColors.mobile,
                 bytes = mobileBytes,
                 percent = mobilePercent,
@@ -75,6 +91,14 @@ fun UsageSplitCard(wifiBytes: Long, mobileBytes: Long, modifier: Modifier = Modi
         }
         Spacer(Modifier.height(16.dp))
         SplitBar(wifiBytes, mobileBytes)
+        if (onShowNetwork != null) {
+            TextButton(
+                onClick = onShowNetwork,
+                shape = CircleShape,
+                contentPadding = PaddingValues(horizontal = 0.dp, vertical = 8.dp),
+                modifier = Modifier.padding(top = 4.dp),
+            ) { Text(stringResource(R.string.usage_show_network), style = MaterialTheme.typography.labelLarge) }
+        }
     }
 }
 
@@ -93,7 +117,7 @@ private fun UsageColumn(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(6.dp))
-            Text(label, style = MaterialTheme.typography.labelLarge, color = color)
+            Text(label, style = MaterialTheme.typography.labelLarge, color = color, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
         Text(
             buildAnnotatedString {
@@ -144,6 +168,14 @@ private fun Segment(color: Color, modifier: Modifier) {
 @Composable
 private fun UsageSplitCardPreview() {
     PreviewSurface {
-        UsageSplitCard(PreviewData.usage.wifiBytes, PreviewData.usage.mobileBytes)
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            UsageSplitCard(
+                PreviewData.usage.wifiBytes,
+                PreviewData.usage.mobileBytes,
+                operatorName = "Tunisie Telecom",
+                networkLabel = "5G",
+            )
+            UsageSplitCard(PreviewData.usage.wifiBytes, PreviewData.usage.mobileBytes, operatorName = "Orange", onShowNetwork = {})
+        }
     }
 }
