@@ -24,6 +24,7 @@ internal val LightError = Color(0xFFC62828)
 internal val LightErrorContainer = Color(0xFFFDE2E1)
 internal val LightOnErrorContainer = Color(0xFF7A1010)
 internal val LightSuccess = Color(0xFF1B7A43)
+internal val LightSuccessContainer = Color(0xFFDDF3E5)
 
 // Thème sombre
 internal val DarkPrimary = Color(0xFF7FA2FF)
@@ -45,3 +46,4 @@ internal val DarkError = Color(0xFFFF8A80)
 internal val DarkErrorContainer = Color(0xFF4D1414)
 internal val DarkOnErrorContainer = Color(0xFFFFDAD6)
 internal val DarkSuccess = Color(0xFF6FD49A)
+internal val DarkSuccessContainer = Color(0xFF12321F)

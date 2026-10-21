@@ -29,6 +29,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.rounded.Payments
 import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.Wifi
 import androidx.compose.material3.AlertDialog
@@ -72,6 +73,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.marzouki.datasaver.R
 import com.marzouki.datasaver.domain.model.DataQuota
 import com.marzouki.datasaver.domain.model.MonthPeriod
+import com.marzouki.datasaver.domain.model.PricePerGb
 import com.marzouki.datasaver.domain.model.QuotaStatus
 import com.marzouki.datasaver.presentation.common.CollectEffects
 import com.marzouki.datasaver.presentation.common.UsageAccessRequiredCard
@@ -87,11 +89,13 @@ import com.marzouki.datasaver.ui.components.SettingDivider
 import com.marzouki.datasaver.ui.components.SettingRow
 import com.marzouki.datasaver.ui.components.formatDayMonth
 import com.marzouki.datasaver.ui.components.formatDayOrdinal
+import com.marzouki.datasaver.ui.components.formatDinars
 import com.marzouki.datasaver.ui.components.toReadableSize
 import com.marzouki.datasaver.ui.components.toReadableSizeParts
 import com.marzouki.datasaver.ui.theme.SpaceGrotesk
 import com.marzouki.datasaver.ui.theme.Spacing
 import com.marzouki.datasaver.ui.theme.numeric
+import java.math.BigDecimal
 import kotlin.math.roundToInt
 
 private val PRESETS_GB = listOf(2, 5, 10, 20)
@@ -142,6 +146,7 @@ private fun QuotaContent(
 ) {
     var showOtherDialog by rememberSaveable { mutableStateOf(false) }
     var showCycleDialog by rememberSaveable { mutableStateOf(false) }
+    var showPriceDialog by rememberSaveable { mutableStateOf(false) }
     val period = state.period ?: MonthPeriod.current(cycleStartDay = state.cycleStartDay)
 
     LazyColumn(
@@ -160,7 +165,14 @@ private fun QuotaContent(
         }
         item { QuotaGaugeCard(state.quota, state.status, period) }
         item { PlanCard(state, onIntent, onOtherClick = { showOtherDialog = true }) }
-        item { SettingsCard(state, onIntent, onCycleClick = { showCycleDialog = true }) }
+        item {
+            SettingsCard(
+                state,
+                onIntent,
+                onCycleClick = { showCycleDialog = true },
+                onPriceClick = { showPriceDialog = true },
+            )
+        }
         item { TipBox(onClick = onOpenDownloads) }
         item { Spacer(Modifier.height(8.dp)) }
     }
@@ -180,6 +192,16 @@ private fun QuotaContent(
                 showCycleDialog = false
             },
             onDismiss = { showCycleDialog = false },
+        )
+    }
+    if (showPriceDialog) {
+        PricePerGbDialog(
+            current = state.pricePerGb,
+            onSave = {
+                onIntent(QuotaIntent.PricePerGbSaved(it))
+                showPriceDialog = false
+            },
+            onDismiss = { showPriceDialog = false },
         )
     }
 }
@@ -323,7 +345,12 @@ private fun PlanCard(state: QuotaState, onIntent: (QuotaIntent) -> Unit, onOther
 }
 
 @Composable
-private fun SettingsCard(state: QuotaState, onIntent: (QuotaIntent) -> Unit, onCycleClick: () -> Unit) {
+private fun SettingsCard(
+    state: QuotaState,
+    onIntent: (QuotaIntent) -> Unit,
+    onCycleClick: () -> Unit,
+    onPriceClick: () -> Unit,
+) {
     val quota = state.quota
     val threshold = quota?.alertThresholdPercent ?: DataQuota.DEFAULT_ALERT_THRESHOLD_PERCENT
     DataKeeperCard(contentPadding = 0.dp) {
@@ -362,9 +389,81 @@ private fun SettingsCard(state: QuotaState, onIntent: (QuotaIntent) -> Unit, onC
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+        SettingDivider()
+        val price = state.pricePerGb
+        SettingRow(
+            icon = Icons.Rounded.Payments,
+            title = stringResource(R.string.quota_price_title),
+            subtitle = if (price != null) {
+                stringResource(R.string.quota_price_subtitle, formatDinars(price.millimes.toLong()))
+            } else {
+                stringResource(R.string.quota_price_subtitle_none)
+            },
+            onClick = onPriceClick,
+        ) {
+            Icon(
+                Icons.Rounded.ChevronRight,
+                contentDescription = stringResource(R.string.quota_price_choose),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
         Spacer(Modifier.height(4.dp))
     }
 }
+
+@Composable
+private fun PricePerGbDialog(current: PricePerGb?, onSave: (PricePerGb?) -> Unit, onDismiss: () -> Unit) {
+    var input by rememberSaveable { mutableStateOf(current?.let { millimesToInput(it.millimes) }.orEmpty()) }
+    var error by rememberSaveable { mutableStateOf(false) }
+    val submit = {
+        val price = PricePerGb.parse(input)
+        if (price == null) error = true else onSave(price)
+    }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.quota_price_title)) },
+        text = {
+            Column {
+                Text(
+                    stringResource(R.string.quota_price_hint),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(12.dp))
+                OutlinedTextField(
+                    value = input,
+                    onValueChange = {
+                        input = it
+                        error = false
+                    },
+                    label = { Text(stringResource(R.string.quota_price_input_label)) },
+                    suffix = { Text(stringResource(R.string.unit_dinar)) },
+                    isError = error,
+                    supportingText = if (error) {
+                        { Text(stringResource(R.string.quota_price_input_error)) }
+                    } else null,
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { submit() }),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        },
+        confirmButton = { TextButton(onClick = submit) { Text(stringResource(R.string.action_save)) } },
+        dismissButton = {
+            Row {
+                if (current != null) {
+                    TextButton(onClick = { onSave(null) }) { Text(stringResource(R.string.quota_price_remove)) }
+                }
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
+            }
+        },
+    )
+}
+
+/** 2500 → "2,5", 2000 → "2". */
+private fun millimesToInput(millimes: Int): String =
+    BigDecimal(millimes).movePointLeft(3).stripTrailingZeros().toPlainString().replace('.', ',')
 
 @Composable
 private fun TipBox(onClick: () -> Unit) {
@@ -440,6 +539,7 @@ private fun QuotaContentPreview() {
                 usedMobileBytes = PreviewData.quotaStatus.usedBytes,
                 input = "5",
                 period = PreviewData.period,
+                pricePerGb = PreviewData.pricePerGb,
             ),
             onIntent = {},
             onOpenDownloads = {},

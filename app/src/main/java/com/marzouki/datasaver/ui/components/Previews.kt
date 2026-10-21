@@ -11,12 +11,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.marzouki.datasaver.domain.model.AppDataUsage
 import com.marzouki.datasaver.domain.model.AppKind
+import com.marzouki.datasaver.domain.model.CycleOutcome
 import com.marzouki.datasaver.domain.model.DataQuota
 import com.marzouki.datasaver.domain.model.DataUsage
 import com.marzouki.datasaver.domain.model.DayUsage
 import com.marzouki.datasaver.domain.model.DownloadState
 import com.marzouki.datasaver.domain.model.MonthPeriod
+import com.marzouki.datasaver.domain.model.PricePerGb
 import com.marzouki.datasaver.domain.model.QuotaStatus
+import com.marzouki.datasaver.domain.model.QuotaStreak
 import com.marzouki.datasaver.domain.model.ScheduledDownload
 import com.marzouki.datasaver.ui.theme.DataKeeperTheme
 import java.util.Calendar
@@ -67,6 +70,9 @@ object PreviewData {
     val quotaStatus = QuotaStatus(quota, usedBytes = 3_200 * MB)
     val quotaAlertStatus = QuotaStatus(quota, usedBytes = 4_300 * MB)
     val quotaExceededStatus = QuotaStatus(quota, usedBytes = 5_400 * MB)
+
+    val pricePerGb = PricePerGb(millimes = 2_000)
+    val streak = QuotaStreak.from(List(3) { CycleOutcome.WITHIN_QUOTA } + CycleOutcome.EXCEEDED)
 
     val days: List<DayUsage> = listOf(
         2_100L to 180L, 3_400L to 90L, 1_800L to 420L, 2_900L to 120L,

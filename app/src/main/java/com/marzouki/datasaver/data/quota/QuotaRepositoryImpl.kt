@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.marzouki.datasaver.domain.model.DataQuota
+import com.marzouki.datasaver.domain.model.PricePerGb
 import com.marzouki.datasaver.domain.repository.QuotaRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -32,6 +33,10 @@ class QuotaRepositoryImpl @Inject constructor(
         .map { it[KEY_CYCLE_START_DAY] ?: 1 }
         .distinctUntilChanged()
 
+    override val pricePerGb: Flow<PricePerGb?> = dataStore.data
+        .map { prefs -> prefs[KEY_PRICE_PER_GB_MILLIMES]?.takeIf { it in 1..PricePerGb.MAX_MILLIMES }?.let(::PricePerGb) }
+        .distinctUntilChanged()
+
     override suspend fun setQuota(quota: DataQuota?) {
         dataStore.edit { prefs ->
             if (quota == null) {
@@ -54,10 +59,17 @@ class QuotaRepositoryImpl @Inject constructor(
         dataStore.edit { it[KEY_CYCLE_START_DAY] = day }
     }
 
+    override suspend fun setPricePerGb(price: PricePerGb?) {
+        dataStore.edit { prefs ->
+            if (price == null) prefs.remove(KEY_PRICE_PER_GB_MILLIMES) else prefs[KEY_PRICE_PER_GB_MILLIMES] = price.millimes
+        }
+    }
+
     private companion object {
         val KEY_QUOTA_BYTES = longPreferencesKey("mobile_quota_bytes")
         val KEY_ALERT_ENABLED = booleanPreferencesKey("quota_alert_enabled")
         val KEY_LAST_ALERTED_MONTH = stringPreferencesKey("last_alerted_month")
         val KEY_CYCLE_START_DAY = intPreferencesKey("cycle_start_day")
+        val KEY_PRICE_PER_GB_MILLIMES = intPreferencesKey("price_per_gb_millimes")
     }
 }

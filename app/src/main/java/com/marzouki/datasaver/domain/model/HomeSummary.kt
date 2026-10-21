@@ -9,6 +9,7 @@ data class HomeSummary(
     val quota: DataQuota?,
     /** Téléchargements en attente du Wi-Fi ou en cours. */
     val pendingDownloads: Int,
+    val pricePerGb: PricePerGb? = null,
 ) {
     val quotaStatus: QuotaStatus? get() = if (quota != null && usage != null) QuotaStatus(quota, usage.mobileBytes) else null
 

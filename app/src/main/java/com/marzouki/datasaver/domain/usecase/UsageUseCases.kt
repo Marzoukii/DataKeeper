@@ -3,8 +3,11 @@ package com.marzouki.datasaver.domain.usecase
 import com.marzouki.datasaver.domain.model.AppDataUsage
 import com.marzouki.datasaver.domain.model.DataUsage
 import com.marzouki.datasaver.domain.model.DayUsage
+import com.marzouki.datasaver.domain.model.MobileOperator
 import com.marzouki.datasaver.domain.model.MonthPeriod
+import com.marzouki.datasaver.domain.model.NetworkGeneration
 import com.marzouki.datasaver.domain.repository.ConnectivityRepository
+import com.marzouki.datasaver.domain.repository.OperatorRepository
 import com.marzouki.datasaver.domain.repository.QuotaRepository
 import com.marzouki.datasaver.domain.repository.UsageRepository
 import kotlinx.coroutines.flow.Flow
@@ -34,6 +37,18 @@ class GetDailyUsageUseCase @Inject constructor(private val repository: UsageRepo
 class GetTopMobileAppsUseCase @Inject constructor(private val repository: UsageRepository) {
     suspend operator fun invoke(period: MonthPeriod, limit: Int = 3): Result<List<AppDataUsage>> =
         runCatching { repository.getTopMobileApps(period, limit) }
+}
+
+class GetDataOperatorUseCase @Inject constructor(private val repository: OperatorRepository) {
+    operator fun invoke(): MobileOperator? = runCatching { repository.dataOperator() }.getOrNull()
+}
+
+class HasPhoneStatePermissionUseCase @Inject constructor(private val repository: OperatorRepository) {
+    operator fun invoke(): Boolean = repository.hasPhoneStatePermission()
+}
+
+class ObserveDataNetworkGenerationUseCase @Inject constructor(private val repository: OperatorRepository) {
+    operator fun invoke(): Flow<NetworkGeneration?> = repository.observeDataNetworkGeneration()
 }
 
 class ObserveWifiConnectionUseCase @Inject constructor(private val repository: ConnectivityRepository) {
