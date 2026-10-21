@@ -28,7 +28,11 @@
     <string name="onboarding_later">Plus tard</string>
     <string name="onboarding_settings_path">Paramètres › Accès aux données d’usage › DataKeeper</string>
     <string name="onboarding_restricted_title">Interrupteur grisé ou accès refusé ?</string>
-    <string name="onboarding_restricted_body">Android bloque cet accès pour les applis installées hors du Play Store. Ouvre les infos de l’appli, touche ⋮ puis « Autoriser les paramètres restreints », et réessaie.</string>
+    <string name="onboarding_restricted_body">Depuis Android 15, l’accès est bloqué pour toute appli installée hors du Play Store, même depuis un gestionnaire de fichiers. Pour le débloquer :</string>
+    <string name="onboarding_restricted_step_toggle">Dans « Accès aux données d’usage », touche une fois l’interrupteur grisé de DataKeeper, puis OK. Sans ce passage, l’option suivante n’apparaît pas.</string>
+    <string name="onboarding_restricted_step_allow">Ouvre les infos de l’appli, touche ⋮ puis « Autoriser les paramètres restreints » et confirme.</string>
+    <string name="onboarding_restricted_step_retry">Reviens dans « Accès aux données d’usage » et active l’interrupteur.</string>
+    <string name="onboarding_restricted_missing">Toujours pas de ⋮ ? Désactive le Blocage automatique (Samsung) ou la Protection avancée dans Sécurité et confidentialité.</string>
     <string name="onboarding_restricted_button">Ouvrir les infos de l’appli</string>
 
     <string name="usage_access_title">Accès aux données d’usage requis</string>
