@@ -52,6 +52,14 @@ fun openUsageAccessSettings(context: Context) {
     }
 }
 
+/** Ouvre la page "Infos sur l'appli" de DataKeeper (menu ⋮ › Autoriser les paramètres restreints). */
+fun openAppDetailsSettings(context: Context) {
+    context.startActivity(
+        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+            .setData(Uri.fromParts("package", context.packageName, null)),
+    )
+}
+
 @Composable
 fun UsageAccessRequiredCard(onGrantClick: () -> Unit, modifier: Modifier = Modifier) {
     DataKeeperCard(

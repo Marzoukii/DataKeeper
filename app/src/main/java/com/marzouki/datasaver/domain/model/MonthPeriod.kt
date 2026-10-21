@@ -25,6 +25,13 @@ data class MonthPeriod(
     /** Jours restants après aujourd'hui, au moins 1 pour pouvoir répartir le reste du quota. */
     val remainingDays: Int get() = (totalDays - currentDay).coerceAtLeast(1)
 
+    /** Cycle complet qui précède celui-ci, de son premier jour jusqu'à la remise à zéro. */
+    fun previous(): MonthPeriod {
+        val startDay = Calendar.getInstance().apply { timeInMillis = startMillis }.get(Calendar.DAY_OF_MONTH)
+        val previous = current(startMillis - 1, startDay)
+        return previous.copy(endMillis = previous.nextStartMillis)
+    }
+
     companion object {
         /** Au-delà, certains mois n'auraient pas ce jour. */
         const val MAX_CYCLE_START_DAY = 28

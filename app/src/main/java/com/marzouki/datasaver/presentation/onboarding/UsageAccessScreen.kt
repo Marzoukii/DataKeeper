@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -23,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Shield
 import androidx.compose.material.icons.rounded.Wifi
 import androidx.compose.material3.Button
@@ -49,9 +51,18 @@ import com.marzouki.datasaver.ui.components.PreviewSurface
 import com.marzouki.datasaver.ui.components.ScreenPreviews
 import com.marzouki.datasaver.ui.theme.DataColors
 
-/** Écran 0 : demande l'accès aux données d'usage, sans barre de navigation. */
+/**
+ * Écran 0 : demande l'accès aux données d'usage, sans barre de navigation.
+ * [showRestrictedHelp] explique comment lever le blocage des « paramètres restreints ».
+ */
 @Composable
-fun UsageAccessScreen(onOpenSettings: () -> Unit, onLater: () -> Unit, modifier: Modifier = Modifier) {
+fun UsageAccessScreen(
+    onOpenSettings: () -> Unit,
+    onLater: () -> Unit,
+    modifier: Modifier = Modifier,
+    showRestrictedHelp: Boolean = false,
+    onOpenAppInfo: () -> Unit = {},
+) {
     Surface(modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(
             Modifier
@@ -85,6 +96,10 @@ fun UsageAccessScreen(onOpenSettings: () -> Unit, onLater: () -> Unit, modifier:
                     CheckPoint(stringResource(R.string.onboarding_point_revoke))
                 }
                 Spacer(Modifier.height(24.dp))
+                // Dans la zone défilante : avec ses étapes, la carte ne tiendrait pas sur un petit écran.
+                if (showRestrictedHelp) {
+                    RestrictedSettingsHelp(onOpenAppInfo, Modifier.padding(bottom = 16.dp))
+                }
             }
             Button(
                 onClick = onOpenSettings,
@@ -110,6 +125,67 @@ fun UsageAccessScreen(onOpenSettings: () -> Unit, onLater: () -> Unit, modifier:
                     .padding(top = 4.dp),
             )
         }
+    }
+}
+
+/** Aide affichée quand Android a grisé l'interrupteur (« Contrôlé par les paramètres restreints »). */
+@Composable
+private fun RestrictedSettingsHelp(onOpenAppInfo: () -> Unit, modifier: Modifier = Modifier) {
+    DataKeeperCard(
+        modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        contentPadding = 16.dp,
+    ) {
+        Row(verticalAlignment = Alignment.Top) {
+            Icon(
+                Icons.Rounded.Info,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(22.dp),
+            )
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(R.string.onboarding_restricted_title), style = MaterialTheme.typography.titleSmall)
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    stringResource(R.string.onboarding_restricted_body),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(8.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    listOf(
+                        R.string.onboarding_restricted_step_toggle,
+                        R.string.onboarding_restricted_step_allow,
+                        R.string.onboarding_restricted_step_retry,
+                    ).forEachIndexed { index, step -> RestrictedStep(index + 1, stringResource(step)) }
+                }
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    stringResource(R.string.onboarding_restricted_missing),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                TextButton(
+                    onClick = onOpenAppInfo,
+                    shape = CircleShape,
+                    contentPadding = PaddingValues(horizontal = 0.dp, vertical = 8.dp),
+                ) { Text(stringResource(R.string.onboarding_restricted_button), style = MaterialTheme.typography.labelLarge) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RestrictedStep(number: Int, text: String) {
+    Row(verticalAlignment = Alignment.Top) {
+        Text(
+            "$number.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.width(18.dp),
+        )
+        Text(text, style = MaterialTheme.typography.bodySmall)
     }
 }
 
@@ -212,4 +288,12 @@ private fun CheckPoint(text: String) {
 @Composable
 private fun UsageAccessScreenPreview() {
     PreviewSurface(padded = false) { UsageAccessScreen(onOpenSettings = {}, onLater = {}) }
+}
+
+@ScreenPreviews
+@Composable
+private fun UsageAccessScreenRestrictedPreview() {
+    PreviewSurface(padded = false) {
+        UsageAccessScreen(onOpenSettings = {}, onLater = {}, showRestrictedHelp = true, onOpenAppInfo = {})
+    }
 }

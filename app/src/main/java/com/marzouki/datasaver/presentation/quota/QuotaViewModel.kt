@@ -3,11 +3,14 @@ package com.marzouki.datasaver.presentation.quota
 import androidx.lifecycle.viewModelScope
 import com.marzouki.datasaver.R
 import com.marzouki.datasaver.domain.usecase.GetCurrentPeriodUseCase
+import com.marzouki.datasaver.domain.usecase.GetDailyUsageUseCase
 import com.marzouki.datasaver.domain.usecase.GetMonthlyUsageUseCase
 import com.marzouki.datasaver.domain.usecase.HasUsageAccessUseCase
 import com.marzouki.datasaver.domain.usecase.ObserveCycleStartDayUseCase
+import com.marzouki.datasaver.domain.usecase.ObservePricePerGbUseCase
 import com.marzouki.datasaver.domain.usecase.ObserveQuotaUseCase
 import com.marzouki.datasaver.domain.usecase.SetCycleStartDayUseCase
+import com.marzouki.datasaver.domain.usecase.SetPricePerGbUseCase
 import com.marzouki.datasaver.domain.usecase.SetQuotaAlertEnabledUseCase
 import com.marzouki.datasaver.domain.usecase.SetQuotaUseCase
 import com.marzouki.datasaver.presentation.mvi.MviViewModel
@@ -24,13 +27,16 @@ import kotlin.math.roundToLong
 class QuotaViewModel @Inject constructor(
     observeQuota: ObserveQuotaUseCase,
     observeCycleStartDay: ObserveCycleStartDayUseCase,
+    observePricePerGb: ObservePricePerGbUseCase,
+    private val setPricePerGb: SetPricePerGbUseCase,
     private val setQuota: SetQuotaUseCase,
     private val setQuotaAlertEnabled: SetQuotaAlertEnabledUseCase,
     private val setCycleStartDay: SetCycleStartDayUseCase,
     private val hasUsageAccess: HasUsageAccessUseCase,
     private val getCurrentPeriod: GetCurrentPeriodUseCase,
     private val getMonthlyUsage: GetMonthlyUsageUseCase,
-) : MviViewModel<QuotaState, QuotaIntent, QuotaEffect>(QuotaState()) {
+    private val getDailyUsage: GetDailyUsageUseCase,
+): MviViewModel<QuotaState, QuotaIntent, QuotaEffect>(QuotaState()) {
 
     init {
         observeQuota()
@@ -45,6 +51,9 @@ class QuotaViewModel @Inject constructor(
             // La première valeur est lue par le Refresh de l'écran ; un changement relit le nouveau cycle.
             .drop(1)
             .onEach { refreshUsage() }
+            .launchIn(viewModelScope)
+        observePricePerGb()
+            .onEach { price -> setState { copy(pricePerGb = price) } }
             .launchIn(viewModelScope)
     }
 
@@ -65,6 +74,10 @@ class QuotaViewModel @Inject constructor(
                 if (intent.enabled) sendEffect(QuotaEffect.RequestNotificationPermission)
             }
             is QuotaIntent.CycleStartDaySelected -> viewModelScope.launch { setCycleStartDay(intent.day) }
+            is QuotaIntent.PricePerGbSaved -> viewModelScope.launch {
+                setPricePerGb(intent.price)
+                if (intent.price != null) sendEffect(QuotaEffect.ShowMessage(R.string.quota_price_saved))
+            }
         }
     }
 
@@ -73,11 +86,14 @@ class QuotaViewModel @Inject constructor(
             val period = getCurrentPeriod()
             setState { copy(period = period) }
             if (!hasUsageAccess()) {
-                setState { copy(hasUsageAccess = false, usedMobileBytes = null) }
+                setState { copy(hasUsageAccess = false, usedMobileBytes = null, dailyMobileBytes = null) }
                 return@launch
             }
             setState { copy(hasUsageAccess = true) }
             getMonthlyUsage(period).onSuccess { usage -> setState { copy(usedMobileBytes = usage.mobileBytes) } }
+            // Un point par jour écoulé du cycle : du premier jour à aujourd'hui.
+            getDailyUsage(days = period.currentDay, nowMillis = period.endMillis)
+                .onSuccess { days -> setState { copy(dailyMobileBytes = days.map { it.mobileBytes }) } }
         }
     }
 
