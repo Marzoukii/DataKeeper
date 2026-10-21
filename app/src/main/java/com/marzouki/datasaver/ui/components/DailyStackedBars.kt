@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -29,7 +28,8 @@ import com.marzouki.datasaver.domain.model.DayUsage
 import com.marzouki.datasaver.ui.theme.DataColors
 
 private val ChartHeight = 120.dp
-private val BarWidth = 22.dp
+/** Part de la colonne du jour occupée par la barre. */
+private const val BarWidthFraction = 0.78f
 private val SegmentGap = 3.dp
 private val MinSegment = 3.dp
 
@@ -67,7 +67,9 @@ fun DailyStackedBars(days: List<DayUsage>, modifier: Modifier = Modifier, title:
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Column(
-                        Modifier.height(ChartHeight),
+                        Modifier
+                            .height(ChartHeight)
+                            .fillMaxWidth(BarWidthFraction),
                         verticalArrangement = Arrangement.Bottom,
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
@@ -107,7 +109,7 @@ private fun segmentHeight(bytes: Long, max: Long, day: DayUsage): Dp {
 private fun Bar(color: Color, height: Dp) {
     Box(
         Modifier
-            .width(BarWidth)
+            .fillMaxWidth()
             .height(height)
             .clip(RoundedCornerShape(4.dp))
             .background(color),
@@ -120,7 +122,7 @@ private fun LegendItem(color: Color, label: String) {
         Box(
             Modifier
                 .size(8.dp)
-                .clip(CircleShape)
+                .clip(RoundedCornerShape(2.dp))
                 .background(color),
         )
         Spacer(Modifier.width(6.dp))

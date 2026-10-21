@@ -39,9 +39,10 @@ class SavingsTest {
 
     @Test
     fun `wifi savings are priced per gigabyte`() {
-        // 18,4 Go × 2 DT = 36,800 DT.
-        assertEquals(36_800L, PricePerGb(2_000).costMillimes(18_400_000_000L))
-        assertEquals("36,800 DT", formatDinars(36_800))
+        // 18,4 Go × 1,5 DT = 27,6 DT.
+        assertEquals(27_600L, PricePerGb(1_500).costMillimes(18_400_000_000L))
+        assertEquals("27,6 DT", formatDinars(27_600))
+        assertEquals("1,25 DT", formatDinars(1_250))
         assertEquals("2 DT", formatDinars(2_000))
     }
 

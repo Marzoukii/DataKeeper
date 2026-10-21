@@ -47,16 +47,26 @@ fun SavingsAndStreakRow(
     currentCycleExceeded: Boolean,
     onOpenQuota: () -> Unit,
     modifier: Modifier = Modifier,
+    operatorName: String? = null,
 ) {
     Row(modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        SavingsCard(wifiBytes, pricePerGb, onOpenQuota, Modifier.weight(1f).fillMaxHeight())
+        SavingsCard(wifiBytes, pricePerGb, onOpenQuota, Modifier.weight(1f).fillMaxHeight(), operatorName)
         StreakCard(streak, currentCycleExceeded, onOpenQuota, Modifier.weight(1f).fillMaxHeight())
     }
 }
 
-/** Ce qu'aurait coûté en data mobile le trafic passé par le Wi-Fi ; le volume seul tant que le prix manque. */
+/**
+ * Ce qu'aurait coûté en data mobile le trafic passé par le Wi-Fi ; le volume seul tant que le prix manque.
+ * [operatorName] rappelle à quel forfait le prix du Go se rapporte.
+ */
 @Composable
-fun SavingsCard(wifiBytes: Long, pricePerGb: PricePerGb?, onSetPrice: () -> Unit, modifier: Modifier = Modifier) {
+fun SavingsCard(
+    wifiBytes: Long,
+    pricePerGb: PricePerGb?,
+    onSetPrice: () -> Unit,
+    modifier: Modifier = Modifier,
+    operatorName: String? = null,
+) {
     DataKeeperCard(
         modifier = modifier,
         shape = SmallCardShape,
@@ -79,7 +89,13 @@ fun SavingsCard(wifiBytes: Long, pricePerGb: PricePerGb?, onSetPrice: () -> Unit
         Spacer(Modifier.height(6.dp))
         Text(
             if (pricePerGb != null) {
-                stringResource(R.string.usage_savings_detail, wifiBytes.toReadableSize(), formatDinars(pricePerGb.millimes.toLong()))
+                val volume = wifiBytes.toReadableSize()
+                val price = formatDinars(pricePerGb.millimes.toLong())
+                if (operatorName != null) {
+                    stringResource(R.string.usage_savings_detail_operator, volume, price, operatorName)
+                } else {
+                    stringResource(R.string.usage_savings_detail, volume, price)
+                }
             } else {
                 stringResource(R.string.usage_savings_no_price)
             },
@@ -195,6 +211,7 @@ private fun SavingsAndStreakRowPreview() {
                 streak = PreviewData.streak,
                 currentCycleExceeded = false,
                 onOpenQuota = {},
+                operatorName = "Ooredoo",
             )
             SavingsAndStreakRow(
                 wifiBytes = PreviewData.usage.wifiBytes,
