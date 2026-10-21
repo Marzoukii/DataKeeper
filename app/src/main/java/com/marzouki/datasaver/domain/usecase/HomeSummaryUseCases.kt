@@ -29,6 +29,7 @@ class GetHomeSummaryUseCase @Inject constructor(
             usage = usage,
             quota = quotaRepository.quota.first(),
             pendingDownloads = pending,
+            pricePerGb = quotaRepository.pricePerGb.first(),
         )
     }
 }

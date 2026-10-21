@@ -28,12 +28,13 @@ import androidx.glance.text.Text
 import com.marzouki.datasaver.R
 import com.marzouki.datasaver.domain.model.HomeSummary
 import com.marzouki.datasaver.presentation.AppRoutes
+import com.marzouki.datasaver.ui.components.formatDinars
 import com.marzouki.datasaver.ui.components.toReadableSize
 import kotlin.math.roundToInt
 
 /**
  * Widget 2 × 2 bleu : data passée par le Wi-Fi ce cycle, donc économisée sur le forfait mobile.
- * La maquette affiche un montant en euros ; sans prix du Go connu, le volume est affiché.
+ * Montant en dinars au prix du Go choisi dans l'écran Quota ; sans prix, le volume est affiché.
  */
 class SavingsWidget : GlanceAppWidget() {
 
@@ -53,7 +54,8 @@ private data class SavingsWidgetModel(val value: String, val share: String) {
             val usage = summary.usage
                 ?: return SavingsWidgetModel(context.getString(R.string.quota_no_value), context.getString(R.string.widget_no_access))
             return SavingsWidgetModel(
-                value = usage.wifiBytes.toReadableSize(),
+                value = summary.pricePerGb?.let { formatDinars(it.costMillimes(usage.wifiBytes)) }
+                    ?: usage.wifiBytes.toReadableSize(),
                 share = context.getString(R.string.widget_wifi_share, (usage.wifiShare * 100).roundToInt()),
             )
         }

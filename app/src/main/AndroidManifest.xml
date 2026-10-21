@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Facultative : affiche 4G ou 5G à côté de l'opérateur des données mobiles. -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <!-- Accordée manuellement par l'utilisateur dans "Accès aux données d'utilisation". -->
     <uses-permission
         android:name="android.permission.PACKAGE_USAGE_STATS"

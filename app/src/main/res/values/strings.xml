@@ -47,6 +47,8 @@
     <string name="usage_total">Total %1$s</string>
     <string name="usage_wifi">Wi‑Fi</string>
     <string name="usage_mobile">Mobile</string>
+    <string name="usage_mobile_operator">Mobile · %1$s</string>
+    <string name="usage_show_network">Voir si tu es en 4G ou 5G</string>
     <string name="usage_share_of_total">%1$d %% du total</string>
     <string name="usage_last_7_days">7 derniers jours</string>
     <string name="usage_day_description">%1$s : %2$s en Wi‑Fi, %3$s en mobile</string>
@@ -58,6 +60,16 @@
     <string name="usage_empty_title">Rien à afficher pour l’instant</string>
     <string name="usage_empty_body">Aucun trafic mesuré depuis le début du cycle. Reviens un peu plus tard.</string>
     <string name="usage_load_failed">Impossible de lire les statistiques réseau.</string>
+    <string name="usage_savings_title">Économisé grâce au Wi‑Fi</string>
+    <string name="usage_savings_detail">%1$s × %2$s le Go</string>
+    <string name="usage_savings_no_price">Indique le prix du Go pour le chiffrer</string>
+    <string name="usage_streak_label">mois sans dépassement</string>
+    <string name="usage_streak_no_quota">Définis ton quota pour suivre ta série</string>
+    <string name="usage_streak_bars_description">Derniers cycles : %1$s. Cycle en cours : %2$s.</string>
+    <string name="usage_streak_outcome_within">sous le quota</string>
+    <string name="usage_streak_outcome_exceeded">dépassé</string>
+    <string name="usage_streak_outcome_unknown">pas de données</string>
+    <string name="usage_streak_current_running">en cours</string>
 
     <!-- Carte quota du tableau de bord -->
     <string name="quota_summary_title">Quota mobile : %1$s</string>
@@ -102,6 +114,16 @@
     <string name="quota_cycle_day_start">début du cycle</string>
     <string name="quota_cycle_day_reset">prochaine remise à zéro</string>
     <string name="quota_cycle_day_today">aujourd’hui</string>
+    <string name="quota_price_title">Prix du Go mobile</string>
+    <string name="quota_price_subtitle">%1$s le Go · sert à chiffrer tes économies</string>
+    <string name="quota_price_subtitle_none">Pour chiffrer ce que le Wi‑Fi te fait économiser</string>
+    <string name="quota_price_choose">Indiquer le prix du Go</string>
+    <string name="quota_price_hint">Prends le prix d’une recharge ou d’un Go hors forfait.</string>
+    <string name="quota_price_input_label">Prix d’un Go</string>
+    <string name="quota_price_input_error">Saisis un prix entre 0,001 et 100 DT, par ex. 2 ou 1,500</string>
+    <string name="quota_price_remove">Effacer</string>
+    <string name="quota_price_saved">Prix du Go enregistré</string>
+    <string name="unit_dinar">DT</string>
     <string name="quota_tip_label">Astuce :</string>
     <string name="quota_tip_body">planifie tes vidéos et podcasts dans « Hors ligne » pour les télécharger au prochain Wi‑Fi.</string>
     <string name="quota_saved">Quota enregistré</string>
