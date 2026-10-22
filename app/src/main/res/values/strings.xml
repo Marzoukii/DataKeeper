@@ -64,13 +64,11 @@
     <string name="usage_savings_detail">%1$s × %2$s</string>
     <string name="usage_savings_detail_operator">%1$s × %2$s · %3$s</string>
     <string name="usage_savings_no_price">Indique le prix du Go pour le chiffrer</string>
-    <string name="usage_streak_label">mois sans dépassement</string>
-    <string name="usage_streak_no_quota">Définis ton quota pour suivre ta série</string>
-    <string name="usage_streak_bars_description">Derniers cycles : %1$s. Cycle en cours : %2$s.</string>
-    <string name="usage_streak_outcome_within">sous le quota</string>
-    <string name="usage_streak_outcome_exceeded">dépassé</string>
-    <string name="usage_streak_outcome_unknown">pas de données</string>
-    <string name="usage_streak_current_running">en cours</string>
+    <string name="usage_plan_label">Mon forfait mobile</string>
+    <string name="usage_plan_label_operator">Forfait %1$s</string>
+    <string name="usage_plan_none">Indique le forfait souscrit chez ton opérateur</string>
+    <string name="usage_plan_expires">Expire le %1$s</string>
+    <string name="usage_plan_bar_description">%1$d %% du forfait restant</string>
 
     <!-- Carte quota du tableau de bord -->
     <string name="quota_summary_title">Quota mobile : %1$s</string>
@@ -124,6 +122,17 @@
     <string name="quota_price_input_error">Saisis un prix entre 0,001 et 100 DT, par ex. 2 ou 1,500</string>
     <string name="quota_price_remove">Effacer</string>
     <string name="quota_price_saved">Prix du Go enregistré</string>
+    <string name="quota_balance_title">Solde restant chez l’opérateur</string>
+    <string name="quota_balance_title_operator">Mon forfait %1$s</string>
+    <string name="quota_balance_subtitle">%1$s restants au %2$s · décompte recalé</string>
+    <string name="quota_balance_subtitle_none">Indique ce qu’il te reste pour un décompte exact</string>
+    <string name="quota_balance_choose">Indiquer le solde restant</string>
+    <string name="quota_balance_hint">Data restante annoncée par ton opérateur, ex. 17 Go.</string>
+    <string name="quota_balance_input_label">Data restante</string>
+    <string name="quota_balance_input_error">Saisis une valeur entre 0 et %1$s</string>
+    <string name="quota_balance_gauge">Recalé sur ton solde de %1$s du %2$s</string>
+    <string name="quota_balance_saved">Solde enregistré : le décompte repart de là</string>
+    <string name="quota_balance_removed">Solde effacé : décompte depuis le début du cycle</string>
     <string name="unit_dinar">DT</string>
     <string name="quota_tip_label">Astuce :</string>
     <string name="quota_tip_body">planifie tes vidéos et podcasts dans « Hors ligne » pour les télécharger au prochain Wi‑Fi.</string>

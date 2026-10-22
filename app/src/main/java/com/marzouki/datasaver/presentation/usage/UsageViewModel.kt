@@ -5,7 +5,7 @@ import com.marzouki.datasaver.domain.usecase.GetCurrentPeriodUseCase
 import com.marzouki.datasaver.domain.usecase.GetDataOperatorUseCase
 import com.marzouki.datasaver.domain.usecase.GetDailyUsageUseCase
 import com.marzouki.datasaver.domain.usecase.GetMonthlyUsageUseCase
-import com.marzouki.datasaver.domain.usecase.GetQuotaStreakUseCase
+import com.marzouki.datasaver.domain.usecase.GetQuotaUsedBytesUseCase
 import com.marzouki.datasaver.domain.usecase.GetTopMobileAppsUseCase
 import com.marzouki.datasaver.domain.usecase.HasPhoneStatePermissionUseCase
 import com.marzouki.datasaver.domain.usecase.HasUsageAccessUseCase
@@ -36,7 +36,7 @@ class UsageViewModel @Inject constructor(
     private val getMonthlyUsage: GetMonthlyUsageUseCase,
     private val getDailyUsage: GetDailyUsageUseCase,
     private val getTopMobileApps: GetTopMobileAppsUseCase,
-    private val getQuotaStreak: GetQuotaStreakUseCase,
+    private val getQuotaUsedBytes: GetQuotaUsedBytesUseCase,
     private val getDataOperator: GetDataOperatorUseCase,
     private val hasPhoneStatePermission: HasPhoneStatePermissionUseCase,
     observeDataNetworkGeneration: ObserveDataNetworkGenerationUseCase,
@@ -55,9 +55,9 @@ class UsageViewModel @Inject constructor(
             .launchIn(viewModelScope)
         observeQuota()
             .onEach { quota -> setState { copy(quota = quota) } }
-            // La série dépend du quota : la première valeur est lue par le Refresh de l'écran.
+            // Le décompte du forfait dépend du quota : la première valeur est lue par le Refresh de l'écran.
             .drop(1)
-            .onEach { refreshStreak() }
+            .onEach { refreshQuota() }
             .launchIn(viewModelScope)
         observePricePerGb()
             .onEach { price -> setState { copy(pricePerGb = price) } }
@@ -86,33 +86,33 @@ class UsageViewModel @Inject constructor(
             val period = getCurrentPeriod()
             // La SIM des données peut changer entre deux visites (double SIM).
             setState { copy(period = period, operatorName = getDataOperator()?.name) }
-            // Les trois lectures sont indépendantes ; seul le total du cycle est indispensable.
+            // Les lectures sont indépendantes ; seul le total du cycle est indispensable.
             val usage = async { getMonthlyUsage(period) }
             val daily = async { getDailyUsage() }
             val apps = async { getTopMobileApps(period) }
-            val streak = async { getQuotaStreak(period) }
+            val quotaUsed = async { getQuotaUsedBytes(period) }
             usage.await()
                 .onSuccess { result -> setState { copy(usage = result, loadFailed = false) } }
                 .onFailure { setState { copy(loadFailed = true) } }
             val dailyResult = daily.await().getOrNull()
             val appsResult = apps.await().getOrNull()
-            val streakResult = streak.await()
+            val quotaUsedResult = quotaUsed.await()
             setState {
                 copy(
                     isLoading = false,
                     dailyUsage = dailyResult ?: dailyUsage,
                     topMobileApps = appsResult ?: topMobileApps,
-                    streak = streakResult.getOrElse { this.streak },
+                    quotaUsedBytes = quotaUsedResult.getOrElse { quotaUsedBytes },
                 )
             }
         }
     }
 
-    private fun refreshStreak() {
+    private fun refreshQuota() {
         val period = currentState.period ?: return
         if (!hasUsageAccess()) return
         viewModelScope.launch {
-            getQuotaStreak(period).onSuccess { result -> setState { copy(streak = result) } }
+            getQuotaUsedBytes(period).onSuccess { used -> setState { copy(quotaUsedBytes = used) } }
         }
     }
 }

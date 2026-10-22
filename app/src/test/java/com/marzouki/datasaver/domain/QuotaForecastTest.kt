@@ -4,6 +4,7 @@ import com.marzouki.datasaver.domain.model.DataQuota
 import com.marzouki.datasaver.domain.model.ForecastOutlook
 import com.marzouki.datasaver.domain.model.MonthPeriod
 import com.marzouki.datasaver.domain.model.QuotaForecast
+import com.marzouki.datasaver.domain.model.alignDailyToUsed
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.util.Calendar
@@ -53,5 +54,23 @@ class QuotaForecastTest {
         val forecast = forecast(260)
         assertEquals(ForecastOutlook.EXCEEDED, forecast.outlook)
         assertEquals(0L, forecast.safeDailyBytes)
+    }
+
+    @Test
+    fun `operator balance rescales the days before the reading so the curve ends on the plan usage`() {
+        // 3 Go mesurés avant le relevé du jour 3 alors que l'opérateur n'en décompte que 1,5.
+        val aligned = alignDailyToUsed(listOf(1_000 * mb, 2_000 * mb, 500 * mb, 300 * mb), 2_300 * mb, fromDayIndex = 2)
+        assertEquals(listOf(500 * mb, 1_000 * mb, 500 * mb, 300 * mb), aligned)
+        assertEquals(2_300 * mb, aligned.sum())
+    }
+
+    @Test
+    fun `operator balance with nothing measured before puts the gap on the first day`() {
+        assertEquals(listOf(8_000 * mb, 0, 200 * mb), alignDailyToUsed(listOf(0, 0, 200 * mb), 8_200 * mb, fromDayIndex = 2))
+    }
+
+    @Test
+    fun `operator balance read on the first day adjusts that day without going negative`() {
+        assertEquals(listOf(0, 100 * mb), alignDailyToUsed(listOf(900 * mb, 100 * mb), 50 * mb, fromDayIndex = 0))
     }
 }

@@ -10,10 +10,12 @@ data class HomeSummary(
     /** Téléchargements en attente du Wi-Fi ou en cours. */
     val pendingDownloads: Int,
     val pricePerGb: PricePerGb? = null,
+    /** Data mobile décomptée du forfait (recalée sur le solde opérateur) ; null sans quota. */
+    val quotaUsedBytes: Long? = null,
 ) {
-    val quotaStatus: QuotaStatus? get() = if (quota != null && usage != null) QuotaStatus(quota, usage.mobileBytes) else null
+    val quotaStatus: QuotaStatus? get() = if (quota != null && quotaUsedBytes != null) QuotaStatus(quota, quotaUsedBytes) else null
 
     /** Data mobile estimée en fin de cycle, au rythme moyen des jours écoulés. */
     val projectedMobileBytes: Long?
-        get() = usage?.let { it.mobileBytes * period.totalDays / period.currentDay.coerceAtLeast(1) }
+        get() = (quotaUsedBytes ?: usage?.mobileBytes)?.let { it * period.totalDays / period.currentDay.coerceAtLeast(1) }
 }
