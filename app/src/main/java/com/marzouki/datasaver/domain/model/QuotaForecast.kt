@@ -1,5 +1,7 @@
 package com.marzouki.datasaver.domain.model
 
+import kotlin.math.roundToLong
+
 /**
  * Prévision de fin de cycle à partir de la data mobile consommée chaque jour depuis le début du
  * cycle, au rythme moyen des jours écoulés.
@@ -42,6 +44,34 @@ data class QuotaForecast(
     companion object {
         const val MARGIN_PERCENT = 95
     }
+}
+
+/**
+ * Recale la data mobile de chaque jour du cycle pour que son cumul retombe sur les [usedBytes]
+ * du forfait. Les jours d'avant le relevé opérateur ([fromDayIndex]) absorbent l'écart au prorata
+ * de ce qu'ils ont mesuré, ou le premier jour seul s'ils n'ont rien mesuré.
+ */
+fun alignDailyToUsed(dailyBytes: List<Long>, usedBytes: Long, fromDayIndex: Int): List<Long> {
+    if (dailyBytes.isEmpty()) return dailyBytes
+    val split = fromDayIndex.coerceIn(0, dailyBytes.size)
+    val after = dailyBytes.subList(split, dailyBytes.size)
+    val target = usedBytes - after.sum()
+    if (split == 0) {
+        // Relevé le premier jour : seul ce jour peut absorber l'écart.
+        return listOf((dailyBytes[0] + target).coerceAtLeast(0)) + dailyBytes.drop(1)
+    }
+    val before = dailyBytes.subList(0, split)
+    val beforeTarget = target.coerceAtLeast(0)
+    val measured = before.sum()
+    val scaled = if (measured == 0L) {
+        List(split) { if (it == 0) beforeTarget else 0L }
+    } else {
+        val ratio = beforeTarget.toDouble() / measured
+        val rounded = before.map { (it * ratio).roundToLong() }
+        // Le dernier jour reprend l'arrondi pour tomber pile sur la cible.
+        rounded.dropLast(1) + (beforeTarget - rounded.dropLast(1).sum()).coerceAtLeast(0)
+    }
+    return scaled + after
 }
 
 enum class ForecastOutlook {

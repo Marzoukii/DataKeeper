@@ -25,6 +25,9 @@ data class MonthPeriod(
     /** Jours restants après aujourd'hui, au moins 1 pour pouvoir répartir le reste du quota. */
     val remainingDays: Int get() = (totalDays - currentDay).coerceAtLeast(1)
 
+        /** Index (à partir de 0) du jour du cycle contenant [millis]. */
+    fun dayIndexOf(millis: Long): Int = localEpochDay(millis) - localEpochDay(startMillis)
+
     /** Cycle complet qui précède celui-ci, de son premier jour jusqu'à la remise à zéro. */
     fun previous(): MonthPeriod {
         val startDay = Calendar.getInstance().apply { timeInMillis = startMillis }.get(Calendar.DAY_OF_MONTH)

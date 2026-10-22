@@ -21,6 +21,8 @@ data class QuotaState(
     val pricePerGb: PricePerGb? = null,
     /** Data mobile de chaque jour écoulé du cycle, pour la courbe de prévision. */
     val dailyMobileBytes: List<Long>? = null,
+    /** Opérateur des données mobiles détecté par la SIM (Ooredoo, Orange, Tunisie Telecom…). */
+    val operatorName: String? = null,
 ) {
     val status: QuotaStatus? get() = if (quota != null && usedMobileBytes != null) QuotaStatus(quota, usedMobileBytes) else null
 
@@ -43,6 +45,8 @@ sealed interface QuotaIntent {
     data class CycleStartDaySelected(val day: Int) : QuotaIntent
     /** Null efface le prix. */
     data class PricePerGbSaved(val price: PricePerGb?) : QuotaIntent
+    /** Data restante saisie par l'utilisateur ; null revient au décompte depuis le début du cycle. */
+    data class BalanceSaved(val remainingBytes: Long?) : QuotaIntent
 }
 
 sealed interface QuotaEffect {
