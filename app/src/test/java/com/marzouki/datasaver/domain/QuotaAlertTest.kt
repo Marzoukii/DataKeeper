@@ -5,12 +5,17 @@ import com.marzouki.datasaver.domain.model.DataQuota
 import com.marzouki.datasaver.domain.model.DayUsage
 import com.marzouki.datasaver.domain.model.DataUsage
 import com.marzouki.datasaver.domain.model.MonthPeriod
+import com.marzouki.datasaver.domain.model.OperatorBalance
 import com.marzouki.datasaver.domain.model.PricePerGb
 import com.marzouki.datasaver.domain.model.QuotaStatus
 import com.marzouki.datasaver.domain.repository.QuotaAlertNotifier
+import com.marzouki.datasaver.domain.repository.QuotaMonitorScheduler
 import com.marzouki.datasaver.domain.repository.QuotaRepository
 import com.marzouki.datasaver.domain.repository.UsageRepository
 import com.marzouki.datasaver.domain.usecase.CheckQuotaAndAlertUseCase
+import com.marzouki.datasaver.domain.usecase.GetQuotaUsedBytesUseCase
+import com.marzouki.datasaver.domain.usecase.SetOperatorBalanceUseCase
+import com.marzouki.datasaver.domain.usecase.SetQuotaUseCase
 import com.marzouki.datasaver.presentation.quota.QuotaViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
@@ -96,6 +101,53 @@ class QuotaAlertTest {
         assertFalse(CheckQuotaAndAlertUseCase(FakeQuotaRepository(DataQuota(10 * gb)), FakeUsageRepository(gb), notifier)(period))
         assertFalse(CheckQuotaAndAlertUseCase(FakeQuotaRepository(null), FakeUsageRepository(99 * gb), notifier)(period))
         assertTrue(notifier.notified.isEmpty())
+    }
+
+    /** 42,8 Go de mobile depuis le début du cycle, dont 1 Go depuis le relevé du solde à 500. */
+    private class CycleUsageRepository : UsageRepository {
+        override fun hasUsageAccess() = true
+        override suspend fun getUsage(period: MonthPeriod) =
+            DataUsage(0, if (period.startMillis == 500L) 1_000_000_000L else 42_800_000_000L, period)
+        override suspend fun getDailyUsage(days: Int, nowMillis: Long) = emptyList<DayUsage>()
+        override suspend fun getTopMobileApps(period: MonthPeriod, limit: Int) = emptyList<AppDataUsage>()
+    }
+
+    @Test
+    fun `operator balance counts the plan from the reading, not from the cycle start`() = runTest {
+        val cycle = MonthPeriod(startMillis = 0, endMillis = 1_000, key = "2026-10")
+        // Pass de 25 Go, l'opérateur annonce 17 Go restants : 8 Go partis, puis 1 Go mesuré depuis.
+        val quota = DataQuota(25 * gb, balance = OperatorBalance(remainingBytes = 17 * gb, atMillis = 500))
+        val used = GetQuotaUsedBytesUseCase(FakeQuotaRepository(quota), CycleUsageRepository())(cycle).getOrThrow()
+        assertEquals(9 * gb, used)
+        assertEquals(16 * gb, QuotaStatus(quota, used!!).remainingBytes)
+
+        // Un solde d'un cycle précédent ne vaut plus : retour au décompte depuis le début du cycle.
+        val nextCycle = cycle.copy(startMillis = 600, key = "2026-11")
+        assertEquals(42_800_000_000L, GetQuotaUsedBytesUseCase(FakeQuotaRepository(quota), CycleUsageRepository())(nextCycle).getOrThrow())
+    }
+
+    @Test
+    fun `operator balance is kept when the plan still holds it and capped to the plan`() = runTest {
+        val repository = FakeQuotaRepository(DataQuota(25 * gb))
+        SetOperatorBalanceUseCase(repository)(30 * gb, nowMillis = 42)
+        assertEquals(OperatorBalance(25 * gb, 42), repository.quota.value?.balance)
+
+        val scheduler = object : QuotaMonitorScheduler {
+            override fun start() {}
+            override fun stop() {}
+        }
+        SetQuotaUseCase(repository, scheduler)(30 * gb)
+        assertEquals(OperatorBalance(25 * gb, 42), repository.quota.value?.balance)
+        SetQuotaUseCase(repository, scheduler)(20 * gb)
+        assertNull(repository.quota.value?.balance)
+    }
+
+    @Test
+    fun `parses balance input between zero and the plan`() {
+        assertEquals(17 * gb, QuotaViewModel.parseBalance("17", 25 * gb))
+        assertEquals(0L, QuotaViewModel.parseBalance("0", 25 * gb))
+        assertNull(QuotaViewModel.parseBalance("26", 25 * gb))
+        assertNull(QuotaViewModel.parseBalance("-1", 25 * gb))
     }
 
     @Test

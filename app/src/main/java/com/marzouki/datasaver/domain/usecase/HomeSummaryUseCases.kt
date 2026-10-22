@@ -23,13 +23,20 @@ class GetHomeSummaryUseCase @Inject constructor(
             downloadRepository.observeDownloads().first()
                 .count { it.state == DownloadState.WAITING_FOR_WIFI || it.state == DownloadState.RUNNING }
         }.getOrDefault(0)
+        val quota = quotaRepository.quota.first()
+        val quotaUsed = if (usage != null && quota != null) {
+            runCatching { usageRepository.quotaUsedBytes(quota, period) }.getOrNull()
+        } else {
+            null
+        }
         return HomeSummary(
             period = period,
             hasUsageAccess = hasAccess,
             usage = usage,
-            quota = quotaRepository.quota.first(),
+            quota = quota,
             pendingDownloads = pending,
             pricePerGb = quotaRepository.pricePerGb.first(),
+            quotaUsedBytes = quotaUsed,
         )
     }
 }

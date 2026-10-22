@@ -19,7 +19,9 @@ class HomeSummaryTest {
     @Test
     fun `projects mobile usage linearly to the end of the cycle`() {
         // 3,2 Go en 20 jours sur un cycle de 31 jours → 4,96 Go.
-        val summary = HomeSummary(period, true, DataUsage(0, 3_200 * mb, period), DataQuota(5_000 * mb), 0)
+        val summary = HomeSummary(
+            period, true, DataUsage(0, 3_200 * mb, period), DataQuota(5_000 * mb), 0, quotaUsedBytes = 3_200 * mb,
+        )
         assertEquals(4_960 * mb, summary.projectedMobileBytes)
         assertEquals(3_200 * mb, summary.quotaStatus?.usedBytes)
     }
