@@ -138,7 +138,7 @@ private fun MainScaffold(requestedTab: String?, onTabRequestHandled: () -> Unit)
             modifier = Modifier.padding(innerPadding),
         ) {
             composable(Destination.USAGE.route) {
-                UsageScreen(onOpenQuota = { navController.navigateToTab(Destination.QUOTA) })
+                UsageScreen(snackbarHostState, onOpenQuota = { navController.navigateToTab(Destination.QUOTA) })
             }
             composable(Destination.QUOTA.route) {
                 QuotaScreen(snackbarHostState, onOpenDownloads = { navController.navigateToTab(Destination.DOWNLOADS) })
