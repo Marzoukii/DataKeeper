@@ -220,4 +220,9 @@
     <string name="notification_channel_quota">Alertes de quota mobile</string>
     <string name="notification_quota_title">%1$d %% de ton quota mobile consommé</string>
     <string name="notification_quota_text">%1$s utilisés sur %2$s ce mois-ci. Passe en Wi-Fi pour économiser ta data.</string>
+    <string name="notification_recalibrate_title">Recale ton forfait</string>
+    <plurals name="notification_recalibrate_text">
+        <item quantity="one">Ton solde (%2$s restants) a été relevé hier. Vérifie chez ton opérateur et recale-le.</item>
+        <item quantity="other">Ton solde (%2$s restants) a été relevé il y a %1$d jours. Vérifie chez ton opérateur et recale-le.</item>
+    </plurals>
 </resources>
