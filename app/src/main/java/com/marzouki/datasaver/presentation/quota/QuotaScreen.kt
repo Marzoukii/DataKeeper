@@ -1,8 +1,10 @@
 package com.marzouki.datasaver.presentation.quota
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -22,6 +24,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -31,11 +35,16 @@ import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.Payments
 import androidx.compose.material.icons.rounded.NotificationsActive
+import androidx.compose.material.icons.rounded.SimCard
+import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material.icons.rounded.Wifi
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
@@ -74,9 +83,11 @@ import com.marzouki.datasaver.R
 import com.marzouki.datasaver.domain.model.DataQuota
 import com.marzouki.datasaver.domain.model.ForecastOutlook
 import com.marzouki.datasaver.domain.model.MonthPeriod
+import com.marzouki.datasaver.domain.model.OperatorBalance
 import com.marzouki.datasaver.domain.model.PricePerGb
 import com.marzouki.datasaver.domain.model.QuotaForecast
 import com.marzouki.datasaver.domain.model.QuotaStatus
+import com.marzouki.datasaver.domain.model.alignDailyToUsed
 import com.marzouki.datasaver.presentation.common.CollectEffects
 import com.marzouki.datasaver.presentation.common.UsageAccessRequiredCard
 import com.marzouki.datasaver.presentation.common.openUsageAccessSettings
@@ -152,6 +163,7 @@ private fun QuotaContent(
     var showOtherDialog by rememberSaveable { mutableStateOf(false) }
     var showCycleDialog by rememberSaveable { mutableStateOf(false) }
     var showPriceDialog by rememberSaveable { mutableStateOf(false) }
+    var showBalanceDialog by rememberSaveable { mutableStateOf(false) }
     val period = state.period ?: MonthPeriod.current(cycleStartDay = state.cycleStartDay)
 
     LazyColumn(
@@ -168,7 +180,7 @@ private fun QuotaContent(
         if (!state.hasUsageAccess) {
             item { UsageAccessRequiredCard(onGrantClick = { onIntent(QuotaIntent.GrantAccessClicked) }) }
         }
-        item { QuotaGaugeCard(state.quota, state.status, period) }
+        item { QuotaGaugeCard(state.quota, state.status, period, balance = state.quota?.balanceIn(period)) }
         state.forecast?.let { forecast -> item { ForecastCard(forecast) } }
         item { PlanCard(state, onIntent, onOtherClick = { showOtherDialog = true }) }
         item {
@@ -177,6 +189,7 @@ private fun QuotaContent(
                 onIntent,
                 onCycleClick = { showCycleDialog = true },
                 onPriceClick = { showPriceDialog = true },
+                onBalanceClick = { showBalanceDialog = true },
             )
         }
         item { TipBox(onClick = onOpenDownloads) }
@@ -210,10 +223,22 @@ private fun QuotaContent(
             onDismiss = { showPriceDialog = false },
         )
     }
+    val quota = state.quota
+    if (showBalanceDialog && quota != null) {
+        BalanceDialog(
+            limitBytes = quota.limitBytes,
+            current = quota.balanceIn(period),
+            onSave = {
+                onIntent(QuotaIntent.BalanceSaved(it))
+                showBalanceDialog = false
+            },
+            onDismiss = { showBalanceDialog = false },
+        )
+    }
 }
 
 @Composable
-private fun QuotaGaugeCard(quota: DataQuota?, status: QuotaStatus?, period: MonthPeriod) {
+private fun QuotaGaugeCard(quota: DataQuota?, status: QuotaStatus?, period: MonthPeriod, balance: OperatorBalance?) {
     DataKeeperCard(shape = MaterialTheme.shapes.extraLarge) {
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             val percent = status?.let { (it.usedRatio * 100).roundToInt() } ?: 0
@@ -267,6 +292,19 @@ private fun QuotaGaugeCard(quota: DataQuota?, status: QuotaStatus?, period: Mont
                         )
                     }
                 }
+            }
+            if (status != null && balance != null) {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    stringResource(
+                        R.string.quota_balance_gauge,
+                        balance.remainingBytes.toReadableSize(),
+                        formatDayMonth(balance.atMillis),
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                )
             }
         }
     }
@@ -419,11 +457,41 @@ private fun SettingsCard(
     onIntent: (QuotaIntent) -> Unit,
     onCycleClick: () -> Unit,
     onPriceClick: () -> Unit,
+    onBalanceClick: () -> Unit,
 ) {
     val quota = state.quota
     val threshold = quota?.alertThresholdPercent ?: DataQuota.DEFAULT_ALERT_THRESHOLD_PERCENT
+    val operator = state.operatorName
     DataKeeperCard(contentPadding = 0.dp) {
         Spacer(Modifier.height(4.dp))
+        val balance = quota?.balanceIn(state.period ?: MonthPeriod.current(cycleStartDay = state.cycleStartDay))
+        SettingRow(
+            icon = Icons.Rounded.SimCard,
+            title = if (operator != null) {
+                stringResource(R.string.quota_balance_title_operator, operator)
+            } else {
+                stringResource(R.string.quota_balance_title)
+            },
+            subtitle = when {
+                balance != null -> stringResource(
+                    R.string.quota_balance_subtitle,
+                    balance.remainingBytes.toReadableSize(),
+                    formatDayMonth(balance.atMillis),
+                )
+                quota == null -> stringResource(R.string.quota_alert_subtitle_no_quota)
+                else -> stringResource(R.string.quota_balance_subtitle_none)
+            },
+            iconContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            iconTint = MaterialTheme.colorScheme.onPrimaryContainer,
+            onClick = if (quota != null) onBalanceClick else null,
+        ) {
+            Icon(
+                Icons.Rounded.ChevronRight,
+                contentDescription = stringResource(R.string.quota_balance_choose),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        SettingDivider()
         SettingRow(
             icon = Icons.Rounded.NotificationsActive,
             title = stringResource(R.string.quota_alert_title, threshold),
@@ -530,6 +598,63 @@ private fun PricePerGbDialog(current: PricePerGb?, onSave: (PricePerGb?) -> Unit
     )
 }
 
+@Composable
+private fun BalanceDialog(
+    limitBytes: Long,
+    current: OperatorBalance?,
+    onSave: (Long?) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var input by rememberSaveable {
+        mutableStateOf(current?.let { QuotaViewModel.bytesToInput(it.remainingBytes).replace('.', ',') }.orEmpty())
+    }
+    var error by rememberSaveable { mutableStateOf(false) }
+    val submit = {
+        val bytes = QuotaViewModel.parseBalance(input, limitBytes)
+        if (bytes == null) error = true else onSave(bytes)
+    }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.quota_balance_title)) },
+        text = {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                Text(
+                    stringResource(R.string.quota_balance_hint),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(12.dp))
+                OutlinedTextField(
+                    value = input,
+                    onValueChange = {
+                        input = it
+                        error = false
+                    },
+                    label = { Text(stringResource(R.string.quota_balance_input_label)) },
+                    suffix = { Text(stringResource(R.string.unit_gb)) },
+                    isError = error,
+                    supportingText = if (error) {
+                        { Text(stringResource(R.string.quota_balance_input_error, limitBytes.toReadableSize())) }
+                    } else null,
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { submit() }),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        },
+        confirmButton = { TextButton(onClick = submit) { Text(stringResource(R.string.action_save)) } },
+        dismissButton = {
+            Row {
+                if (current != null) {
+                    TextButton(onClick = { onSave(null) }) { Text(stringResource(R.string.quota_price_remove)) }
+                }
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
+            }
+        },
+    )
+}
+
 /** 2500 → "2,5", 2000 → "2". */
 private fun millimesToInput(millimes: Int): String =
     BigDecimal(millimes).movePointLeft(3).stripTrailingZeros().toPlainString().replace('.', ',')
@@ -610,6 +735,29 @@ private fun QuotaContentPreview() {
                 period = PreviewData.period,
                 pricePerGb = PreviewData.pricePerGb,
                 dailyMobileBytes = PreviewData.cycleDailyMobile,
+            ),
+            onIntent = {},
+            onOpenDownloads = {},
+        )
+    }
+}
+
+/** Forfait recalé sur le solde annoncé par l'opérateur (aperçu Android Studio uniquement). */
+@ScreenPreviews
+@Composable
+private fun QuotaContentBalancePreview() {
+    val period = PreviewData.period
+    val status = PreviewData.quotaStatus
+    val quota = status.quota.copy(balance = OperatorBalance(status.remainingBytes, atMillis = period.endMillis))
+    PreviewSurface(padded = false) {
+        QuotaContent(
+            state = QuotaState(
+                quota = quota,
+                usedMobileBytes = status.usedBytes,
+                input = QuotaViewModel.bytesToInput(quota.limitBytes),
+                period = period,
+                operatorName = "Ooredoo",
+                dailyMobileBytes = alignDailyToUsed(PreviewData.cycleDailyMobile, status.usedBytes, period.dayIndexOf(period.endMillis)),
             ),
             onIntent = {},
             onOpenDownloads = {},
