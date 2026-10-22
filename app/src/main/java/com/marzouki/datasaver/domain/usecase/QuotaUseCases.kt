@@ -52,6 +52,56 @@ class SetOperatorBalanceUseCase @Inject constructor(private val repository: Quot
         repository.setQuota(quota.copy(balance = balance))
         // La consommation du forfait change : l'alerte doit pouvoir se déclencher à nouveau.
         repository.setLastAlertedMonth(null)
+        // Le solde vient d'être recalé : le compteur du prochain rappel repart de zéro.
+        repository.setBalanceReminderAt(null)
+    }
+}
+
+/**
+ * Au renouvellement du forfait, oublie le solde relevé lors d'un cycle précédent : le décompte
+ * repart alors du forfait plein (data mobile mesurée depuis le début du nouveau cycle). Évite que
+ * l'écart entre la mesure de l'appli et le compteur de l'opérateur s'accumule d'un mois sur l'autre.
+ */
+class ClearStaleBalanceUseCase @Inject constructor(
+    private val quotaRepository: QuotaRepository,
+    private val getCurrentPeriod: GetCurrentPeriodUseCase,
+) {
+    suspend operator fun invoke(): Boolean {
+        val quota = quotaRepository.quota.first() ?: return false
+        val balance = quota.balance ?: return false
+        if (balance.atMillis >= getCurrentPeriod().startMillis) return false
+        quotaRepository.setQuota(quota.copy(balance = null))
+        quotaRepository.setBalanceReminderAt(null)
+        return true
+    }
+}
+
+/**
+ * Rappelle une fois tous les [intervalMillis] de re-saisir le solde réel chez l'opérateur, tant
+ * qu'un solde a été relevé mais commence à dater, pour corriger la dérive de mesure. Renvoie true
+ * si un rappel a été émis.
+ */
+class RemindBalanceRecalibrationUseCase @Inject constructor(
+    private val quotaRepository: QuotaRepository,
+    private val notifier: QuotaAlertNotifier,
+) {
+    suspend operator fun invoke(
+        nowMillis: Long = System.currentTimeMillis(),
+        intervalMillis: Long = DEFAULT_INTERVAL_MILLIS,
+    ): Boolean {
+        val balance = quotaRepository.quota.first()?.balance ?: return false
+        if (nowMillis - balance.atMillis < intervalMillis) return false
+        val lastReminder = quotaRepository.balanceReminderAt.first()
+        // Pas plus d'un rappel par intervalle, et aucun avant que le solde ait vieilli.
+        if (lastReminder != null && nowMillis - lastReminder < intervalMillis) return false
+        if (lastReminder == null && nowMillis - balance.atMillis < intervalMillis) return false
+        notifier.notifyBalanceRecalibration(balance.remainingBytes, balance.atMillis)
+        quotaRepository.setBalanceReminderAt(nowMillis)
+        return true
+    }
+
+    companion object {
+        const val DEFAULT_INTERVAL_MILLIS = 7L * 24 * 60 * 60 * 1000
     }
 }
 

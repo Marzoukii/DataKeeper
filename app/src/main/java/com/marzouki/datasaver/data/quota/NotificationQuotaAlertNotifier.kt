@@ -59,8 +59,44 @@ class NotificationQuotaAlertNotifier @Inject constructor(
         manager.notify(NOTIFICATION_ID, notification)
     }
 
+    override fun notifyBalanceRecalibration(remainingBytes: Long, sinceMillis: Long) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
+            PackageManager.PERMISSION_GRANTED
+        ) return
+
+        val manager = NotificationManagerCompat.from(context)
+        manager.createNotificationChannel(
+            NotificationChannelCompat.Builder(CHANNEL_ID, NotificationManagerCompat.IMPORTANCE_HIGH)
+                .setName(context.getString(R.string.notification_channel_quota))
+                .build()
+        )
+
+        val openApp = PendingIntent.getActivity(
+            context, 0,
+            Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
+        val days = ((System.currentTimeMillis() - sinceMillis) / DAY_MILLIS).coerceAtLeast(1).toInt()
+        val text = context.resources.getQuantityString(
+            R.plurals.notification_recalibrate_text, days, days, Formatter.formatShortFileSize(context, remainingBytes),
+        )
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_stat_data)
+            .setContentTitle(context.getString(R.string.notification_recalibrate_title))
+            .setContentText(text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            .setContentIntent(openApp)
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .build()
+        manager.notify(RECALIBRATE_NOTIFICATION_ID, notification)
+    }
+
     private companion object {
         const val CHANNEL_ID = "quota_alerts"
         const val NOTIFICATION_ID = 80
+        const val RECALIBRATE_NOTIFICATION_ID = 81
+        const val DAY_MILLIS = 24L * 60 * 60 * 1000
     }
 }
