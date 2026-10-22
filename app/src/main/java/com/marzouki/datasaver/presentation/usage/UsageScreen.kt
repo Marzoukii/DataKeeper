@@ -1,6 +1,7 @@
 package com.marzouki.datasaver.presentation.usage
 
 import android.Manifest
+import android.content.pm.PackageManager
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,6 +19,7 @@ import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -27,9 +29,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -49,23 +53,26 @@ import com.marzouki.datasaver.ui.components.PlaceholderCard
 import com.marzouki.datasaver.ui.components.PreviewData
 import com.marzouki.datasaver.ui.components.PreviewSurface
 import com.marzouki.datasaver.ui.components.QuotaSummaryCard
-import com.marzouki.datasaver.ui.components.SavingsAndStreakRow
+import com.marzouki.datasaver.ui.components.SavingsAndPlanRow
 import com.marzouki.datasaver.ui.components.ScreenHeader
 import com.marzouki.datasaver.ui.components.ScreenPreviews
 import com.marzouki.datasaver.ui.components.UsageSplitCard
 import com.marzouki.datasaver.ui.components.displayName
 import com.marzouki.datasaver.ui.components.formatMonthYear
 import com.marzouki.datasaver.ui.components.rememberAppIcon
+import com.marzouki.datasaver.ui.components.toReadableSize
 import com.marzouki.datasaver.ui.theme.Spacing
 
 @Composable
 fun UsageScreen(
+    snackbarHostState: SnackbarHostState,
     onOpenQuota: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: UsageViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val resources = LocalResources.current
     val activity = LocalActivity.current
     // Après un second refus, Android n'affiche plus la demande : on ouvre alors les infos de l'appli.
     var phonePermissionBlocked by rememberSaveable { mutableStateOf(false) }
@@ -172,13 +179,15 @@ private fun androidx.compose.foundation.lazy.LazyListScope.dashboard(
     }
     item { QuotaSummaryCard(state.quotaStatus, period, onClick = onOpenQuota) }
     item {
-        SavingsAndStreakRow(
+        SavingsAndPlanRow(
             wifiBytes = usage.wifiBytes,
             pricePerGb = state.pricePerGb,
-            streak = state.streak,
-            currentCycleExceeded = state.quotaStatus?.isExceeded == true,
+            status = state.quotaStatus,
+            quota = state.quota,
+            balance = state.quota?.balanceIn(period),
             onOpenQuota = onOpenQuota,
             operatorName = state.operatorName,
+            resetMillis = period.nextStartMillis,
         )
     }
     if (state.dailyUsage.isNotEmpty()) {
@@ -244,10 +253,10 @@ private fun UsageContentPreview() {
                 usage = PreviewData.usage,
                 period = PreviewData.period,
                 quota = PreviewData.quota,
+                quotaUsedBytes = PreviewData.quotaStatus.usedBytes,
                 dailyUsage = PreviewData.days,
                 topMobileApps = PreviewData.topApps,
                 pricePerGb = PreviewData.pricePerGb,
-                streak = PreviewData.streak,
                 operatorName = "Ooredoo",
                 networkGeneration = NetworkGeneration.G4,
             ),
