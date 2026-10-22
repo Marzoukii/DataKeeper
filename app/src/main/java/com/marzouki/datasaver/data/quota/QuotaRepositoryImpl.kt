@@ -76,6 +76,14 @@ class QuotaRepositoryImpl @Inject constructor(
         }
     }
 
+    override val balanceReminderAt: Flow<Long?> = dataStore.data.map { it[KEY_BALANCE_REMINDER_AT] }
+
+    override suspend fun setBalanceReminderAt(millis: Long?) {
+        dataStore.edit { prefs ->
+            if (millis == null) prefs.remove(KEY_BALANCE_REMINDER_AT) else prefs[KEY_BALANCE_REMINDER_AT] = millis
+        }
+    }
+
     private fun readBalance(prefs: Preferences, limitBytes: Long): OperatorBalance? {
         val remaining = prefs[KEY_BALANCE_REMAINING_BYTES]?.takeIf { it in 0..limitBytes } ?: return null
         val at = prefs[KEY_BALANCE_AT_MILLIS] ?: return null
@@ -88,6 +96,7 @@ class QuotaRepositoryImpl @Inject constructor(
         val KEY_LAST_ALERTED_MONTH = stringPreferencesKey("last_alerted_month")
         val KEY_CYCLE_START_DAY = intPreferencesKey("cycle_start_day")
         val KEY_PRICE_PER_GB_MILLIMES = intPreferencesKey("price_per_gb_millimes")
+        val KEY_BALANCE_REMINDER_AT = longPreferencesKey("balance_reminder_at")
         val KEY_BALANCE_REMAINING_BYTES = longPreferencesKey("operator_balance_remaining_bytes")
         val KEY_BALANCE_AT_MILLIS = longPreferencesKey("operator_balance_at_millis")
     }

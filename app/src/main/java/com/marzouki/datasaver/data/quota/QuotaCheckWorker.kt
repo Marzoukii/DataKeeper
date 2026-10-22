@@ -9,6 +9,8 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.marzouki.datasaver.domain.repository.QuotaMonitorScheduler
 import com.marzouki.datasaver.domain.usecase.CheckQuotaAndAlertUseCase
+import com.marzouki.datasaver.domain.usecase.ClearStaleBalanceUseCase
+import com.marzouki.datasaver.domain.usecase.RemindBalanceRecalibrationUseCase
 import com.marzouki.datasaver.presentation.widget.refreshHomeSurfaces
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -21,11 +23,17 @@ class QuotaCheckWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
     private val checkQuotaAndAlert: CheckQuotaAndAlertUseCase,
+    private val clearStaleBalance: ClearStaleBalanceUseCase,
+    private val remindBalanceRecalibration: RemindBalanceRecalibrationUseCase,
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result =
         runCatching {
+            // Au nouveau cycle, le solde relevé le mois dernier est oublié (décompte depuis le forfait plein).
+            clearStaleBalance()
             checkQuotaAndAlert()
+            // Rappelle de recaler le solde s'il commence à dater.
+            remindBalanceRecalibration()
             // Profite du passage horaire pour garder widgets et tuiles à jour.
             refreshHomeSurfaces(applicationContext)
         }.fold(onSuccess = { Result.success() }, onFailure = { Result.failure() })
