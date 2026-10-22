@@ -106,6 +106,8 @@ class SavingsTest {
         override suspend fun setLastAlertedMonth(monthKey: String?) { lastAlertedMonth.value = monthKey }
         override suspend fun setCycleStartDay(day: Int) { cycleStartDay.value = day }
         override suspend fun setPricePerGb(price: PricePerGb?) { pricePerGb.value = price }
+        override val balanceReminderAt = MutableStateFlow<Long?>(null)
+        override suspend fun setBalanceReminderAt(millis: Long?) { balanceReminderAt.value = millis }
     }
 
     /** Data mobile par cycle (clé du cycle) ; un cycle absent n'a aucun trafic. */

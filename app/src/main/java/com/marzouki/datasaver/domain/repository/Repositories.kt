@@ -37,6 +37,9 @@ interface QuotaRepository {
     suspend fun setLastAlertedMonth(monthKey: String?)
     suspend fun setCycleStartDay(day: Int)
     suspend fun setPricePerGb(price: PricePerGb?)
+    /** Date du dernier rappel « recale ton solde » envoyé ; null si jamais. */
+    val balanceReminderAt: Flow<Long?>
+    suspend fun setBalanceReminderAt(millis: Long?)
 }
 
 interface DownloadRepository {
@@ -70,4 +73,7 @@ interface QuotaMonitorScheduler {
 
 interface QuotaAlertNotifier {
     fun notifyThresholdReached(status: QuotaStatus)
+
+    /** Invite à re-saisir le solde réel chez l'opérateur, relevé pour la dernière fois à [sinceMillis]. */
+    fun notifyBalanceRecalibration(remainingBytes: Long, sinceMillis: Long)
 }

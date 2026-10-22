@@ -13,7 +13,10 @@ import com.marzouki.datasaver.domain.repository.QuotaMonitorScheduler
 import com.marzouki.datasaver.domain.repository.QuotaRepository
 import com.marzouki.datasaver.domain.repository.UsageRepository
 import com.marzouki.datasaver.domain.usecase.CheckQuotaAndAlertUseCase
+import com.marzouki.datasaver.domain.usecase.ClearStaleBalanceUseCase
+import com.marzouki.datasaver.domain.usecase.GetCurrentPeriodUseCase
 import com.marzouki.datasaver.domain.usecase.GetQuotaUsedBytesUseCase
+import com.marzouki.datasaver.domain.usecase.RemindBalanceRecalibrationUseCase
 import com.marzouki.datasaver.domain.usecase.SetOperatorBalanceUseCase
 import com.marzouki.datasaver.domain.usecase.SetQuotaUseCase
 import com.marzouki.datasaver.presentation.quota.QuotaViewModel
@@ -21,6 +24,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -39,6 +43,8 @@ class QuotaAlertTest {
         override suspend fun setCycleStartDay(day: Int) { cycleStartDay.value = day }
         override val pricePerGb = MutableStateFlow<PricePerGb?>(null)
         override suspend fun setPricePerGb(price: PricePerGb?) { pricePerGb.value = price }
+        override val balanceReminderAt = MutableStateFlow<Long?>(null)
+        override suspend fun setBalanceReminderAt(millis: Long?) { balanceReminderAt.value = millis }
     }
 
     private class FakeUsageRepository(var mobileBytes: Long) : UsageRepository {
@@ -74,6 +80,8 @@ class QuotaAlertTest {
     private class FakeNotifier : QuotaAlertNotifier {
         val notified = mutableListOf<QuotaStatus>()
         override fun notifyThresholdReached(status: QuotaStatus) { notified += status }
+        val recalibrations = mutableListOf<Long>()
+        override fun notifyBalanceRecalibration(remainingBytes: Long, sinceMillis: Long) { recalibrations += remainingBytes }
     }
 
     @Test
@@ -148,6 +156,43 @@ class QuotaAlertTest {
         assertEquals(0L, QuotaViewModel.parseBalance("0", 25 * gb))
         assertNull(QuotaViewModel.parseBalance("26", 25 * gb))
         assertNull(QuotaViewModel.parseBalance("-1", 25 * gb))
+    }
+
+    @Test
+    fun `clears a balance relevé lors d'un cycle précédent, garde celui du cycle courant`() = runTest {
+        // Solde relevé à l'époque 0, bien avant le début du cycle courant.
+        val stale = FakeQuotaRepository(DataQuota(10 * gb, balance = OperatorBalance(5 * gb, atMillis = 0L)))
+        assertTrue(ClearStaleBalanceUseCase(stale, GetCurrentPeriodUseCase(stale))())
+        assertNull(stale.quota.value?.balance)
+
+        val fresh = FakeQuotaRepository(DataQuota(10 * gb, balance = OperatorBalance(5 * gb, atMillis = System.currentTimeMillis())))
+        assertFalse(ClearStaleBalanceUseCase(fresh, GetCurrentPeriodUseCase(fresh))())
+        assertNotNull(fresh.quota.value?.balance)
+    }
+
+    @Test
+    fun `reminds once the balance is older than the interval, then not again`() = runTest {
+        val day = 24L * 60 * 60 * 1000
+        val now = 100 * day
+        val notifier = FakeNotifier()
+        val repo = FakeQuotaRepository(DataQuota(10 * gb, balance = OperatorBalance(5 * gb, atMillis = now - 8 * day)))
+        val useCase = RemindBalanceRecalibrationUseCase(repo, notifier)
+
+        assertTrue(useCase(nowMillis = now))
+        assertEquals(1, notifier.recalibrations.size)
+        assertEquals(now, repo.balanceReminderAt.value)
+        // Déjà rappelé dans l'intervalle : pas de second rappel.
+        assertFalse(useCase(nowMillis = now + day))
+    }
+
+    @Test
+    fun `does not remind a fresh balance nor without balance`() = runTest {
+        val day = 24L * 60 * 60 * 1000
+        val notifier = FakeNotifier()
+        val fresh = FakeQuotaRepository(DataQuota(10 * gb, balance = OperatorBalance(5 * gb, atMillis = 100 * day)))
+        assertFalse(RemindBalanceRecalibrationUseCase(fresh, notifier)(nowMillis = 100 * day + day))
+        assertFalse(RemindBalanceRecalibrationUseCase(FakeQuotaRepository(DataQuota(10 * gb)), notifier)(nowMillis = 100 * day))
+        assertTrue(notifier.recalibrations.isEmpty())
     }
 
     @Test
