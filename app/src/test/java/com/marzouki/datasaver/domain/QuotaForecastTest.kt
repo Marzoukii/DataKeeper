@@ -1,7 +1,7 @@
 package com.marzouki.datasaver.domain
 
+import com.marzouki.datasaver.domain.enums.ForecastOutlook
 import com.marzouki.datasaver.domain.model.DataQuota
-import com.marzouki.datasaver.domain.model.ForecastOutlook
 import com.marzouki.datasaver.domain.model.MonthPeriod
 import com.marzouki.datasaver.domain.model.QuotaForecast
 import com.marzouki.datasaver.domain.model.alignDailyToUsed

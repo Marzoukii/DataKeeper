@@ -12,6 +12,8 @@ data class HomeSummary(
     val pricePerGb: PricePerGb? = null,
     /** Data mobile décomptée du forfait (recalée sur le solde opérateur) ; null sans quota. */
     val quotaUsedBytes: Long? = null,
+    /** Nouvelle SIM des données : le forfait de l'ancienne n'est pas montré, il faut saisir le nouveau. */
+    val operatorChanged: Boolean = false,
 ) {
     val quotaStatus: QuotaStatus? get() = if (quota != null && quotaUsedBytes != null) QuotaStatus(quota, quotaUsedBytes) else null
 

@@ -1,29 +1,44 @@
 package com.marzouki.datasaver.domain
 
+import com.marzouki.datasaver.domain.enums.AppKind
+import com.marzouki.datasaver.domain.enums.NetworkGeneration
+import com.marzouki.datasaver.domain.enums.PlanStatus
 import com.marzouki.datasaver.domain.model.AppDataUsage
-import com.marzouki.datasaver.domain.model.AppKind
 import com.marzouki.datasaver.domain.model.DataQuota
-import com.marzouki.datasaver.domain.model.DayUsage
 import com.marzouki.datasaver.domain.model.DataUsage
+import com.marzouki.datasaver.domain.model.DayUsage
+import com.marzouki.datasaver.domain.model.MobileOperator
 import com.marzouki.datasaver.domain.model.MonthPeriod
 import com.marzouki.datasaver.domain.model.OperatorBalance
+import com.marzouki.datasaver.domain.model.PlanValidity
 import com.marzouki.datasaver.domain.model.PricePerGb
 import com.marzouki.datasaver.domain.model.QuotaStatus
+import com.marzouki.datasaver.domain.model.SavedPlan
 import com.marzouki.datasaver.domain.model.heavyAppFor
+import com.marzouki.datasaver.domain.repository.OperatorRepository
 import com.marzouki.datasaver.domain.repository.QuotaAlertNotifier
 import com.marzouki.datasaver.domain.repository.QuotaMonitorScheduler
 import com.marzouki.datasaver.domain.repository.QuotaRepository
 import com.marzouki.datasaver.domain.repository.UsageRepository
 import com.marzouki.datasaver.domain.usecase.CheckQuotaAndAlertUseCase
 import com.marzouki.datasaver.domain.usecase.ClearStaleBalanceUseCase
+import com.marzouki.datasaver.domain.usecase.CompletePlanSetupUseCase
 import com.marzouki.datasaver.domain.usecase.GetCurrentPeriodUseCase
 import com.marzouki.datasaver.domain.usecase.GetQuotaUsedBytesUseCase
+import com.marzouki.datasaver.domain.usecase.ObservePlanStatusUseCase
+import com.marzouki.datasaver.domain.usecase.RememberPlanUseCase
 import com.marzouki.datasaver.domain.usecase.RemindBalanceRecalibrationUseCase
 import com.marzouki.datasaver.domain.usecase.RemindPlanRenewalUseCase
+import com.marzouki.datasaver.domain.usecase.SetCycleStartDayUseCase
 import com.marzouki.datasaver.domain.usecase.SetOperatorBalanceUseCase
+import com.marzouki.datasaver.domain.usecase.SetPlanCycleUseCase
+import com.marzouki.datasaver.domain.usecase.SetPlanPriceUseCase
 import com.marzouki.datasaver.domain.usecase.SetQuotaUseCase
+import com.marzouki.datasaver.domain.usecase.SkipPlanSetupUseCase
 import com.marzouki.datasaver.presentation.quota.QuotaViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -31,6 +46,7 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.util.Calendar
 
 class QuotaAlertTest {
 
@@ -50,6 +66,14 @@ class QuotaAlertTest {
         override suspend fun setBalanceReminderAt(millis: Long?) { balanceReminderAt.value = millis }
         override val lastRenewalReminderCycle = MutableStateFlow<String?>(null)
         override suspend fun setLastRenewalReminderCycle(cycleKey: String?) { lastRenewalReminderCycle.value = cycleKey }
+        override val planSetupDone = MutableStateFlow(false)
+        override suspend fun setPlanSetupDone(done: Boolean) { planSetupDone.value = done }
+        override val planOperatorKey = MutableStateFlow<String?>(null)
+        override suspend fun setPlanOperatorKey(key: String?) { planOperatorKey.value = key }
+        override val planValidity = MutableStateFlow<PlanValidity?>(null)
+        override suspend fun setPlanValidity(validity: PlanValidity?) { planValidity.value = validity }
+        override val savedPlans = MutableStateFlow<List<SavedPlan>>(emptyList())
+        override suspend fun setSavedPlans(plans: List<SavedPlan>) { savedPlans.value = plans }
     }
 
     private class FakeUsageRepository(var mobileBytes: Long) : UsageRepository {
@@ -230,6 +254,128 @@ class QuotaAlertTest {
         assertEquals(chrome, listOf(system, chrome, instagram).heavyAppFor(quota))
         assertNull(listOf(system, instagram).heavyAppFor(quota))
         assertNull(listOf(chrome).heavyAppFor(null))
+    }
+
+    private val noopScheduler = object : QuotaMonitorScheduler {
+        override fun start() = Unit
+        override fun stop() = Unit
+    }
+
+    private val ooredoo = MobileOperator("Ooredoo", "60503")
+    private val tunisieTelecom = MobileOperator("Tunisie Telecom", "60502")
+
+    /** SIM des données, que le test change comme on change de carte. */
+    private class FakeOperatorRepository(operator: MobileOperator?) : OperatorRepository {
+        val operator = MutableStateFlow(operator)
+        override fun dataOperator() = operator.value
+        override fun observeDataOperator() = operator
+        override fun hasPhoneStatePermission() = false
+        override fun observeDataNetworkGeneration() = flowOf<NetworkGeneration?>(null)
+    }
+
+    private fun completePlanSetup(repository: QuotaRepository, operators: OperatorRepository) = CompletePlanSetupUseCase(
+        repository,
+        operators,
+        SetQuotaUseCase(repository, noopScheduler),
+        SetPlanCycleUseCase(repository, SetCycleStartDayUseCase(repository)),
+        SetOperatorBalanceUseCase(repository),
+        SetPlanPriceUseCase(repository),
+        RememberPlanUseCase(repository),
+    )
+
+    /** 21 octobre 2026 à minuit, jour d'achat des forfaits de ces tests. */
+    private val oct21 = Calendar.getInstance().apply { clear(); set(2026, Calendar.OCTOBER, 21) }.timeInMillis
+
+    @Test
+    fun `plan setup stores the plan, the operator balance, the cycle and the price at once`() = runTest {
+        val repository = FakeQuotaRepository(null)
+        val operators = FakeOperatorRepository(ooredoo)
+        assertEquals(PlanStatus.MISSING, ObservePlanStatusUseCase(repository, operators)().first())
+
+        // Abonnement de 25 Go à 28 DT renouvelé le 21 de chaque mois, l'opérateur annonce 19 Go restants.
+        completePlanSetup(repository, operators)(
+            25 * gb, purchaseMillis = oct21, validityDays = null, remainingBytes = 19 * gb, planPriceMillimes = 28_000,
+            nowMillis = 42,
+        )
+
+        val quota = repository.quota.value!!
+        assertEquals(25 * gb, quota.limitBytes)
+        assertEquals(OperatorBalance(19 * gb, atMillis = 42), quota.balance)
+        assertEquals(21, repository.cycleStartDay.value)
+        assertEquals(28_000L, quota.priceMillimes)
+        assertEquals(PricePerGb(1_120), quota.pricePerGb)
+        assertEquals("60503", repository.planOperatorKey.value)
+        assertNull(repository.planValidity.value)
+        assertEquals(listOf(SavedPlan("60503", 25 * gb, 28_000, validityDays = null)), repository.savedPlans.value)
+        assertEquals(PlanStatus.CONFIGURED, ObservePlanStatusUseCase(repository, operators)().first())
+    }
+
+    @Test
+    fun `dashboard is reachable without a plan once the setup is skipped, or with a plan set earlier`() = runTest {
+        val skipped = FakeQuotaRepository(null)
+        val operators = FakeOperatorRepository(ooredoo)
+        SkipPlanSetupUseCase(skipped, operators, SetQuotaUseCase(skipped, noopScheduler))()
+        assertEquals(PlanStatus.CONFIGURED, ObservePlanStatusUseCase(skipped, operators)().first())
+
+        // Quota d'avant le suivi de la SIM : rattaché à la SIM du moment, sans redemander le forfait.
+        val legacy = FakeQuotaRepository(DataQuota(10 * gb))
+        assertEquals(PlanStatus.CONFIGURED, ObservePlanStatusUseCase(legacy, operators)().first())
+        assertEquals("60503", legacy.planOperatorKey.value)
+    }
+
+    @Test
+    fun `switching the data SIM to another operator asks for its plan again`() = runTest {
+        val repository = FakeQuotaRepository(null)
+        val operators = FakeOperatorRepository(ooredoo)
+        completePlanSetup(repository, operators)(25 * gb, oct21, validityDays = 30, remainingBytes = null, planPriceMillimes = null)
+        val status = ObservePlanStatusUseCase(repository, operators)
+
+        operators.operator.value = tunisieTelecom
+        assertEquals(PlanStatus.OPERATOR_CHANGED, status().first())
+
+        // Sans SIM prête (mode avion, redémarrage), le forfait n'est pas redemandé pour rien.
+        operators.operator.value = null
+        assertEquals(PlanStatus.CONFIGURED, status().first())
+
+        operators.operator.value = tunisieTelecom
+        completePlanSetup(repository, operators)(10 * gb, oct21, validityDays = 30, remainingBytes = null, planPriceMillimes = null)
+        assertEquals(10 * gb, repository.quota.value!!.limitBytes)
+        assertEquals(PlanStatus.CONFIGURED, status().first())
+
+        // Retour sur Ooredoo : le forfait Tunisie Telecom ne vaut pas pour elle non plus.
+        operators.operator.value = ooredoo
+        assertEquals(PlanStatus.OPERATOR_CHANGED, status().first())
+    }
+
+    @Test
+    fun `skipping after a SIM change drops the previous operator's plan`() = runTest {
+        val repository = FakeQuotaRepository(DataQuota(25 * gb))
+        repository.planOperatorKey.value = "60503"
+        val operators = FakeOperatorRepository(tunisieTelecom)
+
+        SkipPlanSetupUseCase(repository, operators, SetQuotaUseCase(repository, noopScheduler))()
+
+        assertNull(repository.quota.value)
+        assertEquals(PlanStatus.CONFIGURED, ObservePlanStatusUseCase(repository, operators)().first())
+    }
+
+    @Test
+    fun `each plan keeps its own price, which does not follow a change of size`() = runTest {
+        val repository = FakeQuotaRepository(null)
+        val setQuota = SetQuotaUseCase(repository, noopScheduler)
+        // Pass de 1,4 Go à 4,8 DT : 3,429 DT le Go.
+        setQuota(1_400_000_000L)
+        SetPlanPriceUseCase(repository)(4_800)
+        assertEquals(PricePerGb(3_429), repository.quota.value!!.pricePerGb)
+
+        // Même forfait réenregistré : le prix reste.
+        setQuota(1_400_000_000L)
+        assertEquals(4_800L, repository.quota.value!!.priceMillimes)
+
+        // Passage au pass de 25 Go : l'ancien prix ne vaut pas, il est à ressaisir.
+        setQuota(25 * gb)
+        assertNull(repository.quota.value!!.priceMillimes)
+        assertNull(repository.quota.value!!.pricePerGb)
     }
 
     @Test

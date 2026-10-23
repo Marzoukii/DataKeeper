@@ -1,11 +1,11 @@
 package com.marzouki.datasaver.domain.usecase
 
+import com.marzouki.datasaver.domain.enums.NetworkGeneration
 import com.marzouki.datasaver.domain.model.AppDataUsage
 import com.marzouki.datasaver.domain.model.DataUsage
 import com.marzouki.datasaver.domain.model.DayUsage
 import com.marzouki.datasaver.domain.model.MobileOperator
 import com.marzouki.datasaver.domain.model.MonthPeriod
-import com.marzouki.datasaver.domain.model.NetworkGeneration
 import com.marzouki.datasaver.domain.repository.ConnectivityRepository
 import com.marzouki.datasaver.domain.repository.OperatorRepository
 import com.marzouki.datasaver.domain.repository.QuotaRepository
@@ -18,11 +18,14 @@ class HasUsageAccessUseCase @Inject constructor(private val repository: UsageRep
     operator fun invoke(): Boolean = repository.hasUsageAccess()
 }
 
-/** Cycle de facturation en cours, selon le jour de remise à zéro choisi par l'utilisateur. */
+/** Cycle de facturation en cours : celui du pass s'il a une validité, sinon le cycle mensuel. */
 class GetCurrentPeriodUseCase @Inject constructor(private val quotaRepository: QuotaRepository) {
     suspend operator fun invoke(nowMillis: Long = System.currentTimeMillis()): MonthPeriod =
-        MonthPeriod.current(nowMillis, quotaRepository.cycleStartDay.first())
+        quotaRepository.currentPeriod(nowMillis)
 }
+
+internal suspend fun QuotaRepository.currentPeriod(nowMillis: Long): MonthPeriod =
+    planValidity.first()?.periodAt(nowMillis) ?: MonthPeriod.current(nowMillis, cycleStartDay.first())
 
 class GetMonthlyUsageUseCase @Inject constructor(private val repository: UsageRepository) {
     suspend operator fun invoke(period: MonthPeriod = MonthPeriod.current()): Result<DataUsage> =
@@ -39,8 +42,9 @@ class GetTopMobileAppsUseCase @Inject constructor(private val repository: UsageR
         runCatching { repository.getTopMobileApps(period, limit) }
 }
 
-class GetDataOperatorUseCase @Inject constructor(private val repository: OperatorRepository) {
-    operator fun invoke(): MobileOperator? = runCatching { repository.dataOperator() }.getOrNull()
+/** Opérateur de la SIM des données, mis à jour dès qu'on change de SIM ou qu'on bascule la data. */
+class ObserveDataOperatorUseCase @Inject constructor(private val repository: OperatorRepository) {
+    operator fun invoke(): Flow<MobileOperator?> = repository.observeDataOperator()
 }
 
 class HasPhoneStatePermissionUseCase @Inject constructor(private val repository: OperatorRepository) {

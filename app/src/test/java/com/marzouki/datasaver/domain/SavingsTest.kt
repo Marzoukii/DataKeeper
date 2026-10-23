@@ -2,18 +2,23 @@ package com.marzouki.datasaver.domain
 
 import android.telephony.TelephonyManager
 import com.marzouki.datasaver.data.operator.generationOf
+import com.marzouki.datasaver.domain.enums.CycleOutcome
+import com.marzouki.datasaver.domain.enums.NetworkGeneration
+import com.marzouki.datasaver.domain.enums.TunisianOperator
 import com.marzouki.datasaver.domain.model.AppDataUsage
-import com.marzouki.datasaver.domain.model.CycleOutcome
 import com.marzouki.datasaver.domain.model.DataQuota
 import com.marzouki.datasaver.domain.model.DataUsage
 import com.marzouki.datasaver.domain.model.DayUsage
 import com.marzouki.datasaver.domain.model.MobileOperator
 import com.marzouki.datasaver.domain.model.MonthPeriod
-import com.marzouki.datasaver.domain.model.NetworkGeneration
+import com.marzouki.datasaver.domain.model.OperatorBalance
+import com.marzouki.datasaver.domain.model.PlanValidity
 import com.marzouki.datasaver.domain.model.PricePerGb
+import com.marzouki.datasaver.domain.model.SavedPlan
 import com.marzouki.datasaver.domain.repository.QuotaRepository
 import com.marzouki.datasaver.domain.repository.UsageRepository
 import com.marzouki.datasaver.domain.usecase.GetQuotaStreakUseCase
+import com.marzouki.datasaver.presentation.usage.UsageState
 import com.marzouki.datasaver.ui.components.formatDinars
 import com.marzouki.datasaver.ui.components.formatDinarsRounded
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,6 +41,36 @@ class SavingsTest {
         assertNull(PricePerGb.parse("0"))
         assertNull(PricePerGb.parse("101"))
         assertNull(PricePerGb.parse("abc"))
+    }
+
+    @Test
+    fun `plan price is brought back to the price of one gigabyte`() {
+        // Pass Ooredoo de 25 Go à 28 DT.
+        assertEquals(1_120, PricePerGb.fromPlan("28", 25 * gb)?.millimes)
+        assertEquals(1_667, PricePerGb.fromPlan("8,333 DT", 5 * gb)?.millimes)
+        assertEquals(500, PricePerGb.fromPlan("1", 2 * gb)?.millimes)
+        assertNull(PricePerGb.fromPlan("0", 25 * gb))
+        assertNull(PricePerGb.fromPlan("abc", 25 * gb))
+        // Plus de 100 DT le Go : faute de frappe plutôt que vrai prix.
+        assertNull(PricePerGb.fromPlan("280", 2 * gb))
+        // Et retour : l'écran Quota réaffiche le prix du forfait saisi.
+        assertEquals(28_000L, PricePerGb(1_120).planMillimes(25 * gb))
+    }
+
+    @Test
+    fun `mobile usage card follows the operator balance once it is recorded this cycle`() {
+        val cycle = MonthPeriod(startMillis = 1_000, endMillis = 9_000, key = "2026-10")
+        val measured = UsageState(period = cycle, quota = DataQuota(25 * gb), quotaUsedBytes = 8_500_000_000L)
+        // Sans solde relevé, la carte garde la mesure du téléphone.
+        assertNull(measured.operatorMobileBytes)
+
+        // 18,1 Go restants au 22 octobre : 6,9 Go partis + 1,6 Go mesurés depuis = 8,5 Go, comme la carte du quota.
+        val recalibrated = measured.copy(quota = DataQuota(25 * gb, balance = OperatorBalance(18_100_000_000L, atMillis = 2_000)))
+        assertEquals(8_500_000_000L, recalibrated.operatorMobileBytes)
+
+        // Solde d'un cycle précédent : il ne vaut plus pour celui-ci.
+        val stale = measured.copy(quota = DataQuota(25 * gb, balance = OperatorBalance(18_100_000_000L, atMillis = 500)))
+        assertNull(stale.operatorMobileBytes)
     }
 
     @Test
@@ -94,6 +129,8 @@ class SavingsTest {
         assertEquals("Orange", MobileOperator.from("60501", null)?.name)
         assertEquals("Free", MobileOperator.from("20815", "Free")?.name)
         assertNull(MobileOperator.from("", " "))
+        assertEquals(TunisianOperator.OOREDOO, MobileOperator.from("60503", null)?.tunisian)
+        assertNull(MobileOperator.from("20815", "Free")?.tunisian)
     }
 
     @Test
@@ -119,6 +156,14 @@ class SavingsTest {
         override suspend fun setBalanceReminderAt(millis: Long?) { balanceReminderAt.value = millis }
         override val lastRenewalReminderCycle = MutableStateFlow<String?>(null)
         override suspend fun setLastRenewalReminderCycle(cycleKey: String?) { lastRenewalReminderCycle.value = cycleKey }
+        override val planSetupDone = MutableStateFlow(false)
+        override suspend fun setPlanSetupDone(done: Boolean) { planSetupDone.value = done }
+        override val planOperatorKey = MutableStateFlow<String?>(null)
+        override suspend fun setPlanOperatorKey(key: String?) { planOperatorKey.value = key }
+        override val planValidity = MutableStateFlow<PlanValidity?>(null)
+        override suspend fun setPlanValidity(validity: PlanValidity?) { planValidity.value = validity }
+        override val savedPlans = MutableStateFlow<List<SavedPlan>>(emptyList())
+        override suspend fun setSavedPlans(plans: List<SavedPlan>) { savedPlans.value = plans }
     }
 
     /** Data mobile par cycle (clé du cycle) ; un cycle absent n'a aucun trafic. */

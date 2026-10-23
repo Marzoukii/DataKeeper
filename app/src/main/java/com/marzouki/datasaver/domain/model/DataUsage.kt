@@ -1,5 +1,7 @@
 package com.marzouki.datasaver.domain.model
 
+import com.marzouki.datasaver.domain.enums.AppKind
+
 /** Trafic de l'appareil (réception + émission) sur une période, réparti par type de réseau. */
 data class DataUsage(
     val wifiBytes: Long,
@@ -30,8 +32,6 @@ data class AppDataUsage(
     val label: String?,
     val mobileBytes: Long,
 )
-
-enum class AppKind { APP, SYSTEM, TETHERING, REMOVED }
 
 /** Part du forfait mobile à partir de laquelle une seule appli mérite d'être signalée. */
 const val HEAVY_APP_QUOTA_PERCENT = 50
