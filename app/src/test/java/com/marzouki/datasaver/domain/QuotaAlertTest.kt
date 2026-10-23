@@ -1,6 +1,7 @@
 package com.marzouki.datasaver.domain
 
 import com.marzouki.datasaver.domain.model.AppDataUsage
+import com.marzouki.datasaver.domain.model.AppKind
 import com.marzouki.datasaver.domain.model.DataQuota
 import com.marzouki.datasaver.domain.model.DayUsage
 import com.marzouki.datasaver.domain.model.DataUsage
@@ -8,6 +9,7 @@ import com.marzouki.datasaver.domain.model.MonthPeriod
 import com.marzouki.datasaver.domain.model.OperatorBalance
 import com.marzouki.datasaver.domain.model.PricePerGb
 import com.marzouki.datasaver.domain.model.QuotaStatus
+import com.marzouki.datasaver.domain.model.heavyAppFor
 import com.marzouki.datasaver.domain.repository.QuotaAlertNotifier
 import com.marzouki.datasaver.domain.repository.QuotaMonitorScheduler
 import com.marzouki.datasaver.domain.repository.QuotaRepository
@@ -17,6 +19,7 @@ import com.marzouki.datasaver.domain.usecase.ClearStaleBalanceUseCase
 import com.marzouki.datasaver.domain.usecase.GetCurrentPeriodUseCase
 import com.marzouki.datasaver.domain.usecase.GetQuotaUsedBytesUseCase
 import com.marzouki.datasaver.domain.usecase.RemindBalanceRecalibrationUseCase
+import com.marzouki.datasaver.domain.usecase.RemindPlanRenewalUseCase
 import com.marzouki.datasaver.domain.usecase.SetOperatorBalanceUseCase
 import com.marzouki.datasaver.domain.usecase.SetQuotaUseCase
 import com.marzouki.datasaver.presentation.quota.QuotaViewModel
@@ -45,6 +48,8 @@ class QuotaAlertTest {
         override suspend fun setPricePerGb(price: PricePerGb?) { pricePerGb.value = price }
         override val balanceReminderAt = MutableStateFlow<Long?>(null)
         override suspend fun setBalanceReminderAt(millis: Long?) { balanceReminderAt.value = millis }
+        override val lastRenewalReminderCycle = MutableStateFlow<String?>(null)
+        override suspend fun setLastRenewalReminderCycle(cycleKey: String?) { lastRenewalReminderCycle.value = cycleKey }
     }
 
     private class FakeUsageRepository(var mobileBytes: Long) : UsageRepository {
@@ -82,6 +87,8 @@ class QuotaAlertTest {
         override fun notifyThresholdReached(status: QuotaStatus) { notified += status }
         val recalibrations = mutableListOf<Long>()
         override fun notifyBalanceRecalibration(remainingBytes: Long, sinceMillis: Long) { recalibrations += remainingBytes }
+        val renewals = mutableListOf<Long>()
+        override fun notifyPlanRenewal(renewalMillis: Long) { renewals += renewalMillis }
     }
 
     @Test
@@ -193,6 +200,36 @@ class QuotaAlertTest {
         assertFalse(RemindBalanceRecalibrationUseCase(fresh, notifier)(nowMillis = 100 * day + day))
         assertFalse(RemindBalanceRecalibrationUseCase(FakeQuotaRepository(DataQuota(10 * gb)), notifier)(nowMillis = 100 * day))
         assertTrue(notifier.recalibrations.isEmpty())
+    }
+
+    @Test
+    fun `reminds to renew the plan two days before its end, once per cycle`() = runTest {
+        val day = 24L * 60 * 60 * 1000
+        val notifier = FakeNotifier()
+        val repo = FakeQuotaRepository(DataQuota(25 * gb))
+        val useCase = RemindPlanRenewalUseCase(repo, GetCurrentPeriodUseCase(repo), notifier)
+        val renewal = 30 * day
+        fun cycleAt(now: Long, key: String = "2026-10") = MonthPeriod(0, endMillis = now, key = key, nextStartMillis = renewal)
+
+        assertFalse(useCase(cycleAt(renewal - 3 * day)))
+        assertTrue(useCase(cycleAt(renewal - 2 * day)))
+        assertEquals(listOf(renewal), notifier.renewals)
+        assertFalse(useCase(cycleAt(renewal - day)))
+        // Nouveau cycle : nouveau rappel possible.
+        assertTrue(useCase(cycleAt(renewal - day, key = "2026-11")))
+        // Sans forfait, rien à recharger.
+        assertFalse(RemindPlanRenewalUseCase(FakeQuotaRepository(null), GetCurrentPeriodUseCase(repo), notifier)(cycleAt(renewal - day)))
+    }
+
+    @Test
+    fun `flags the first app eating half of the plan`() {
+        val quota = DataQuota(20 * gb)
+        val system = AppDataUsage(AppKind.SYSTEM, null, null, 15 * gb)
+        val chrome = AppDataUsage(AppKind.APP, "com.android.chrome", "Chrome", 10 * gb)
+        val instagram = AppDataUsage(AppKind.APP, "com.instagram.android", "Instagram", 9 * gb)
+        assertEquals(chrome, listOf(system, chrome, instagram).heavyAppFor(quota))
+        assertNull(listOf(system, instagram).heavyAppFor(quota))
+        assertNull(listOf(chrome).heavyAppFor(null))
     }
 
     @Test

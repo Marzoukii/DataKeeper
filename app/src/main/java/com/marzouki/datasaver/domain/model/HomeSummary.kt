@@ -15,7 +15,14 @@ data class HomeSummary(
 ) {
     val quotaStatus: QuotaStatus? get() = if (quota != null && quotaUsedBytes != null) QuotaStatus(quota, quotaUsedBytes) else null
 
-    /** Data mobile estimée en fin de cycle, au rythme moyen des jours écoulés. */
+    /**
+     * Data mobile estimée en fin de cycle : le forfait décompté plus le rythme mesuré depuis le
+     * début du cycle sur les jours restants. Le solde recalé n'est pas extrapolé (voir [QuotaForecast]).
+     */
     val projectedMobileBytes: Long?
-        get() = (quotaUsedBytes ?: usage?.mobileBytes)?.let { it * period.totalDays / period.currentDay.coerceAtLeast(1) }
+        get() {
+            val measured = usage?.mobileBytes ?: return null
+            val daysAfterToday = (period.totalDays - period.currentDay).coerceAtLeast(0)
+            return (quotaUsedBytes ?: measured) + measured * daysAfterToday / period.currentDay.coerceAtLeast(1)
+        }
 }

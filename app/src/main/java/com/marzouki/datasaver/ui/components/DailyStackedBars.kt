@@ -1,6 +1,7 @@
 package com.marzouki.datasaver.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,9 +17,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.unit.Dp
@@ -35,11 +38,20 @@ private val MinSegment = 3.dp
 
 /**
  * Histogramme empilé des derniers jours : Wi-Fi en bas, mobile au-dessus.
- * Le dernier jour (aujourd'hui) a son initiale mise en avant.
+ * Le dernier jour (aujourd'hui) a son initiale mise en avant. Avec [onDayClick], chaque jour est
+ * touchable et le jour [selectedDayMillis] reste opaque quand les autres s'estompent.
  */
 @Composable
-fun DailyStackedBars(days: List<DayUsage>, modifier: Modifier = Modifier, title: String? = null) {
+fun DailyStackedBars(
+    days: List<DayUsage>,
+    modifier: Modifier = Modifier,
+    title: String? = null,
+    selectedDayMillis: Long? = null,
+    onDayClick: ((DayUsage) -> Unit)? = null,
+) {
     val max = days.maxOfOrNull { it.totalBytes }?.takeIf { it > 0 } ?: 1L
+    // Un jour sorti de la fenêtre ne doit pas estomper toutes les barres.
+    val selected = selectedDayMillis?.takeIf { millis -> days.any { it.dayStartMillis == millis } }
     Column(modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (title != null) {
@@ -60,9 +72,18 @@ fun DailyStackedBars(days: List<DayUsage>, modifier: Modifier = Modifier, title:
                     day.wifiBytes.toReadableSize(),
                     day.mobileBytes.toReadableSize(),
                 )
+                val dimmed = selected != null && selected != day.dayStartMillis
                 Column(
                     Modifier
                         .weight(1f)
+                        .then(
+                            if (onDayClick != null) {
+                                Modifier.clickable(role = Role.Button) { onDayClick(day) }
+                            } else {
+                                Modifier
+                            },
+                        )
+                        .alpha(if (dimmed) 0.4f else 1f)
                         .clearAndSetSemantics { contentDescription = description },
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {

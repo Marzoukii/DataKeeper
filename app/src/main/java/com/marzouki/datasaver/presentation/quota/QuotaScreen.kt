@@ -25,16 +25,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.ChevronRight
-import androidx.compose.material.icons.rounded.Payments
 import androidx.compose.material.icons.rounded.NotificationsActive
+import androidx.compose.material.icons.rounded.Payments
 import androidx.compose.material.icons.rounded.SimCard
 import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material.icons.rounded.Wifi
@@ -101,12 +101,15 @@ import com.marzouki.datasaver.ui.components.ScreenHeader
 import com.marzouki.datasaver.ui.components.ScreenPreviews
 import com.marzouki.datasaver.ui.components.SettingDivider
 import com.marzouki.datasaver.ui.components.SettingRow
+import com.marzouki.datasaver.ui.components.ThinBar
 import com.marzouki.datasaver.ui.components.formatDayMonth
 import com.marzouki.datasaver.ui.components.formatDayOrdinal
 import com.marzouki.datasaver.ui.components.formatDinars
 import com.marzouki.datasaver.ui.components.formatShortDate
+import com.marzouki.datasaver.ui.components.formatUsedOf
 import com.marzouki.datasaver.ui.components.toReadableSize
 import com.marzouki.datasaver.ui.components.toReadableSizeParts
+import com.marzouki.datasaver.ui.theme.DataColors
 import com.marzouki.datasaver.ui.theme.SpaceGrotesk
 import com.marzouki.datasaver.ui.theme.Spacing
 import com.marzouki.datasaver.ui.theme.numeric
@@ -180,8 +183,18 @@ private fun QuotaContent(
         if (!state.hasUsageAccess) {
             item { UsageAccessRequiredCard(onGrantClick = { onIntent(QuotaIntent.GrantAccessClicked) }) }
         }
-        item { QuotaGaugeCard(state.quota, state.status, period, balance = state.quota?.balanceIn(period)) }
-        state.forecast?.let { forecast -> item { ForecastCard(forecast) } }
+        val forecast = state.forecast
+        item {
+            QuotaGaugeCard(
+                state.quota, state.status, period,
+                balance = state.quota?.balanceIn(period),
+                dailyBudgetBytes = forecast?.dailyBudgetBytes,
+            )
+        }
+        if (forecast != null && state.status?.isExceeded == false) {
+            item { DailyBudgetCard(forecast) }
+        }
+        forecast?.let { item { ForecastCard(it) } }
         item { PlanCard(state, onIntent, onOtherClick = { showOtherDialog = true }) }
         item {
             SettingsCard(
@@ -238,7 +251,13 @@ private fun QuotaContent(
 }
 
 @Composable
-private fun QuotaGaugeCard(quota: DataQuota?, status: QuotaStatus?, period: MonthPeriod, balance: OperatorBalance?) {
+private fun QuotaGaugeCard(
+    quota: DataQuota?,
+    status: QuotaStatus?,
+    period: MonthPeriod,
+    balance: OperatorBalance?,
+    dailyBudgetBytes: Long? = null,
+) {
     DataKeeperCard(shape = MaterialTheme.shapes.extraLarge) {
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             val percent = status?.let { (it.usedRatio * 100).roundToInt() } ?: 0
@@ -286,7 +305,8 @@ private fun QuotaGaugeCard(quota: DataQuota?, status: QuotaStatus?, period: Mont
                         InfoPill(
                             stringResource(
                                 R.string.quota_per_day_chip,
-                                (status.remainingBytes / period.remainingDays).toReadableSize(),
+                                // Même chiffre que le budget du jour quand il est connu.
+                                (dailyBudgetBytes ?: (status.remainingBytes / period.remainingDays)).toReadableSize(),
                             ),
                             MaterialTheme.colorScheme.surfaceVariant,
                         )
@@ -307,6 +327,49 @@ private fun QuotaGaugeCard(quota: DataQuota?, status: QuotaStatus?, period: Mont
                 )
             }
         }
+    }
+}
+
+/**
+ * Budget du jour : data mobile d'aujourd'hui face à la part du forfait qui lui revient. La barre
+ * passe à l'orange à [DataQuota.DEFAULT_ALERT_THRESHOLD_PERCENT] % du budget, au rouge au-delà.
+ */
+@Composable
+private fun DailyBudgetCard(forecast: QuotaForecast) {
+    val today = forecast.todayBytes
+    val budget = forecast.dailyBudgetBytes
+    val ratio = if (budget > 0) today.toFloat() / budget else 1f
+    val over = today > budget
+    val color = when {
+        over -> MaterialTheme.colorScheme.error
+        ratio * 100 >= forecast.quota.alertThresholdPercent -> DataColors.mobile
+        else -> DataColors.wifi
+    }
+    DataKeeperCard {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                stringResource(R.string.budget_title),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                stringResource(R.string.budget_today_of, formatUsedOf(today, budget)),
+                style = MaterialTheme.typography.titleSmall.numeric(),
+                color = if (over) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+            )
+        }
+        Spacer(Modifier.height(12.dp))
+        ThinBar(ratio, color, height = 10.dp)
+        Spacer(Modifier.height(8.dp))
+        Text(
+            if (over) {
+                stringResource(R.string.budget_over, (today - budget).toReadableSize())
+            } else {
+                stringResource(R.string.budget_left, (budget - today).toReadableSize())
+            },
+            style = MaterialTheme.typography.bodySmall,
+            color = if (over) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
@@ -473,9 +536,10 @@ private fun SettingsCard(
                 stringResource(R.string.quota_balance_title)
             },
             subtitle = when {
+                // Solde du jour (relevé moins la data mobile consommée depuis), comme sur le tableau de bord.
                 balance != null -> stringResource(
                     R.string.quota_balance_subtitle,
-                    balance.remainingBytes.toReadableSize(),
+                    (state.status?.remainingBytes ?: balance.remainingBytes).toReadableSize(),
                     formatDayMonth(balance.atMillis),
                 )
                 quota == null -> stringResource(R.string.quota_alert_subtitle_no_quota)

@@ -105,6 +105,31 @@ class RemindBalanceRecalibrationUseCase @Inject constructor(
     }
 }
 
+/**
+ * Rappelle de recharger le forfait [NOTICE_DAYS] jours avant sa fin (remise à zéro du cycle), une
+ * seule fois par cycle. Renvoie true si un rappel a été émis.
+ */
+class RemindPlanRenewalUseCase @Inject constructor(
+    private val quotaRepository: QuotaRepository,
+    private val getCurrentPeriod: GetCurrentPeriodUseCase,
+    private val notifier: QuotaAlertNotifier,
+) {
+    suspend operator fun invoke(period: MonthPeriod? = null): Boolean {
+        quotaRepository.quota.first() ?: return false
+        val current = period ?: getCurrentPeriod()
+        if (current.nextStartMillis - current.endMillis > NOTICE_DAYS * DAY_MILLIS) return false
+        if (quotaRepository.lastRenewalReminderCycle.first() == current.key) return false
+        notifier.notifyPlanRenewal(current.nextStartMillis)
+        quotaRepository.setLastRenewalReminderCycle(current.key)
+        return true
+    }
+
+    companion object {
+        const val NOTICE_DAYS = 2
+        private const val DAY_MILLIS = 24L * 60 * 60 * 1000
+    }
+}
+
 /** Data mobile décomptée du forfait sur [period] ; null sans quota. */
 class GetQuotaUsedBytesUseCase @Inject constructor(
     private val quotaRepository: QuotaRepository,
