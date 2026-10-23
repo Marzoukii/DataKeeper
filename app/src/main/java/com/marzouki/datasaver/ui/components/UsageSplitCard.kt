@@ -53,6 +53,8 @@ fun UsageSplitCard(
     networkLabel: String? = null,
     /** Non null tant que la permission manque : propose d'afficher la 4G ou la 5G. */
     onShowNetwork: (() -> Unit)? = null,
+    /** Provenance du chiffre mobile quand ce n'est pas la mesure du téléphone ("selon ton solde Ooredoo"). */
+    mobileNote: String? = null,
 ) {
     val total = wifiBytes + mobileBytes
     val wifiPercent = if (total == 0L) 0 else (wifiBytes * 100f / total).roundToInt()
@@ -93,6 +95,7 @@ fun UsageSplitCard(
                 color = DataColors.mobile,
                 bytes = mobileBytes,
                 percent = mobilePercent,
+                note = mobileNote,
                 modifier = Modifier.weight(1f),
             ) {
                 if (operatorName != null) {
@@ -132,6 +135,7 @@ private fun UsageColumn(
     bytes: Long,
     percent: Int,
     modifier: Modifier = Modifier,
+    note: String? = null,
     subtitle: @Composable RowScope.() -> Unit,
 ) {
     val size = bytes.toReadableSizeParts()
@@ -159,6 +163,9 @@ private fun UsageColumn(
             style = MaterialTheme.typography.bodySmall.numeric(),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        if (note != null) {
+            Text(note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
     }
 }
 

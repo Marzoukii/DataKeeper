@@ -4,15 +4,22 @@ import com.marzouki.datasaver.domain.model.CycleOutcome
 import com.marzouki.datasaver.domain.model.DataQuota
 import com.marzouki.datasaver.domain.model.MonthPeriod
 import com.marzouki.datasaver.domain.model.OperatorBalance
+import com.marzouki.datasaver.domain.model.PlanStatus
+import com.marzouki.datasaver.domain.model.PlanValidity
 import com.marzouki.datasaver.domain.model.PricePerGb
 import com.marzouki.datasaver.domain.model.QuotaStatus
 import com.marzouki.datasaver.domain.model.QuotaStreak
+import com.marzouki.datasaver.domain.model.SavedPlan
+import com.marzouki.datasaver.domain.repository.OperatorRepository
 import com.marzouki.datasaver.domain.repository.QuotaAlertNotifier
 import com.marzouki.datasaver.domain.repository.QuotaMonitorScheduler
 import com.marzouki.datasaver.domain.repository.QuotaRepository
 import com.marzouki.datasaver.domain.repository.UsageRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import java.util.Calendar
 import javax.inject.Inject
 
 class ObserveQuotaUseCase @Inject constructor(private val repository: QuotaRepository) {
@@ -21,6 +28,146 @@ class ObserveQuotaUseCase @Inject constructor(private val repository: QuotaRepos
 
 class ObserveCycleStartDayUseCase @Inject constructor(private val repository: QuotaRepository) {
     operator fun invoke(): Flow<Int> = repository.cycleStartDay
+}
+
+/**
+ * Configuré quand le forfait est connu (ou que l'utilisateur a dit ne pas en avoir) : le tableau
+ * de bord peut alors s'afficher. Avant, ses chiffres partiraient d'un cycle au hasard (le 1er du
+ * mois). Un quota déjà enregistré, d'avant cet écran, vaut configuration.
+ *
+ * Suivi en direct de la SIM des données : passer d'une SIM Ooredoo à une SIM Tunisie Telecom
+ * redemande le forfait, car quota, solde et renouvellement ne sont plus les mêmes. Sans SIM prête
+ * (mode avion, démarrage), on garde le forfait en place plutôt que de le redemander à tort.
+ */
+class ObservePlanStatusUseCase @Inject constructor(
+    private val repository: QuotaRepository,
+    private val operatorRepository: OperatorRepository,
+) {
+    operator fun invoke(): Flow<PlanStatus> =
+        combine(
+            repository.quota,
+            repository.planSetupDone,
+            repository.planOperatorKey,
+            operatorRepository.observeDataOperator(),
+        ) { quota, done, planOperatorKey, operator ->
+            when {
+                quota == null && !done -> PlanStatus.MISSING
+                operator == null || operator.key == planOperatorKey -> PlanStatus.CONFIGURED
+                planOperatorKey == null -> {
+                    // Forfait saisi avant ce suivi : il est rattaché à la SIM du moment.
+                    repository.setPlanOperatorKey(operator.key)
+                    PlanStatus.CONFIGURED
+                }
+                else -> PlanStatus.OPERATOR_CHANGED
+            }
+        }.distinctUntilChanged()
+}
+
+/**
+ * Enregistre en une fois ce que demande l'écran de configuration : forfait, jour de
+ * renouvellement, solde restant chez l'opérateur et prix du forfait (ces deux derniers facultatifs).
+ */
+class CompletePlanSetupUseCase @Inject constructor(
+    private val repository: QuotaRepository,
+    private val operatorRepository: OperatorRepository,
+    private val setQuota: SetQuotaUseCase,
+    private val setPlanCycle: SetPlanCycleUseCase,
+    private val setOperatorBalance: SetOperatorBalanceUseCase,
+    private val setPlanPrice: SetPlanPriceUseCase,
+    private val rememberPlan: RememberPlanUseCase,
+) {
+    /**
+     * @param purchaseMillis jour d'achat (ou de renouvellement) du forfait.
+     * @param validityDays durée du pass en jours ; null s'il se renouvelle chaque mois à cette date.
+     */
+    suspend operator fun invoke(
+        limitBytes: Long,
+        purchaseMillis: Long,
+        validityDays: Int?,
+        remainingBytes: Long?,
+        planPriceMillimes: Long?,
+        nowMillis: Long = System.currentTimeMillis(),
+    ) {
+        setPlanCycle(purchaseMillis, validityDays)
+        setQuota(limitBytes)
+        // Sans solde saisi, le décompte part du début du cycle.
+        setOperatorBalance(remainingBytes, nowMillis)
+        // Prix laissé vide : celui d'un forfait précédent (autre SIM) ne vaut pas pour celui-ci.
+        setPlanPrice(planPriceMillimes)
+        val operatorKey = operatorRepository.dataOperator()?.key
+        if (operatorKey != null) rememberPlan(SavedPlan(operatorKey, limitBytes, planPriceMillimes, validityDays))
+        repository.setPlanOperatorKey(operatorKey)
+        repository.setPlanSetupDone(true)
+    }
+}
+
+/**
+ * Cycle du forfait : pass de [validityDays] jours depuis [purchaseMillis] (30 jours pour un
+ * Flexi 25 Go, 4 pour un 220 Mo), ou, avec null, chaque mois le jour de [purchaseMillis].
+ */
+class SetPlanCycleUseCase @Inject constructor(
+    private val repository: QuotaRepository,
+    private val setCycleStartDay: SetCycleStartDayUseCase,
+) {
+    suspend operator fun invoke(purchaseMillis: Long, validityDays: Int?) {
+        if (validityDays == null) {
+            val day = Calendar.getInstance().apply { timeInMillis = purchaseMillis }.get(Calendar.DAY_OF_MONTH)
+            repository.setPlanValidity(null)
+            setCycleStartDay(day)
+        } else {
+            repository.setPlanValidity(PlanValidity(purchaseMillis, validityDays.coerceIn(1, MonthPeriod.MAX_VALIDITY_DAYS)))
+            // Le cycle courant change : l'alerte doit pouvoir se déclencher sur le nouveau.
+            repository.setLastAlertedMonth(null)
+        }
+    }
+}
+
+class ObservePlanValidityUseCase @Inject constructor(private val repository: QuotaRepository) {
+    operator fun invoke(): Flow<PlanValidity?> = repository.planValidity
+}
+
+/**
+ * Ajoute [plan] en tête des forfaits retenus pour son opérateur. La même offre (taille et durée)
+ * n'apparaît qu'une fois, avec son dernier prix : une promo remplace l'ancien.
+ */
+class RememberPlanUseCase @Inject constructor(private val repository: QuotaRepository) {
+    suspend operator fun invoke(plan: SavedPlan) {
+        val others = repository.savedPlans.first().filterNot { it.isSameOfferAs(plan) }
+        val sameOperator = others.filter { it.operatorKey == plan.operatorKey }.take(SavedPlan.MAX_PER_OPERATOR - 1)
+        repository.setSavedPlans(listOf(plan) + sameOperator + others.filter { it.operatorKey != plan.operatorKey })
+    }
+}
+
+class ForgetSavedPlanUseCase @Inject constructor(private val repository: QuotaRepository) {
+    suspend operator fun invoke(plan: SavedPlan) =
+        repository.setSavedPlans(repository.savedPlans.first().filterNot { it.isSameOfferAs(plan) })
+}
+
+/** Forfaits déjà saisis pour l'opérateur de la SIM des données, suivi en direct ; vide sans SIM. */
+class ObserveSavedPlansUseCase @Inject constructor(
+    private val repository: QuotaRepository,
+    private val operatorRepository: OperatorRepository,
+) {
+    operator fun invoke(): Flow<List<SavedPlan>> =
+        combine(repository.savedPlans, operatorRepository.observeDataOperator()) { plans, operator ->
+            if (operator == null) emptyList() else plans.filter { it.operatorKey == operator.key }
+        }.distinctUntilChanged()
+}
+
+/**
+ * « Je n'ai pas de forfait mobile » : le tableau de bord s'affiche sans quota. Après un changement
+ * de SIM, le forfait de l'ancienne est retiré.
+ */
+class SkipPlanSetupUseCase @Inject constructor(
+    private val repository: QuotaRepository,
+    private val operatorRepository: OperatorRepository,
+    private val setQuota: SetQuotaUseCase,
+) {
+    suspend operator fun invoke() {
+        setQuota(null)
+        repository.setPlanOperatorKey(operatorRepository.dataOperator()?.key)
+        repository.setPlanSetupDone(true)
+    }
 }
 
 /** Enregistre (ou supprime avec null) le quota et (dés)active la surveillance en arrière-plan. */
@@ -34,7 +181,11 @@ class SetQuotaUseCase @Inject constructor(
         val alertEnabled = current?.alertEnabled ?: true
         // Le solde relevé reste valable tant qu'il tient dans le nouveau forfait.
         val balance = current?.balance?.takeIf { limitBytes != null && it.remainingBytes <= limitBytes }
-        repository.setQuota(limitBytes?.let { DataQuota(it, alertEnabled = alertEnabled, balance = balance) })
+        // Chaque forfait a son prix (28 DT les 25 Go, 4,8 DT les 1,4 Go) : il ne suit pas un changement de taille.
+        val price = current?.priceMillimes?.takeIf { current.limitBytes == limitBytes }
+        repository.setQuota(
+            limitBytes?.let { DataQuota(it, alertEnabled = alertEnabled, balance = balance, priceMillimes = price) },
+        )
         // Un nouveau quota doit pouvoir déclencher une nouvelle alerte ce mois-ci.
         repository.setLastAlertedMonth(null)
         if (limitBytes != null && alertEnabled) scheduler.start() else scheduler.stop()
@@ -166,8 +317,17 @@ class ObservePricePerGbUseCase @Inject constructor(private val repository: Quota
     operator fun invoke(): Flow<PricePerGb?> = repository.pricePerGb
 }
 
+/** Prix du Go saisi directement, quand il n'y a pas de forfait pour le déduire. */
 class SetPricePerGbUseCase @Inject constructor(private val repository: QuotaRepository) {
     suspend operator fun invoke(price: PricePerGb?) = repository.setPricePerGb(price)
+}
+
+/** Prix payé pour le forfait en cours (null l'efface) ; le prix du Go des économies en découle. */
+class SetPlanPriceUseCase @Inject constructor(private val repository: QuotaRepository) {
+    suspend operator fun invoke(priceMillimes: Long?) {
+        val quota = repository.quota.first() ?: return
+        repository.setQuota(quota.copy(priceMillimes = priceMillimes?.takeIf { it in 1..PricePerGb.MAX_PLAN_MILLIMES }))
+    }
 }
 
 /**
@@ -219,7 +379,7 @@ class CheckQuotaAndAlertUseCase @Inject constructor(
         val quota = quotaRepository.quota.first() ?: return false
         if (!quota.alertEnabled) return false
         if (!usageRepository.hasUsageAccess()) return false
-        val currentPeriod = period ?: MonthPeriod.current(cycleStartDay = quotaRepository.cycleStartDay.first())
+        val currentPeriod = period ?: quotaRepository.currentPeriod(System.currentTimeMillis())
         val status = QuotaStatus(quota, usageRepository.quotaUsedBytes(quota, currentPeriod))
         if (!status.isAlertReached) return false
         if (quotaRepository.lastAlertedMonth.first() == currentPeriod.key) return false

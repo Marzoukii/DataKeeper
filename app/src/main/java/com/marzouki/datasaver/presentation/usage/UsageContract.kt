@@ -30,6 +30,18 @@ data class UsageState(
 ) {
     val quotaStatus: QuotaStatus? get() = if (quota != null && quotaUsedBytes != null) QuotaStatus(quota, quotaUsedBytes) else null
 
+    /**
+     * Data mobile du cycle selon l'opérateur, quand son solde a été relevé ce cycle : le même chiffre
+     * que la carte du quota (25 Go − 16,5 restants = 8,5 Go), et non la mesure du téléphone, qui
+     * ignore une partie de ce que l'opérateur facture. Null sans solde relevé.
+     */
+    val operatorMobileBytes: Long?
+        get() {
+            val period = period ?: return null
+            if (quota?.balanceIn(period) == null) return null
+            return quotaUsedBytes
+        }
+
     /** Appli à basculer en Wi-Fi tant elle pèse sur le forfait ; null si aucune ne dépasse le seuil. */
     val heavyApp: AppDataUsage? get() = topMobileApps.heavyAppFor(quota)
 }

@@ -95,6 +95,7 @@ class QuotaTileService : HomeTileService() {
         val status = summary.quotaStatus
         val subtitle = when {
             !summary.hasUsageAccess -> getString(R.string.tile_no_access)
+            summary.operatorChanged -> getString(R.string.tile_new_sim)
             status == null -> getString(R.string.widget_no_quota)
             status.isExceeded -> getString(R.string.quota_exceeded_chip, status.exceededBytes.toReadableSize())
             else -> getString(R.string.quota_remaining_chip, status.remainingBytes.toReadableSize())

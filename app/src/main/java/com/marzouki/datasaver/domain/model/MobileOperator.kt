@@ -10,6 +10,9 @@ enum class NetworkGeneration(val label: String) {
 
 /** Opérateur qui fournit la data mobile ; [name] est celui des opérateurs tunisiens quand le code est reconnu. */
 data class MobileOperator(val name: String, val mccMnc: String?) {
+    /** Identifie l'opérateur d'une SIM à l'autre : son code MCC/MNC, à défaut son nom. */
+    val key: String get() = mccMnc ?: name
+
     companion object {
         /** Codes MCC/MNC des opérateurs tunisiens (MCC 605). */
         private val TUNISIAN_OPERATORS = mapOf(
