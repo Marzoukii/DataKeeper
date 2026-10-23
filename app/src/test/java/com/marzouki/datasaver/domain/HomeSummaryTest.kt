@@ -27,6 +27,19 @@ class HomeSummaryTest {
     }
 
     @Test
+    fun `projection adds the measured rate to the recalibrated plan usage`() {
+        // 9 Go décomptés du forfait (solde recalé) mais 1,5 Go mesurés en 3 jours sur 31.
+        val day3 = MonthPeriod.current(
+            Calendar.getInstance().apply { set(2026, Calendar.OCTOBER, 23, 9, 55) }.timeInMillis,
+            cycleStartDay = 21,
+        )
+        val summary = HomeSummary(
+            day3, true, DataUsage(0, 1_500 * mb, day3), DataQuota(25_000 * mb), 0, quotaUsedBytes = 9_000 * mb,
+        )
+        assertEquals(23_000 * mb, summary.projectedMobileBytes)
+    }
+
+    @Test
     fun `no projection nor status without usage`() {
         val summary = HomeSummary(period, false, usage = null, quota = DataQuota(5_000 * mb), pendingDownloads = 3)
         assertNull(summary.projectedMobileBytes)

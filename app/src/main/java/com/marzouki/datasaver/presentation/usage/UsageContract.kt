@@ -7,6 +7,7 @@ import com.marzouki.datasaver.domain.model.MonthPeriod
 import com.marzouki.datasaver.domain.model.NetworkGeneration
 import com.marzouki.datasaver.domain.model.PricePerGb
 import com.marzouki.datasaver.domain.model.QuotaStatus
+import com.marzouki.datasaver.domain.model.heavyAppFor
 
 data class UsageState(
     val isLoading: Boolean = true,
@@ -28,6 +29,9 @@ data class UsageState(
     val quotaUsedBytes: Long? = null,
 ) {
     val quotaStatus: QuotaStatus? get() = if (quota != null && quotaUsedBytes != null) QuotaStatus(quota, quotaUsedBytes) else null
+
+    /** Appli à basculer en Wi-Fi tant elle pèse sur le forfait ; null si aucune ne dépasse le seuil. */
+    val heavyApp: AppDataUsage? get() = topMobileApps.heavyAppFor(quota)
 }
 
 sealed interface UsageIntent {
