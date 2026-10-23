@@ -1,6 +1,6 @@
 package com.marzouki.datasaver.domain.usecase
 
-import com.marzouki.datasaver.domain.model.DownloadSchedule
+import com.marzouki.datasaver.domain.enums.DownloadSchedule
 import com.marzouki.datasaver.domain.model.InvalidDownloadUrlException
 import com.marzouki.datasaver.domain.model.ScheduledDownload
 import com.marzouki.datasaver.domain.repository.DownloadRepository

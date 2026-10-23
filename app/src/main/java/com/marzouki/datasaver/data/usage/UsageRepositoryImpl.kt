@@ -5,8 +5,8 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Process
 import com.marzouki.datasaver.di.IoDispatcher
+import com.marzouki.datasaver.domain.enums.AppKind
 import com.marzouki.datasaver.domain.model.AppDataUsage
-import com.marzouki.datasaver.domain.model.AppKind
 import com.marzouki.datasaver.domain.model.DataUsage
 import com.marzouki.datasaver.domain.model.DayUsage
 import com.marzouki.datasaver.domain.model.MonthPeriod

@@ -1,6 +1,6 @@
 package com.marzouki.datasaver.presentation.downloads
 
-import com.marzouki.datasaver.domain.model.DownloadSchedule
+import com.marzouki.datasaver.domain.enums.DownloadSchedule
 import com.marzouki.datasaver.domain.model.ScheduledDownload
 
 data class DownloadsState(

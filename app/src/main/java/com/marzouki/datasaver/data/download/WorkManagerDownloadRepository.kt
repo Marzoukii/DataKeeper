@@ -7,8 +7,8 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
-import com.marzouki.datasaver.domain.model.DownloadSchedule
-import com.marzouki.datasaver.domain.model.DownloadState
+import com.marzouki.datasaver.domain.enums.DownloadSchedule
+import com.marzouki.datasaver.domain.enums.DownloadState
 import com.marzouki.datasaver.domain.model.ScheduledDownload
 import com.marzouki.datasaver.domain.repository.DownloadRepository
 import kotlinx.coroutines.flow.Flow
