@@ -1,6 +1,7 @@
 package com.marzouki.datasaver.presentation.onboarding
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,12 +39,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.marzouki.datasaver.R
@@ -72,13 +79,14 @@ fun UsageAccessScreen(
             Column(
                 Modifier
                     .weight(1f)
+                    .fadingBottomEdge(MaterialTheme.colorScheme.background)
                     .verticalScroll(rememberScrollState())
-                    .padding(top = 32.dp),
+                    .padding(top = 16.dp, bottom = 24.dp),
             ) {
                 Logo()
-                Spacer(Modifier.height(32.dp))
+                Spacer(Modifier.height(24.dp))
                 Illustration()
-                Spacer(Modifier.height(32.dp))
+                Spacer(Modifier.height(24.dp))
                 Text(
                     stringResource(R.string.onboarding_title),
                     style = MaterialTheme.typography.headlineLarge.copy(fontSize = 30.sp, lineHeight = 36.sp),
@@ -95,12 +103,13 @@ fun UsageAccessScreen(
                     CheckPoint(stringResource(R.string.onboarding_point_local))
                     CheckPoint(stringResource(R.string.onboarding_point_revoke))
                 }
-                Spacer(Modifier.height(24.dp))
                 // Dans la zone défilante : avec ses étapes, la carte ne tiendrait pas sur un petit écran.
                 if (showRestrictedHelp) {
-                    RestrictedSettingsHelp(onOpenAppInfo, Modifier.padding(bottom = 16.dp))
+                    Spacer(Modifier.height(24.dp))
+                    RestrictedSettingsHelp(onOpenAppInfo)
                 }
             }
+            Spacer(Modifier.height(12.dp))
             Button(
                 onClick = onOpenSettings,
                 shape = CircleShape,
@@ -216,20 +225,41 @@ private fun Logo() {
     }
 }
 
-/** Carte avec quatre barres Wi-Fi et une petite barre mobile, et une bulle Wi-Fi. */
+/**
+ * Fond la fin de la zone défilante dans [color] : un texte qui continue sous les boutons se devine
+ * au lieu d'être coupé net.
+ */
+private fun Modifier.fadingBottomEdge(color: Color, height: Dp = 32.dp): Modifier = drawWithContent {
+    drawContent()
+    val fade = height.toPx()
+    drawRect(
+        Brush.verticalGradient(listOf(Color.Transparent, color), startY = size.height - fade, endY = size.height),
+        topLeft = Offset(0f, size.height - fade),
+        size = Size(size.width, fade),
+    )
+}
+
+private val IllustrationCardWidth = 240.dp
+private val IllustrationBubbleSize = 56.dp
+
+/** Carte avec quatre barres Wi-Fi et une petite barre mobile, et une bulle Wi-Fi sur son coin. */
 @Composable
 private fun Illustration() {
     val description = stringResource(R.string.onboarding_illustration_description)
+    // La bulle est centrée sur le coin haut droit de la carte, quelle que soit la largeur de l'écran ;
+    // la boîte déborde de la carte d'une demi-bulle de chaque côté pour garder la carte centrée.
     Box(
         Modifier
             .fillMaxWidth()
-            .height(180.dp)
+            .wrapContentWidth()
+            .width(IllustrationCardWidth + IllustrationBubbleSize)
+            .height(150.dp + IllustrationBubbleSize / 2)
             .clearAndSetSemantics { contentDescription = description },
-        contentAlignment = Alignment.Center,
+        contentAlignment = Alignment.BottomCenter,
     ) {
         DataKeeperCard(
             Modifier
-                .width(240.dp)
+                .width(IllustrationCardWidth)
                 .height(150.dp),
             shape = MaterialTheme.shapes.extraLarge,
         ) {
@@ -245,13 +275,15 @@ private fun Illustration() {
         Box(
             Modifier
                 .align(Alignment.TopEnd)
-                .padding(end = 24.dp)
-                .size(56.dp)
+                .size(IllustrationBubbleSize)
+                // Anneau couleur de fond : la bulle se détache proprement de la bordure de la carte.
+                .border(4.dp, MaterialTheme.colorScheme.background, CircleShape)
+                .padding(4.dp)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.primaryContainer),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(Icons.Rounded.Wifi, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(28.dp))
+            Icon(Icons.Rounded.Wifi, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(26.dp))
         }
     }
 }

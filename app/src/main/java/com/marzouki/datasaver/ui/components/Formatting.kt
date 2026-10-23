@@ -1,5 +1,6 @@
 package com.marzouki.datasaver.ui.components
 
+import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
@@ -47,6 +48,16 @@ fun formatUsedOf(usedBytes: Long, limitBytes: Long): String {
 /** Montant en dinars tunisiens, sans zéros inutiles : "27,6 DT", "1,25 DT", "2 DT". */
 fun formatDinars(millimes: Long): String {
     val dinars = DecimalFormat("#,##0.###", DecimalFormatSymbols(Locale.FRANCE)).format(millimes / 1_000.0)
+    return "$dinars${NBSP}DT"
+}
+
+/**
+ * Montant des économies arrondi aux 100 millimes et toujours écrit avec trois décimales :
+ * "87,800 DT" pour 87,790 ou 87,798 DT, "2,000 DT". Les prix gardent [formatDinars] (1,250 DT).
+ */
+fun formatDinarsRounded(millimes: Long): String {
+    val rounded = BigDecimal.valueOf(millimes, 3).setScale(1, RoundingMode.HALF_UP)
+    val dinars = DecimalFormat("#,##0.000", DecimalFormatSymbols(Locale.FRANCE)).format(rounded)
     return "$dinars${NBSP}DT"
 }
 

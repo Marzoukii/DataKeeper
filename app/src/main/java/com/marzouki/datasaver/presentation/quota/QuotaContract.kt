@@ -19,8 +19,10 @@ data class QuotaState(
     /** Cycle en cours (date de remise à zéro, jours restants). */
     val period: MonthPeriod? = null,
     val pricePerGb: PricePerGb? = null,
-    /** Data mobile de chaque jour écoulé du cycle, pour la courbe de prévision. */
+    /** Data mobile décomptée chaque jour écoulé du cycle (recalée sur le solde), pour la courbe de prévision. */
     val dailyMobileBytes: List<Long>? = null,
+    /** Data mobile mesurée chaque jour écoulé du cycle, sans recalage : rythme réel et conso du jour. */
+    val measuredDailyMobileBytes: List<Long>? = null,
     /** Opérateur des données mobiles détecté par la SIM (Ooredoo, Orange, Tunisie Telecom…). */
     val operatorName: String? = null,
 ) {
@@ -28,7 +30,7 @@ data class QuotaState(
 
     val forecast: QuotaForecast?
         get() = if (quota != null && period != null && !dailyMobileBytes.isNullOrEmpty()) {
-            QuotaForecast(quota, period, dailyMobileBytes)
+            QuotaForecast(quota, period, dailyMobileBytes, measuredDailyMobileBytes ?: dailyMobileBytes)
         } else {
             null
         }

@@ -95,7 +95,7 @@ fun SavingsCard(
         )
         Spacer(Modifier.height(6.dp))
         Text(
-            if (pricePerGb != null) formatDinars(pricePerGb.costMillimes(wifiBytes)) else wifiBytes.toReadableSize(),
+            if (pricePerGb != null) formatDinarsRounded(pricePerGb.costMillimes(wifiBytes)) else wifiBytes.toReadableSize(),
             style = MaterialTheme.typography.headlineMedium.numeric().copy(fontSize = 28.sp),
             color = DataColors.success,
             maxLines = 1,
