@@ -1,5 +1,7 @@
 package com.marzouki.datasaver.domain.model
 
+import com.marzouki.datasaver.domain.enums.DownloadState
+
 data class ScheduledDownload(
     val id: String,
     val url: String,
@@ -13,11 +15,6 @@ data class ScheduledDownload(
     /** Taille du fichier, connue une fois le téléchargement démarré. */
     val totalBytes: Long? = null,
 )
-
-enum class DownloadState { WAITING_FOR_WIFI, RUNNING, SUCCEEDED, FAILED, CANCELLED }
-
-/** Quand lancer un téléchargement, toujours sous réserve d'être sur un réseau non facturé. */
-enum class DownloadSchedule { AS_SOON_AS_WIFI, IN_ONE_HOUR, TONIGHT }
 
 /** L'utilisateur n'a pas accordé l'accès aux données d'utilisation (PACKAGE_USAGE_STATS). */
 class UsageAccessDeniedException : Exception("Usage access not granted")

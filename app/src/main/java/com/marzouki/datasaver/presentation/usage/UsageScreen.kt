@@ -54,11 +54,11 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.marzouki.datasaver.R
+import com.marzouki.datasaver.domain.enums.NetworkGeneration
 import com.marzouki.datasaver.domain.model.AppDataUsage
 import com.marzouki.datasaver.domain.model.DataUsage
 import com.marzouki.datasaver.domain.model.DayUsage
 import com.marzouki.datasaver.domain.model.MonthPeriod
-import com.marzouki.datasaver.domain.model.NetworkGeneration
 import com.marzouki.datasaver.presentation.common.CollectEffects
 import com.marzouki.datasaver.presentation.common.UsageAccessRequiredCard
 import com.marzouki.datasaver.presentation.common.openAppDetailsSettings
@@ -204,9 +204,14 @@ private fun androidx.compose.foundation.lazy.LazyListScope.dashboard(
         if (usage.totalBytes == 0L) {
             EmptyUsageCard()
         } else {
+            val operatorMobileBytes = state.operatorMobileBytes
             UsageSplitCard(
                 wifiBytes = usage.wifiBytes,
-                mobileBytes = usage.mobileBytes,
+                mobileBytes = operatorMobileBytes ?: usage.mobileBytes,
+                mobileNote = operatorMobileBytes?.let {
+                    state.operatorName?.let { name -> stringResource(R.string.usage_mobile_from_balance_operator, name) }
+                        ?: stringResource(R.string.usage_mobile_from_balance)
+                },
                 operatorName = state.operatorName,
                 networkLabel = state.networkGeneration?.label,
                 onShowNetwork = if (state.hasPhonePermission) null else onRequestPhonePermission,

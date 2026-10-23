@@ -67,8 +67,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.marzouki.datasaver.R
-import com.marzouki.datasaver.domain.model.DownloadSchedule
-import com.marzouki.datasaver.domain.model.DownloadState
+import com.marzouki.datasaver.domain.enums.DownloadSchedule
+import com.marzouki.datasaver.domain.enums.DownloadState
 import com.marzouki.datasaver.domain.model.ScheduledDownload
 import com.marzouki.datasaver.presentation.common.CollectEffects
 import com.marzouki.datasaver.ui.components.DataKeeperCard

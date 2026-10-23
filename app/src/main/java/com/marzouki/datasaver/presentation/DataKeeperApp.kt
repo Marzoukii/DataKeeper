@@ -3,6 +3,8 @@ package com.marzouki.datasaver.presentation
 import android.os.Build
 import androidx.annotation.StringRes
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -45,10 +47,13 @@ import com.marzouki.datasaver.presentation.common.openUsageAccessSettings
 import com.marzouki.datasaver.presentation.downloads.DownloadsScreen
 import com.marzouki.datasaver.presentation.onboarding.OnboardingEffect
 import com.marzouki.datasaver.presentation.onboarding.OnboardingIntent
+import com.marzouki.datasaver.presentation.onboarding.OnboardingStep
 import com.marzouki.datasaver.presentation.onboarding.OnboardingViewModel
+import com.marzouki.datasaver.presentation.onboarding.PlanSetupScreen
 import com.marzouki.datasaver.presentation.onboarding.UsageAccessScreen
 import com.marzouki.datasaver.presentation.quota.QuotaScreen
 import com.marzouki.datasaver.presentation.usage.UsageScreen
+import com.marzouki.datasaver.presentation.widget.refreshHomeSurfaces
 
 private enum class Destination(val route: String, @param:StringRes val labelRes: Int, val icon: ImageVector) {
     USAGE(AppRoutes.USAGE, R.string.tab_usage, Icons.Rounded.BarChart),
@@ -57,7 +62,8 @@ private enum class Destination(val route: String, @param:StringRes val labelRes:
 }
 
 /**
- * Racine : écran d'accès aux données d'usage tant que la permission manque, sinon l'appli à onglets.
+ * Racine : écran d'accès aux données d'usage tant que la permission manque, puis configuration du
+ * forfait tant qu'il n'est pas saisi, sinon l'appli à onglets.
  * [requestedTab] (route d'[AppRoutes]) ouvre un onglet précis, à la demande d'un widget ou d'une tuile.
  */
 @Composable
@@ -73,6 +79,10 @@ fun DataKeeperApp(
         onboardingViewModel.onIntent(OnboardingIntent.Refresh)
         onPauseOrDispose { }
     }
+    // Forfait saisi, ou SIM changée appli ouverte : widgets et tuiles suivent sans attendre le passage horaire.
+    LaunchedEffect(onboarding.planConfigured) {
+        if (onboarding.planConfigured != null) refreshHomeSurfaces(context)
+    }
     CollectEffects(onboardingViewModel.effects) { effect ->
         when (effect) {
             OnboardingEffect.OpenUsageAccessSettings -> openUsageAccessSettings(context)
@@ -80,17 +90,23 @@ fun DataKeeperApp(
         }
     }
 
-    Crossfade(targetState = onboarding.showUsageAccessScreen, label = "root") { showUsageAccess ->
-        if (showUsageAccess) {
-            UsageAccessScreen(
+    Crossfade(targetState = onboarding.step, label = "root") { step ->
+        when (step) {
+            OnboardingStep.USAGE_ACCESS -> UsageAccessScreen(
                 onOpenSettings = { onboardingViewModel.onIntent(OnboardingIntent.OpenSettingsClicked) },
                 onLater = { onboardingViewModel.onIntent(OnboardingIntent.LaterClicked) },
                 // Les « paramètres restreints » n'existent qu'à partir d'Android 13.
                 showRestrictedHelp = onboarding.settingsOpened && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU,
                 onOpenAppInfo = { onboardingViewModel.onIntent(OnboardingIntent.OpenAppInfoClicked) },
             )
-        } else {
-            MainScaffold(requestedTab, onTabRequestHandled)
+            // Lecture des préférences, quasi instantanée : un fond uni évite d'entrevoir le mauvais écran.
+            OnboardingStep.LOADING -> Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background),
+            )
+            OnboardingStep.PLAN_SETUP -> PlanSetupScreen()
+            OnboardingStep.DONE -> MainScaffold(requestedTab, onTabRequestHandled)
         }
     }
 }

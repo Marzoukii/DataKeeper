@@ -1,15 +1,17 @@
 package com.marzouki.datasaver.domain.repository
 
+import com.marzouki.datasaver.domain.enums.DownloadSchedule
+import com.marzouki.datasaver.domain.enums.NetworkGeneration
 import com.marzouki.datasaver.domain.model.AppDataUsage
 import com.marzouki.datasaver.domain.model.DataQuota
 import com.marzouki.datasaver.domain.model.DataUsage
 import com.marzouki.datasaver.domain.model.DayUsage
-import com.marzouki.datasaver.domain.model.DownloadSchedule
 import com.marzouki.datasaver.domain.model.MobileOperator
 import com.marzouki.datasaver.domain.model.MonthPeriod
-import com.marzouki.datasaver.domain.model.NetworkGeneration
+import com.marzouki.datasaver.domain.model.PlanValidity
 import com.marzouki.datasaver.domain.model.PricePerGb
 import com.marzouki.datasaver.domain.model.QuotaStatus
+import com.marzouki.datasaver.domain.model.SavedPlan
 import com.marzouki.datasaver.domain.model.ScheduledDownload
 import kotlinx.coroutines.flow.Flow
 
@@ -43,6 +45,18 @@ interface QuotaRepository {
     /** Cycle ([MonthPeriod.key]) dont la fin du forfait a déjà été rappelée ; null si jamais. */
     val lastRenewalReminderCycle: Flow<String?>
     suspend fun setLastRenewalReminderCycle(cycleKey: String?)
+    /** Vrai une fois l'écran de configuration du forfait validé ou passé (« pas de forfait »). */
+    val planSetupDone: Flow<Boolean>
+    suspend fun setPlanSetupDone(done: Boolean)
+    /** [com.marzouki.datasaver.domain.model.MobileOperator.key] de la SIM pour laquelle le forfait a été saisi. */
+    val planOperatorKey: Flow<String?>
+    suspend fun setPlanOperatorKey(key: String?)
+    /** Pass en cours (date d'achat et validité) ; null pour un cycle mensuel selon [cycleStartDay]. */
+    val planValidity: Flow<PlanValidity?>
+    suspend fun setPlanValidity(validity: PlanValidity?)
+    /** Forfaits déjà saisis, tous opérateurs confondus, du plus récent au plus ancien. */
+    val savedPlans: Flow<List<SavedPlan>>
+    suspend fun setSavedPlans(plans: List<SavedPlan>)
 }
 
 interface DownloadRepository {
@@ -53,8 +67,11 @@ interface DownloadRepository {
 }
 
 interface OperatorRepository {
-    /** Opérateur de la SIM des données mobiles ; null sans SIM prête. */
+    /** Opérateur de la SIM des données mobiles ; null sans SIM prête ou illisible. */
     fun dataOperator(): MobileOperator?
+
+    /** [dataOperator], relu à chaque changement de SIM (carte changée, SIM des données basculée). */
+    fun observeDataOperator(): Flow<MobileOperator?>
 
     /** Permission « Téléphone » (READ_PHONE_STATE), nécessaire pour connaître la 4G ou la 5G. */
     fun hasPhoneStatePermission(): Boolean

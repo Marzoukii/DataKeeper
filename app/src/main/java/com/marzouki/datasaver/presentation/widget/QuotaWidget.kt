@@ -75,6 +75,10 @@ private data class QuotaWidgetModel(
                     ring, context.getString(R.string.quota_no_value), "",
                     context.getString(R.string.widget_no_access), context.getString(R.string.widget_no_access),
                 )
+                summary.operatorChanged -> QuotaWidgetModel(
+                    ring, context.getString(R.string.quota_no_value), "",
+                    context.getString(R.string.widget_new_sim), context.getString(R.string.widget_new_sim),
+                )
                 status == null -> QuotaWidgetModel(
                     ring, context.getString(R.string.quota_no_value), "",
                     context.getString(R.string.widget_no_quota), context.getString(R.string.widget_no_quota),
