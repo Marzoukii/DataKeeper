@@ -65,6 +65,8 @@ private data class QuotaBarWidgetModel(
             return when {
                 !summary.hasUsageAccess ->
                     QuotaBarWidgetModel(ring, context.getString(R.string.quota_title), context.getString(R.string.widget_no_access), "")
+                summary.operatorChanged ->
+                    QuotaBarWidgetModel(ring, context.getString(R.string.quota_title), context.getString(R.string.widget_new_sim), "")
                 status == null ->
                     QuotaBarWidgetModel(ring, context.getString(R.string.quota_title), context.getString(R.string.widget_no_quota), "")
                 else -> QuotaBarWidgetModel(

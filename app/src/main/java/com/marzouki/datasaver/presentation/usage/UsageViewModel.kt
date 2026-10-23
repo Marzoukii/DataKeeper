@@ -2,7 +2,6 @@ package com.marzouki.datasaver.presentation.usage
 
 import androidx.lifecycle.viewModelScope
 import com.marzouki.datasaver.domain.usecase.GetCurrentPeriodUseCase
-import com.marzouki.datasaver.domain.usecase.GetDataOperatorUseCase
 import com.marzouki.datasaver.domain.usecase.GetDailyUsageUseCase
 import com.marzouki.datasaver.domain.usecase.GetMonthlyUsageUseCase
 import com.marzouki.datasaver.domain.usecase.GetQuotaUsedBytesUseCase
@@ -10,6 +9,7 @@ import com.marzouki.datasaver.domain.usecase.GetTopMobileAppsUseCase
 import com.marzouki.datasaver.domain.usecase.HasPhoneStatePermissionUseCase
 import com.marzouki.datasaver.domain.usecase.HasUsageAccessUseCase
 import com.marzouki.datasaver.domain.usecase.ObserveDataNetworkGenerationUseCase
+import com.marzouki.datasaver.domain.usecase.ObserveDataOperatorUseCase
 import com.marzouki.datasaver.domain.usecase.ObservePricePerGbUseCase
 import com.marzouki.datasaver.domain.usecase.ObserveQuotaUseCase
 import com.marzouki.datasaver.presentation.mvi.MviViewModel
@@ -37,7 +37,7 @@ class UsageViewModel @Inject constructor(
     private val getDailyUsage: GetDailyUsageUseCase,
     private val getTopMobileApps: GetTopMobileAppsUseCase,
     private val getQuotaUsedBytes: GetQuotaUsedBytesUseCase,
-    private val getDataOperator: GetDataOperatorUseCase,
+    observeDataOperator: ObserveDataOperatorUseCase,
     private val hasPhoneStatePermission: HasPhoneStatePermissionUseCase,
     observeDataNetworkGeneration: ObserveDataNetworkGenerationUseCase,
 ) : MviViewModel<UsageState, UsageIntent, UsageEffect>(UsageState()) {
@@ -62,6 +62,10 @@ class UsageViewModel @Inject constructor(
         observePricePerGb()
             .onEach { price -> setState { copy(pricePerGb = price) } }
             .launchIn(viewModelScope)
+        // Suit la SIM des données en direct : carte changée ou data basculée sur l'autre SIM.
+        observeDataOperator()
+            .onEach { operator -> setState { copy(operatorName = operator?.name) } }
+            .launchIn(viewModelScope)
     }
 
     override fun onIntent(intent: UsageIntent) {
@@ -84,8 +88,7 @@ class UsageViewModel @Inject constructor(
         refreshJob?.cancel()
         refreshJob = viewModelScope.launch {
             val period = getCurrentPeriod()
-            // La SIM des données peut changer entre deux visites (double SIM).
-            setState { copy(period = period, operatorName = getDataOperator()?.name) }
+            setState { copy(period = period) }
             // Les lectures sont indépendantes ; seul le total du cycle est indispensable.
             val usage = async { getMonthlyUsage(period) }
             val daily = async { getDailyUsage() }
