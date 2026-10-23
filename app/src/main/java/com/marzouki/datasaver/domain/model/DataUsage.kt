@@ -32,3 +32,16 @@ data class AppDataUsage(
 )
 
 enum class AppKind { APP, SYSTEM, TETHERING, REMOVED }
+
+/** Part du forfait mobile à partir de laquelle une seule appli mérite d'être signalée. */
+const val HEAVY_APP_QUOTA_PERCENT = 50
+
+/**
+ * Première appli du classement ayant consommé à elle seule au moins [HEAVY_APP_QUOTA_PERCENT] % du
+ * forfait mobile : mieux vaut l'ouvrir en Wi-Fi. Les catégories système ne sont pas signalées,
+ * l'utilisateur n'y peut rien. Null sans forfait ou si aucune appli n'atteint le seuil.
+ */
+fun List<AppDataUsage>.heavyAppFor(quota: DataQuota?): AppDataUsage? {
+    if (quota == null) return null
+    return firstOrNull { it.kind == AppKind.APP && it.mobileBytes * 100 >= quota.limitBytes * HEAVY_APP_QUOTA_PERCENT }
+}

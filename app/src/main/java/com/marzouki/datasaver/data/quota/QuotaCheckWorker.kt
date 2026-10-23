@@ -11,6 +11,7 @@ import com.marzouki.datasaver.domain.repository.QuotaMonitorScheduler
 import com.marzouki.datasaver.domain.usecase.CheckQuotaAndAlertUseCase
 import com.marzouki.datasaver.domain.usecase.ClearStaleBalanceUseCase
 import com.marzouki.datasaver.domain.usecase.RemindBalanceRecalibrationUseCase
+import com.marzouki.datasaver.domain.usecase.RemindPlanRenewalUseCase
 import com.marzouki.datasaver.presentation.widget.refreshHomeSurfaces
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -25,7 +26,8 @@ class QuotaCheckWorker @AssistedInject constructor(
     private val checkQuotaAndAlert: CheckQuotaAndAlertUseCase,
     private val clearStaleBalance: ClearStaleBalanceUseCase,
     private val remindBalanceRecalibration: RemindBalanceRecalibrationUseCase,
-) : CoroutineWorker(context, params) {
+    private val remindPlanRenewal: RemindPlanRenewalUseCase,
+): CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result =
         runCatching {
@@ -34,6 +36,8 @@ class QuotaCheckWorker @AssistedInject constructor(
             checkQuotaAndAlert()
             // Rappelle de recaler le solde s'il commence à dater.
             remindBalanceRecalibration()
+            // Deux jours avant la fin du forfait, invite à le recharger.
+            remindPlanRenewal()
             // Profite du passage horaire pour garder widgets et tuiles à jour.
             refreshHomeSurfaces(applicationContext)
         }.fold(onSuccess = { Result.success() }, onFailure = { Result.failure() })

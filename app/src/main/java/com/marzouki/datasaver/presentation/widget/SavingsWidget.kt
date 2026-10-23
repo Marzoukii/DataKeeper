@@ -28,7 +28,7 @@ import androidx.glance.text.Text
 import com.marzouki.datasaver.R
 import com.marzouki.datasaver.domain.model.HomeSummary
 import com.marzouki.datasaver.presentation.AppRoutes
-import com.marzouki.datasaver.ui.components.formatDinars
+import com.marzouki.datasaver.ui.components.formatDinarsRounded
 import com.marzouki.datasaver.ui.components.toReadableSize
 import kotlin.math.roundToInt
 
@@ -54,7 +54,7 @@ private data class SavingsWidgetModel(val value: String, val share: String) {
             val usage = summary.usage
                 ?: return SavingsWidgetModel(context.getString(R.string.quota_no_value), context.getString(R.string.widget_no_access))
             return SavingsWidgetModel(
-                value = summary.pricePerGb?.let { formatDinars(it.costMillimes(usage.wifiBytes)) }
+                value = summary.pricePerGb?.let { formatDinarsRounded(it.costMillimes(usage.wifiBytes)) }
                     ?: usage.wifiBytes.toReadableSize(),
                 share = context.getString(R.string.widget_wifi_share, (usage.wifiShare * 100).roundToInt()),
             )

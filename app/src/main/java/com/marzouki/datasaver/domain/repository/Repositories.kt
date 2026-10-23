@@ -40,6 +40,9 @@ interface QuotaRepository {
     /** Date du dernier rappel « recale ton solde » envoyé ; null si jamais. */
     val balanceReminderAt: Flow<Long?>
     suspend fun setBalanceReminderAt(millis: Long?)
+    /** Cycle ([MonthPeriod.key]) dont la fin du forfait a déjà été rappelée ; null si jamais. */
+    val lastRenewalReminderCycle: Flow<String?>
+    suspend fun setLastRenewalReminderCycle(cycleKey: String?)
 }
 
 interface DownloadRepository {
@@ -76,4 +79,7 @@ interface QuotaAlertNotifier {
 
     /** Invite à re-saisir le solde réel chez l'opérateur, relevé pour la dernière fois à [sinceMillis]. */
     fun notifyBalanceRecalibration(remainingBytes: Long, sinceMillis: Long)
+
+    /** Prévient que le forfait arrive à son terme le [renewalMillis] et qu'il faudra le recharger. */
+    fun notifyPlanRenewal(renewalMillis: Long)
 }
