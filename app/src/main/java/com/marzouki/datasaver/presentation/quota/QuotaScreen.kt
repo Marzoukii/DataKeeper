@@ -56,6 +56,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -63,6 +64,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -113,7 +115,6 @@ import com.marzouki.datasaver.ui.theme.DataColors
 import com.marzouki.datasaver.ui.theme.SpaceGrotesk
 import com.marzouki.datasaver.ui.theme.Spacing
 import com.marzouki.datasaver.ui.theme.numeric
-import java.math.BigDecimal
 import java.util.Calendar
 import kotlin.math.roundToInt
 
@@ -167,7 +168,7 @@ private fun QuotaContent(
     var showCycleDialog by rememberSaveable { mutableStateOf(false) }
     var showPriceDialog by rememberSaveable { mutableStateOf(false) }
     var showBalanceDialog by rememberSaveable { mutableStateOf(false) }
-    val period = state.period ?: MonthPeriod.current(cycleStartDay = state.cycleStartDay)
+    val period = state.displayPeriod
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -217,24 +218,36 @@ private fun QuotaContent(
         )
     }
     if (showCycleDialog) {
-        CycleStartDialog(
-            selected = state.cycleStartDay,
-            onSelect = {
-                onIntent(QuotaIntent.CycleStartDaySelected(it))
+        PlanCycleDialog(
+            initial = PlanCycleInput.of(state.validity, period),
+            onSave = {
+                onIntent(QuotaIntent.PlanCycleSaved(it))
                 showCycleDialog = false
             },
             onDismiss = { showCycleDialog = false },
         )
     }
     if (showPriceDialog) {
-        PricePerGbDialog(
-            current = state.pricePerGb,
-            onSave = {
-                onIntent(QuotaIntent.PricePerGbSaved(it))
-                showPriceDialog = false
-            },
-            onDismiss = { showPriceDialog = false },
-        )
+        val planQuota = state.quota
+        if (planQuota != null) {
+            PlanPriceDialog(
+                quota = planQuota,
+                onSave = {
+                    onIntent(QuotaIntent.PlanPriceSaved(it))
+                    showPriceDialog = false
+                },
+                onDismiss = { showPriceDialog = false },
+            )
+        } else {
+            PricePerGbDialog(
+                current = state.pricePerGb,
+                onSave = {
+                    onIntent(QuotaIntent.PricePerGbSaved(it))
+                    showPriceDialog = false
+                },
+                onDismiss = { showPriceDialog = false },
+            )
+        }
     }
     val quota = state.quota
     if (showBalanceDialog && quota != null) {
@@ -527,7 +540,7 @@ private fun SettingsCard(
     val operator = state.operatorName
     DataKeeperCard(contentPadding = 0.dp) {
         Spacer(Modifier.height(4.dp))
-        val balance = quota?.balanceIn(state.period ?: MonthPeriod.current(cycleStartDay = state.cycleStartDay))
+        val balance = quota?.balanceIn(state.displayPeriod)
         SettingRow(
             icon = Icons.Rounded.SimCard,
             title = if (operator != null) {
@@ -574,14 +587,25 @@ private fun SettingsCard(
             )
         }
         SettingDivider()
+        val validity = state.validity
+        val cyclePeriod = state.displayPeriod
         SettingRow(
             icon = Icons.Rounded.CalendarMonth,
-            title = stringResource(R.string.quota_cycle_title),
-            subtitle = stringResource(
-                R.string.quota_cycle_subtitle,
-                formatDayOrdinal(state.cycleStartDay),
-                formatDayMonth((state.period ?: MonthPeriod.current(cycleStartDay = state.cycleStartDay)).startMillis),
-            ),
+            title = stringResource(if (validity != null) R.string.plan_cycle_title else R.string.quota_cycle_title),
+            subtitle = if (validity != null) {
+                stringResource(
+                    R.string.plan_cycle_pass_subtitle,
+                    pluralStringResource(R.plurals.days, validity.days, validity.days),
+                    formatDayMonth(cyclePeriod.startMillis),
+                    formatDayMonth(cyclePeriod.nextStartMillis),
+                )
+            } else {
+                stringResource(
+                    R.string.quota_cycle_subtitle,
+                    formatDayOrdinal(state.cycleStartDay),
+                    formatDayMonth(cyclePeriod.startMillis),
+                )
+            },
             onClick = onCycleClick,
         ) {
             Icon(
@@ -592,13 +616,21 @@ private fun SettingsCard(
         }
         SettingDivider()
         val price = state.pricePerGb
+        val quota = state.quota
+        val planPrice = quota?.priceMillimes
         SettingRow(
             icon = Icons.Rounded.Payments,
-            title = stringResource(R.string.quota_price_title),
-            subtitle = if (price != null) {
-                stringResource(R.string.quota_price_subtitle, formatDinars(price.millimes.toLong()))
-            } else {
-                stringResource(R.string.quota_price_subtitle_none)
+            title = stringResource(if (quota != null) R.string.quota_plan_price_title else R.string.quota_price_title),
+            subtitle = when {
+                quota != null && planPrice != null && price != null -> stringResource(
+                    R.string.quota_plan_price_subtitle,
+                    formatDinars(planPrice),
+                    quota.limitBytes.toReadableSize(),
+                    formatDinars(price.millimes.toLong()),
+                )
+                quota != null -> stringResource(R.string.quota_plan_price_subtitle_none, quota.limitBytes.toReadableSize())
+                price != null -> stringResource(R.string.quota_price_subtitle, formatDinars(price.millimes.toLong()))
+                else -> stringResource(R.string.quota_price_subtitle_none)
             },
             onClick = onPriceClick,
         ) {
@@ -612,9 +644,69 @@ private fun SettingsCard(
     }
 }
 
+/** Prix payé pour le forfait en cours (28 DT pour 25 Go) ; le prix du Go s'affiche en direct. */
+@Composable
+private fun PlanPriceDialog(quota: DataQuota, onSave: (Long?) -> Unit, onDismiss: () -> Unit) {
+    val current = quota.priceMillimes
+    var input by rememberSaveable { mutableStateOf(current?.let(QuotaViewModel::millimesToInput).orEmpty()) }
+    var error by rememberSaveable { mutableStateOf(false) }
+    val millimes = PricePerGb.parsePlanPrice(input)
+    val perGb = millimes?.let { PricePerGb.ofPlan(it, quota.limitBytes) }
+    val submit = {
+        if (perGb == null) error = true else onSave(millimes)
+    }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.quota_plan_price_title)) },
+        text = {
+            Column {
+                Text(
+                    stringResource(R.string.quota_plan_price_hint, quota.limitBytes.toReadableSize()),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(12.dp))
+                OutlinedTextField(
+                    value = input,
+                    onValueChange = {
+                        input = it
+                        error = false
+                    },
+                    label = { Text(stringResource(R.string.setup_price_input_label)) },
+                    suffix = { Text(stringResource(R.string.unit_dinar)) },
+                    isError = error,
+                    supportingText = when {
+                        error -> {
+                            { Text(stringResource(R.string.setup_price_error)) }
+                        }
+                        perGb != null -> {
+                            { Text(stringResource(R.string.setup_price_per_gb, formatDinars(perGb.millimes.toLong()))) }
+                        }
+                        else -> null
+                    },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { submit() }),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        },
+        confirmButton = { TextButton(onClick = submit) { Text(stringResource(R.string.action_save)) } },
+        dismissButton = {
+            Row {
+                if (current != null) {
+                    TextButton(onClick = { onSave(null) }) { Text(stringResource(R.string.quota_price_remove)) }
+                }
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
+            }
+        },
+    )
+}
+
+/** Sans forfait, il n'y a rien à diviser : on saisit directement le prix d'un Go. */
 @Composable
 private fun PricePerGbDialog(current: PricePerGb?, onSave: (PricePerGb?) -> Unit, onDismiss: () -> Unit) {
-    var input by rememberSaveable { mutableStateOf(current?.let { millimesToInput(it.millimes) }.orEmpty()) }
+    var input by rememberSaveable { mutableStateOf(current?.let { QuotaViewModel.millimesToInput(it.millimes.toLong()) }.orEmpty()) }
     var error by rememberSaveable { mutableStateOf(false) }
     val submit = {
         val price = PricePerGb.parse(input)
@@ -718,10 +810,6 @@ private fun BalanceDialog(
         },
     )
 }
-
-/** 2500 → "2,5", 2000 → "2". */
-private fun millimesToInput(millimes: Int): String =
-    BigDecimal(millimes).movePointLeft(3).stripTrailingZeros().toPlainString().replace('.', ',')
 
 @Composable
 private fun TipBox(onClick: () -> Unit) {
@@ -853,4 +941,19 @@ private fun QuotaContentNoQuotaPreview() {
     PreviewSurface(padded = false) {
         QuotaContent(state = QuotaState(period = PreviewData.period), onIntent = {}, onOpenDownloads = {})
     }
+}
+
+/** Jour d'achat et durée du forfait en cours, comme dans le formulaire du premier lancement. */
+@Composable
+private fun PlanCycleDialog(initial: PlanCycleInput, onSave: (PlanCycleInput) -> Unit, onDismiss: () -> Unit) {
+    var cycle by remember { mutableStateOf(initial) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.plan_cycle_title)) },
+        text = { PlanCycleFields(cycle, onChange = { cycle = it }) },
+        confirmButton = {
+            TextButton(onClick = { onSave(cycle) }, enabled = cycle.isValid) { Text(stringResource(R.string.action_save)) }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } },
+    )
 }

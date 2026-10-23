@@ -204,9 +204,14 @@ private fun androidx.compose.foundation.lazy.LazyListScope.dashboard(
         if (usage.totalBytes == 0L) {
             EmptyUsageCard()
         } else {
+            val operatorMobileBytes = state.operatorMobileBytes
             UsageSplitCard(
                 wifiBytes = usage.wifiBytes,
-                mobileBytes = usage.mobileBytes,
+                mobileBytes = operatorMobileBytes ?: usage.mobileBytes,
+                mobileNote = operatorMobileBytes?.let {
+                    state.operatorName?.let { name -> stringResource(R.string.usage_mobile_from_balance_operator, name) }
+                        ?: stringResource(R.string.usage_mobile_from_balance)
+                },
                 operatorName = state.operatorName,
                 networkLabel = state.networkGeneration?.label,
                 onShowNetwork = if (state.hasPhonePermission) null else onRequestPhonePermission,

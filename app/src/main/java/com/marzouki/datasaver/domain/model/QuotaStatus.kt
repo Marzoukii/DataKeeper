@@ -8,12 +8,20 @@ data class DataQuota(
     val alertEnabled: Boolean = true,
     /** Dernier solde relevé chez l'opérateur ; null pour compter depuis le début du cycle. */
     val balance: OperatorBalance? = null,
+    /**
+     * Prix payé pour ce forfait, en millimes (28 DT pour 25 Go, 4,8 DT pour 1,4 Go) ; null s'il
+     * n'est pas renseigné. Propre au forfait : il ne survit pas à un changement de taille.
+     */
+    val priceMillimes: Long? = null,
 ) {
     init {
         require(limitBytes > 0) { "Le quota doit être positif" }
         require(alertThresholdPercent in 1..100)
         require(balance == null || balance.remainingBytes <= limitBytes) { "Le solde dépasse le forfait" }
     }
+
+    /** [priceMillimes] ramené au Go, pour chiffrer les économies du Wi-Fi. */
+    val pricePerGb: PricePerGb? get() = priceMillimes?.let { PricePerGb.ofPlan(it, limitBytes) }
 
     /** Solde relevé pendant [period] : celui d'un cycle précédent ne vaut plus après la remise à zéro. */
     fun balanceIn(period: MonthPeriod): OperatorBalance? =
