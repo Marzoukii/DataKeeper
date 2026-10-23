@@ -1,8 +1,8 @@
 package com.marzouki.datasaver.presentation.onboarding
 
 import androidx.lifecycle.viewModelScope
+import com.marzouki.datasaver.domain.enums.PlanStatus
 import com.marzouki.datasaver.domain.usecase.HasUsageAccessUseCase
-import com.marzouki.datasaver.domain.model.PlanStatus
 import com.marzouki.datasaver.domain.usecase.ObservePlanStatusUseCase
 import com.marzouki.datasaver.presentation.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel

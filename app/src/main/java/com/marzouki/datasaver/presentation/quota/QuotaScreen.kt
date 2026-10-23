@@ -82,8 +82,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.marzouki.datasaver.R
+import com.marzouki.datasaver.domain.enums.ForecastOutlook
 import com.marzouki.datasaver.domain.model.DataQuota
-import com.marzouki.datasaver.domain.model.ForecastOutlook
 import com.marzouki.datasaver.domain.model.MonthPeriod
 import com.marzouki.datasaver.domain.model.OperatorBalance
 import com.marzouki.datasaver.domain.model.PricePerGb

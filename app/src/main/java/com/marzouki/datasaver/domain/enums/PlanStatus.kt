@@ -1,4 +1,4 @@
-package com.marzouki.datasaver.domain.model
+package com.marzouki.datasaver.domain.enums
 
 /** Où en est la configuration du forfait, qui décide de l'écran affiché à la racine. */
 enum class PlanStatus {

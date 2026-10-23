@@ -1,10 +1,10 @@
 package com.marzouki.datasaver.domain.usecase
 
-import com.marzouki.datasaver.domain.model.CycleOutcome
+import com.marzouki.datasaver.domain.enums.CycleOutcome
+import com.marzouki.datasaver.domain.enums.PlanStatus
 import com.marzouki.datasaver.domain.model.DataQuota
 import com.marzouki.datasaver.domain.model.MonthPeriod
 import com.marzouki.datasaver.domain.model.OperatorBalance
-import com.marzouki.datasaver.domain.model.PlanStatus
 import com.marzouki.datasaver.domain.model.PlanValidity
 import com.marzouki.datasaver.domain.model.PricePerGb
 import com.marzouki.datasaver.domain.model.QuotaStatus

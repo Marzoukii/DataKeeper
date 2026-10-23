@@ -1,5 +1,6 @@
 package com.marzouki.datasaver.domain.model
 
+import com.marzouki.datasaver.domain.enums.CycleOutcome
 import java.math.RoundingMode
 
 /** Prix d'un Go de data mobile en millimes (1 DT = 1 000 millimes), tel que saisi par l'utilisateur. */
@@ -50,14 +51,6 @@ value class PricePerGb(val millimes: Int) {
             return runCatching { dinars.movePointRight(3).setScale(0, RoundingMode.HALF_UP).longValueExact() }.getOrNull()
         }
     }
-}
-
-/** Résultat d'un cycle terminé, comparé au quota actuel. */
-enum class CycleOutcome {
-    WITHIN_QUOTA,
-    EXCEEDED,
-    /** Aucun trafic mesuré : Android n'a plus l'historique, ou l'appli n'avait pas l'accès. */
-    UNKNOWN,
 }
 
 /**

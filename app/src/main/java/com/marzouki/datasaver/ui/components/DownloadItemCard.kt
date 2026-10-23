@@ -32,7 +32,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.marzouki.datasaver.R
-import com.marzouki.datasaver.domain.model.DownloadState
+import com.marzouki.datasaver.domain.enums.DownloadState
 import com.marzouki.datasaver.domain.model.ScheduledDownload
 import com.marzouki.datasaver.ui.theme.DataColors
 import com.marzouki.datasaver.ui.theme.numeric
