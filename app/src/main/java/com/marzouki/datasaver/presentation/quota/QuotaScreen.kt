@@ -473,9 +473,10 @@ private fun SettingsCard(
                 stringResource(R.string.quota_balance_title)
             },
             subtitle = when {
+                // Solde du jour (relevé moins la data mobile consommée depuis), comme sur le tableau de bord.
                 balance != null -> stringResource(
                     R.string.quota_balance_subtitle,
-                    balance.remainingBytes.toReadableSize(),
+                    (state.status?.remainingBytes ?: balance.remainingBytes).toReadableSize(),
                     formatDayMonth(balance.atMillis),
                 )
                 quota == null -> stringResource(R.string.quota_alert_subtitle_no_quota)
