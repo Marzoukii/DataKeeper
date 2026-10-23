@@ -1,7 +1,10 @@
 package com.marzouki.datasaver.data.operator
 
 import android.Manifest
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
 import android.telephony.PhoneStateListener
@@ -15,32 +18,82 @@ import com.marzouki.datasaver.domain.model.MobileOperator
 import com.marzouki.datasaver.domain.model.NetworkGeneration
 import com.marzouki.datasaver.domain.repository.OperatorRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 /**
  * Opérateur et génération de réseau de la SIM choisie pour les données mobiles. Le code MCC/MNC
  * de la SIM se lit sans permission ; la 4G ou la 5G demande READ_PHONE_STATE.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class OperatorRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
 ) : OperatorRepository {
 
-    override fun dataOperator(): MobileOperator? {
+    // Certaines surcouches lèvent une SecurityException sur les SIM : on la traite comme « pas de SIM ».
+    override fun dataOperator(): MobileOperator? = runCatching {
         val telephony = dataTelephony() ?: return null
         if (telephony.simState != TelephonyManager.SIM_STATE_READY) return null
-        return MobileOperator.from(mccMnc = telephony.simOperator, simName = telephony.simOperatorName)
-    }
+        MobileOperator.from(mccMnc = telephony.simOperator, simName = telephony.simOperatorName)
+    }.getOrNull()
+
+    override fun observeDataOperator(): Flow<MobileOperator?> =
+        dataSubscriptionChanges().map { dataOperator() }.distinctUntilChanged()
 
     override fun hasPhoneStatePermission(): Boolean =
         ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED
 
-    override fun observeDataNetworkGeneration(): Flow<NetworkGeneration?> {
-        val telephony = dataTelephony()
+    /** Se réabonne à l'autre SIM quand l'utilisateur y bascule les données mobiles. */
+    override fun observeDataNetworkGeneration(): Flow<NetworkGeneration?> =
+        dataSubscriptionChanges()
+            .map { SubscriptionManager.getDefaultDataSubscriptionId() }
+            .distinctUntilChanged()
+            .flatMapLatest { generationFlow(dataTelephony()) }
+
+    /**
+     * Émet à l'abonnement puis à chaque changement de SIM : carte insérée, retirée ou prête, SIM des
+     * données choisie dans les réglages (double SIM). Aucune permission n'est nécessaire.
+     */
+    private fun dataSubscriptionChanges(): Flow<Unit> = callbackFlow {
+        trySend(Unit)
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                trySend(Unit)
+            }
+        }
+        ContextCompat.registerReceiver(
+            context,
+            receiver,
+            IntentFilter(ACTION_DEFAULT_DATA_SUBSCRIPTION_CHANGED),
+            // Envoyée par le processus téléphonie, pas par le système : non exporté, on la raterait.
+            // Diffusion protégée, aucune autre appli ne peut l'imiter.
+            ContextCompat.RECEIVER_EXPORTED,
+        )
+        val subscriptions = context.getSystemService(SubscriptionManager::class.java)
+        val listener = object : SubscriptionManager.OnSubscriptionsChangedListener() {
+            override fun onSubscriptionsChanged() {
+                trySend(Unit)
+            }
+        }
+        subscriptions?.addOnSubscriptionsChangedListener(listener)
+        awaitClose {
+            context.unregisterReceiver(receiver)
+            subscriptions?.removeOnSubscriptionsChangedListener(listener)
+        }
+    }
+        // Avant Android 11, l'écouteur s'attache au Looper du fil qui le crée.
+        .flowOn(Dispatchers.Main)
+
+    private fun generationFlow(telephony: TelephonyManager?): Flow<NetworkGeneration?> {
         if (telephony == null || !hasPhoneStatePermission()) return flowOf(null)
         return when {
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> displayInfoFlow(telephony)
@@ -111,6 +164,11 @@ class OperatorRepositoryImpl @Inject constructor(
             -> NetworkGeneration.G5
             else -> generationOf(info.networkType)
         }
+
+    private companion object {
+        /** Diffusion système, absente du SDK public, quand la SIM des données mobiles change. */
+        const val ACTION_DEFAULT_DATA_SUBSCRIPTION_CHANGED = "android.intent.action.ACTION_DEFAULT_DATA_SUBSCRIPTION_CHANGED"
+    }
 }
 
 /** Type de réseau de [TelephonyManager] → génération ; null si inconnu ou en appel Wi-Fi (IWLAN). */

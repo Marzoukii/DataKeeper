@@ -5,15 +5,17 @@ import com.marzouki.datasaver.R
 import com.marzouki.datasaver.domain.model.alignDailyToUsed
 import com.marzouki.datasaver.domain.usecase.GetCurrentPeriodUseCase
 import com.marzouki.datasaver.domain.usecase.GetDailyUsageUseCase
-import com.marzouki.datasaver.domain.usecase.GetDataOperatorUseCase
 import com.marzouki.datasaver.domain.usecase.GetMonthlyUsageUseCase
 import com.marzouki.datasaver.domain.usecase.GetQuotaUsedBytesUseCase
 import com.marzouki.datasaver.domain.usecase.HasUsageAccessUseCase
 import com.marzouki.datasaver.domain.usecase.ObserveCycleStartDayUseCase
+import com.marzouki.datasaver.domain.usecase.ObserveDataOperatorUseCase
+import com.marzouki.datasaver.domain.usecase.ObservePlanValidityUseCase
 import com.marzouki.datasaver.domain.usecase.ObservePricePerGbUseCase
 import com.marzouki.datasaver.domain.usecase.ObserveQuotaUseCase
-import com.marzouki.datasaver.domain.usecase.SetCycleStartDayUseCase
 import com.marzouki.datasaver.domain.usecase.SetOperatorBalanceUseCase
+import com.marzouki.datasaver.domain.usecase.SetPlanCycleUseCase
+import com.marzouki.datasaver.domain.usecase.SetPlanPriceUseCase
 import com.marzouki.datasaver.domain.usecase.SetPricePerGbUseCase
 import com.marzouki.datasaver.domain.usecase.SetQuotaAlertEnabledUseCase
 import com.marzouki.datasaver.domain.usecase.SetQuotaUseCase
@@ -34,16 +36,18 @@ class QuotaViewModel @Inject constructor(
     observeCycleStartDay: ObserveCycleStartDayUseCase,
     observePricePerGb: ObservePricePerGbUseCase,
     private val setPricePerGb: SetPricePerGbUseCase,
+    private val setPlanPrice: SetPlanPriceUseCase,
     private val setQuota: SetQuotaUseCase,
     private val setQuotaAlertEnabled: SetQuotaAlertEnabledUseCase,
-    private val setCycleStartDay: SetCycleStartDayUseCase,
+    private val setPlanCycle: SetPlanCycleUseCase,
+    observePlanValidity: ObservePlanValidityUseCase,
     private val hasUsageAccess: HasUsageAccessUseCase,
     private val getCurrentPeriod: GetCurrentPeriodUseCase,
     private val getMonthlyUsage: GetMonthlyUsageUseCase,
     private val getDailyUsage: GetDailyUsageUseCase,
     private val getQuotaUsedBytes: GetQuotaUsedBytesUseCase,
     private val setOperatorBalance: SetOperatorBalanceUseCase,
-    private val getDataOperator: GetDataOperatorUseCase,
+    observeDataOperator: ObserveDataOperatorUseCase,
 ): MviViewModel<QuotaState, QuotaIntent, QuotaEffect>(QuotaState()) {
 
     init {
@@ -63,8 +67,18 @@ class QuotaViewModel @Inject constructor(
             .drop(1)
             .onEach { refreshUsage() }
             .launchIn(viewModelScope)
+        observePlanValidity()
+            .onEach { validity -> setState { copy(validity = validity) } }
+            // Comme le jour du cycle : un pass rallongé ou racheté change le cycle à relire.
+            .drop(1)
+            .onEach { refreshUsage() }
+            .launchIn(viewModelScope)
         observePricePerGb()
             .onEach { price -> setState { copy(pricePerGb = price) } }
+            .launchIn(viewModelScope)
+        // Suit la SIM des données en direct : carte changée ou data basculée sur l'autre SIM.
+        observeDataOperator()
+            .onEach { operator -> setState { copy(operatorName = operator?.name) } }
             .launchIn(viewModelScope)
     }
 
@@ -84,7 +98,9 @@ class QuotaViewModel @Inject constructor(
                 setQuotaAlertEnabled(intent.enabled)
                 if (intent.enabled) sendEffect(QuotaEffect.RequestNotificationPermission)
             }
-            is QuotaIntent.CycleStartDaySelected -> viewModelScope.launch { setCycleStartDay(intent.day) }
+            is QuotaIntent.PlanCycleSaved -> viewModelScope.launch {
+                setPlanCycle(intent.cycle.purchaseMillis, intent.cycle.validityDays)
+            }
             is QuotaIntent.BalanceSaved -> viewModelScope.launch {
                 setOperatorBalance(intent.remainingBytes)
                 sendEffect(
@@ -97,14 +113,17 @@ class QuotaViewModel @Inject constructor(
                 setPricePerGb(intent.price)
                 if (intent.price != null) sendEffect(QuotaEffect.ShowMessage(R.string.quota_price_saved))
             }
+            is QuotaIntent.PlanPriceSaved -> viewModelScope.launch {
+                setPlanPrice(intent.priceMillimes)
+                if (intent.priceMillimes != null) sendEffect(QuotaEffect.ShowMessage(R.string.quota_plan_price_saved))
+            }
         }
     }
 
     private fun refreshUsage() {
         viewModelScope.launch {
             val period = getCurrentPeriod()
-            // La SIM des données peut changer entre deux visites (double SIM).
-            setState { copy(period = period, operatorName = getDataOperator()?.name) }
+            setState { copy(period = period) }
             if (!hasUsageAccess()) {
                 setState { copy(hasUsageAccess = false, usedMobileBytes = null, dailyMobileBytes = null, measuredDailyMobileBytes = null) }
                 return@launch
@@ -162,5 +181,9 @@ class QuotaViewModel @Inject constructor(
 
         fun bytesToInput(bytes: Long): String =
             BigDecimal(bytes).divide(BigDecimal(BYTES_PER_GB)).stripTrailingZeros().toPlainString()
+
+        /** 28 500 millimes → "28,5", tel qu'on le retaperait dans un champ en DT. */
+        fun millimesToInput(millimes: Long): String =
+            BigDecimal(millimes).movePointLeft(3).stripTrailingZeros().toPlainString().replace('.', ',')
     }
 }

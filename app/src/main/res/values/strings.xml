@@ -35,6 +35,55 @@
     <string name="onboarding_restricted_missing">Toujours pas de ⋮ ? Désactive le Blocage automatique (Samsung) ou la Protection avancée dans Sécurité et confidentialité.</string>
     <string name="onboarding_restricted_button">Ouvrir les infos de l’appli</string>
 
+    <!-- Configuration du forfait -->
+    <string name="setup_title">Configure ton forfait</string>
+    <string name="setup_title_operator">Configure ton forfait %1$s</string>
+    <string name="setup_body">Ton tableau de bord partira de ces chiffres : décompte, prévision et alertes suivront ton vrai forfait.</string>
+    <string name="setup_body_operator_changed">Nouvelle SIM pour les données mobiles : l’ancien forfait ne s’applique plus. Saisis celui de cette carte.</string>
+    <string name="setup_plan_label">Taille du forfait</string>
+    <string name="setup_plan_input">Forfait mobile</string>
+    <string name="setup_plan_placeholder">ex. 25</string>
+    <string name="setup_remaining_label">Ce qu’il te reste aujourd’hui</string>
+    <string name="setup_remaining_placeholder">ex. 19</string>
+    <string name="setup_remaining_hint">Le solde annoncé par ton opérateur. Laisse vide si ton forfait vient de se renouveler.</string>
+    <string name="setup_price_label">Prix du forfait (facultatif)</string>
+    <string name="setup_price_input_label">Prix payé pour ce forfait</string>
+    <string name="setup_price_placeholder">ex. 28</string>
+    <string name="setup_price_hint">Sert à chiffrer ce que le Wi‑Fi te fait économiser.</string>
+    <string name="setup_price_per_gb">Soit %1$s le Go</string>
+    <string name="setup_price_error">Prix trop bas ou trop élevé pour ce forfait</string>
+    <string name="setup_submit">Afficher mon tableau de bord</string>
+    <string name="setup_skip">Je n’ai pas de forfait mobile</string>
+    <string name="setup_saved_plans_label">Tes forfaits %1$s</string>
+    <string name="setup_saved_plans_label_generic">Tes forfaits</string>
+    <string name="setup_saved_plans_hint">Touche un forfait déjà utilisé pour tout remplir. Tu peux ajuster le prix s’il a changé.</string>
+    <string name="setup_saved_plan_forget">Oublier ce forfait</string>
+    <string name="setup_validity_label">Durée du forfait</string>
+
+    <!-- Cycle du forfait : jour d'achat et validité -->
+    <string name="plan_cycle_purchase_title">Acheté le %1$s</string>
+    <string name="plan_cycle_purchase_subtitle">Indique combien de jours il est valable</string>
+    <string name="plan_cycle_purchase_choose">Jour d’achat du forfait</string>
+    <string name="plan_cycle_pass_summary">Expire le %1$s · touche pour changer la date d’achat</string>
+    <string name="plan_cycle_monthly_summary">Repart le %1$s de chaque mois · prochain le %2$s</string>
+    <string name="plan_cycle_monthly_chip">Chaque mois</string>
+    <string name="plan_cycle_validity_label">Valable</string>
+    <string name="plan_cycle_validity_unit">jours</string>
+    <string name="plan_cycle_validity_hint">La durée annoncée par l’opérateur, ex. « Valable 30 jours ».</string>
+    <string name="plan_cycle_validity_error">Saisis une durée entre 1 jour et %1$s</string>
+    <plurals name="plan_cycle_days_chip">
+        <item quantity="one">%d jour</item>
+        <item quantity="many">%d jours</item>
+        <item quantity="other">%d jours</item>
+    </plurals>
+    <plurals name="plan_cycle_validity_short">
+        <item quantity="one">%d j</item>
+        <item quantity="many">%d j</item>
+        <item quantity="other">%d j</item>
+    </plurals>
+    <string name="plan_cycle_title">Durée du forfait</string>
+    <string name="plan_cycle_pass_subtitle">Valable %1$s depuis le %2$s · expire le %3$s</string>
+
     <string name="usage_access_title">Accès aux données d’usage requis</string>
     <string name="usage_access_body">Sans cet accès, DataKeeper ne peut pas comparer ton Wi‑Fi et tes données mobiles. Rien ne quitte ton téléphone.</string>
     <string name="usage_access_button">Ouvrir les paramètres</string>
@@ -50,6 +99,8 @@
     <string name="usage_wifi_all_networks">Tous les réseaux</string>
     <string name="usage_show_network">Voir si tu es en 4G ou 5G</string>
     <string name="usage_share_of_total">%1$d %% du total</string>
+    <string name="usage_mobile_from_balance_operator">selon ton solde %1$s</string>
+    <string name="usage_mobile_from_balance">selon ton solde opérateur</string>
     <string name="usage_last_7_days">7 derniers jours</string>
     <string name="usage_day_description">%1$s : %2$s en Wi‑Fi, %3$s en mobile</string>
     <string name="usage_top_apps_title">Applis les plus gourmandes en mobile</string>
@@ -110,18 +161,13 @@
     <string name="quota_alert_subtitle_no_quota">Choisis d’abord ton forfait</string>
     <string name="quota_cycle_title">Début du cycle</string>
     <string name="quota_cycle_subtitle">Le %1$s de chaque mois · cycle en cours depuis le %2$s</string>
-    <string name="quota_cycle_first">1er</string>
     <string name="quota_cycle_choose">Choisir le jour de début du cycle</string>
-    <string name="quota_cycle_hint">Touche la date où ton forfait repart à zéro. La plage surlignée est ton cycle en cours.</string>
-    <string name="quota_cycle_range">Du %1$s au %2$s</string>
-    <string name="quota_cycle_reset">%1$s · remise à zéro le %2$s</string>
-    <string name="quota_cycle_max_day">Les 29, 30 et 31 manquent certains mois : choisis au plus tard le 28.</string>
-    <string name="quota_cycle_previous_month">Mois précédent</string>
-    <string name="quota_cycle_next_month">Mois suivant</string>
-    <string name="quota_cycle_day_start">début du cycle</string>
-    <string name="quota_cycle_day_reset">prochaine remise à zéro</string>
-    <string name="quota_cycle_day_today">aujourd’hui</string>
     <string name="quota_price_title">Prix du Go mobile</string>
+    <string name="quota_plan_price_title">Prix du forfait</string>
+    <string name="quota_plan_price_subtitle">%1$s pour %2$s · soit %3$s le Go</string>
+    <string name="quota_plan_price_hint">Ce que tu paies pour ton forfait de %1$s. Le prix du Go en est déduit pour chiffrer tes économies.</string>
+    <string name="quota_plan_price_subtitle_none">Indique ce que coûte ton forfait de %1$s pour chiffrer tes économies</string>
+    <string name="quota_plan_price_saved">Prix du forfait enregistré</string>
     <string name="quota_price_subtitle">%1$s le Go · sert à chiffrer tes économies</string>
     <string name="quota_price_subtitle_none">Pour chiffrer ce que le Wi‑Fi te fait économiser</string>
     <string name="quota_price_choose">Indiquer le prix du Go</string>
@@ -228,11 +274,13 @@
     <string name="widget_quota_exceeded_description">Quota mobile dépassé de %1$s</string>
     <string name="widget_no_access">Ouvre DataKeeper pour autoriser l’accès</string>
     <string name="widget_no_quota">Définis ton quota</string>
+    <string name="widget_new_sim">Nouvelle SIM : saisis ton forfait</string>
     <string name="widget_saved_this_month">Économisé ce mois</string>
     <string name="widget_wifi_share">%1$d %% en Wi‑Fi</string>
     <string name="widget_used_of_mobile">%1$s mobiles</string>
     <string name="widget_projection">Fin de mois estimée : %1$s</string>
     <string name="tile_no_access">Accès requis</string>
+    <string name="tile_new_sim">Nouvelle SIM</string>
     <string name="tile_downloads_none">Rien en attente</string>
     <plurals name="tile_downloads_pending">
         <item quantity="one">%d en attente</item>

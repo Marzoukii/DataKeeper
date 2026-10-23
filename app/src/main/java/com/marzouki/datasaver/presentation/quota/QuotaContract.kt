@@ -3,6 +3,7 @@ package com.marzouki.datasaver.presentation.quota
 import androidx.annotation.StringRes
 import com.marzouki.datasaver.domain.model.DataQuota
 import com.marzouki.datasaver.domain.model.MonthPeriod
+import com.marzouki.datasaver.domain.model.PlanValidity
 import com.marzouki.datasaver.domain.model.PricePerGb
 import com.marzouki.datasaver.domain.model.QuotaForecast
 import com.marzouki.datasaver.domain.model.QuotaStatus
@@ -16,6 +17,8 @@ data class QuotaState(
     val inputError: Boolean = false,
     /** Jour du mois où le forfait repart à zéro. */
     val cycleStartDay: Int = 1,
+    /** Pass en cours (achat + validité) ; null pour un cycle mensuel selon [cycleStartDay]. */
+    val validity: PlanValidity? = null,
     /** Cycle en cours (date de remise à zéro, jours restants). */
     val period: MonthPeriod? = null,
     val pricePerGb: PricePerGb? = null,
@@ -27,6 +30,10 @@ data class QuotaState(
     val operatorName: String? = null,
 ) {
     val status: QuotaStatus? get() = if (quota != null && usedMobileBytes != null) QuotaStatus(quota, usedMobileBytes) else null
+
+    /** [period] une fois lu ; avant, celui qu'annoncent les réglages (pass ou cycle mensuel). */
+    val displayPeriod: MonthPeriod
+        get() = period ?: validity?.periodAt(System.currentTimeMillis()) ?: MonthPeriod.current(cycleStartDay = cycleStartDay)
 
     val forecast: QuotaForecast?
         get() = if (quota != null && period != null && !dailyMobileBytes.isNullOrEmpty()) {
@@ -44,9 +51,12 @@ sealed interface QuotaIntent {
     data object RemoveQuota : QuotaIntent
     data object GrantAccessClicked : QuotaIntent
     data class AlertToggled(val enabled: Boolean) : QuotaIntent
-    data class CycleStartDaySelected(val day: Int) : QuotaIntent
-    /** Null efface le prix. */
+    /** Jour d'achat et validité du forfait, ou renouvellement chaque mois. */
+    data class PlanCycleSaved(val cycle: PlanCycleInput) : QuotaIntent
+    /** Sans forfait : prix d'un Go saisi directement. Null efface le prix. */
     data class PricePerGbSaved(val price: PricePerGb?) : QuotaIntent
+    /** Prix payé pour le forfait en cours, en millimes. Null efface le prix. */
+    data class PlanPriceSaved(val priceMillimes: Long?) : QuotaIntent
     /** Data restante saisie par l'utilisateur ; null revient au décompte depuis le début du cycle. */
     data class BalanceSaved(val remainingBytes: Long?) : QuotaIntent
 }
