@@ -28,8 +28,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import com.marzouki.datasaver.R
+import com.marzouki.datasaver.domain.enums.AppKind
 import com.marzouki.datasaver.domain.model.AppDataUsage
-import com.marzouki.datasaver.domain.model.AppKind
 import com.marzouki.datasaver.ui.theme.DataColors
 import com.marzouki.datasaver.ui.theme.numeric
 

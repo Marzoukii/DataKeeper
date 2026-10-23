@@ -2,14 +2,15 @@ package com.marzouki.datasaver.domain
 
 import android.telephony.TelephonyManager
 import com.marzouki.datasaver.data.operator.generationOf
+import com.marzouki.datasaver.domain.enums.CycleOutcome
+import com.marzouki.datasaver.domain.enums.NetworkGeneration
+import com.marzouki.datasaver.domain.enums.TunisianOperator
 import com.marzouki.datasaver.domain.model.AppDataUsage
-import com.marzouki.datasaver.domain.model.CycleOutcome
 import com.marzouki.datasaver.domain.model.DataQuota
 import com.marzouki.datasaver.domain.model.DataUsage
 import com.marzouki.datasaver.domain.model.DayUsage
 import com.marzouki.datasaver.domain.model.MobileOperator
 import com.marzouki.datasaver.domain.model.MonthPeriod
-import com.marzouki.datasaver.domain.model.NetworkGeneration
 import com.marzouki.datasaver.domain.model.OperatorBalance
 import com.marzouki.datasaver.domain.model.PlanValidity
 import com.marzouki.datasaver.domain.model.PricePerGb
@@ -128,6 +129,8 @@ class SavingsTest {
         assertEquals("Orange", MobileOperator.from("60501", null)?.name)
         assertEquals("Free", MobileOperator.from("20815", "Free")?.name)
         assertNull(MobileOperator.from("", " "))
+        assertEquals(TunisianOperator.OOREDOO, MobileOperator.from("60503", null)?.tunisian)
+        assertNull(MobileOperator.from("20815", "Free")?.tunisian)
     }
 
     @Test

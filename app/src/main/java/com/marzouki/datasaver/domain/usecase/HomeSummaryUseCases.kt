@@ -1,8 +1,8 @@
 package com.marzouki.datasaver.domain.usecase
 
-import com.marzouki.datasaver.domain.model.DownloadState
+import com.marzouki.datasaver.domain.enums.DownloadState
+import com.marzouki.datasaver.domain.enums.PlanStatus
 import com.marzouki.datasaver.domain.model.HomeSummary
-import com.marzouki.datasaver.domain.model.PlanStatus
 import com.marzouki.datasaver.domain.repository.DownloadRepository
 import com.marzouki.datasaver.domain.repository.QuotaRepository
 import com.marzouki.datasaver.domain.repository.UsageRepository

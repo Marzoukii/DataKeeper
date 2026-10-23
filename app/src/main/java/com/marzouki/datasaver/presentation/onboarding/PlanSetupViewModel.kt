@@ -1,7 +1,7 @@
 package com.marzouki.datasaver.presentation.onboarding
 
 import androidx.lifecycle.viewModelScope
-import com.marzouki.datasaver.domain.model.PlanStatus
+import com.marzouki.datasaver.domain.enums.PlanStatus
 import com.marzouki.datasaver.domain.usecase.CompletePlanSetupUseCase
 import com.marzouki.datasaver.domain.usecase.ForgetSavedPlanUseCase
 import com.marzouki.datasaver.domain.usecase.ObserveDataOperatorUseCase
