@@ -23,7 +23,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.DataSaverOn
 import androidx.compose.material.icons.rounded.DeleteSweep
+import androidx.compose.material.icons.rounded.HighQuality
+import androidx.compose.material.icons.rounded.Photo
+import androidx.compose.material.icons.rounded.PlayCircle
+import androidx.compose.material.icons.rounded.SystemUpdate
 import androidx.compose.material.icons.rounded.Wifi
 import androidx.compose.material.icons.rounded.WifiOff
 import androidx.compose.material3.Button
@@ -52,6 +57,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -192,6 +198,7 @@ private fun DownloadsContent(
                     modifier = Modifier.animateItem(),
                 )
             }
+            item { SavingTipsCard(Modifier.padding(top = 8.dp)) }
         }
 
         ExtendedFloatingActionButton(
@@ -277,6 +284,55 @@ private fun WifiStatusCard(
                     containerColor = content.copy(alpha = 0.16f),
                     contentColor = content,
                 )
+            }
+        }
+    }
+}
+
+/** Réglage à changer dans une appli ou dans Android pour moins consommer en mobile. */
+private data class SavingTip(val icon: ImageVector, val title: Int, val body: Int)
+
+private val SavingTips = listOf(
+    SavingTip(Icons.Rounded.PlayCircle, R.string.tip_autoplay_title, R.string.tip_autoplay_body),
+    SavingTip(Icons.Rounded.HighQuality, R.string.tip_video_quality_title, R.string.tip_video_quality_body),
+    SavingTip(Icons.Rounded.Photo, R.string.tip_media_download_title, R.string.tip_media_download_body),
+    SavingTip(Icons.Rounded.SystemUpdate, R.string.tip_updates_title, R.string.tip_updates_body),
+    SavingTip(Icons.Rounded.DataSaverOn, R.string.tip_data_saver_title, R.string.tip_data_saver_body),
+)
+
+/** Astuces pour économiser la data mobile, sous la liste des téléchargements. */
+@Composable
+private fun SavingTipsCard(modifier: Modifier = Modifier) {
+    DataKeeperCard(modifier = modifier) {
+        Text(stringResource(R.string.tips_title), style = MaterialTheme.typography.titleMedium)
+        Spacer(Modifier.height(12.dp))
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            SavingTips.forEach { tip ->
+                Row {
+                    Box(
+                        Modifier
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.secondaryContainer),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            tip.icon,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = Modifier.size(20.dp),
+                        )
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(stringResource(tip.title), style = MaterialTheme.typography.titleSmall)
+                        Text(
+                            stringResource(tip.body),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
             }
         }
     }

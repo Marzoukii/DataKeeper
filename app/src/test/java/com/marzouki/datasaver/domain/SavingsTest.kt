@@ -15,6 +15,7 @@ import com.marzouki.datasaver.domain.repository.QuotaRepository
 import com.marzouki.datasaver.domain.repository.UsageRepository
 import com.marzouki.datasaver.domain.usecase.GetQuotaStreakUseCase
 import com.marzouki.datasaver.ui.components.formatDinars
+import com.marzouki.datasaver.ui.components.formatDinarsRounded
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -44,6 +45,14 @@ class SavingsTest {
         assertEquals("27,6 DT", formatDinars(27_600))
         assertEquals("1,25 DT", formatDinars(1_250))
         assertEquals("2 DT", formatDinars(2_000))
+    }
+
+    @Test
+    fun `savings are rounded to 100 millimes with three decimals`() {
+        assertEquals("87,800 DT", formatDinarsRounded(87_790))
+        assertEquals("87,800 DT", formatDinarsRounded(87_798))
+        assertEquals("85,700 DT", formatDinarsRounded(85_672))
+        assertEquals("2,000 DT", formatDinarsRounded(2_000))
     }
 
     @Test
@@ -108,6 +117,8 @@ class SavingsTest {
         override suspend fun setPricePerGb(price: PricePerGb?) { pricePerGb.value = price }
         override val balanceReminderAt = MutableStateFlow<Long?>(null)
         override suspend fun setBalanceReminderAt(millis: Long?) { balanceReminderAt.value = millis }
+        override val lastRenewalReminderCycle = MutableStateFlow<String?>(null)
+        override suspend fun setLastRenewalReminderCycle(cycleKey: String?) { lastRenewalReminderCycle.value = cycleKey }
     }
 
     /** Data mobile par cycle (clé du cycle) ; un cycle absent n'a aucun trafic. */

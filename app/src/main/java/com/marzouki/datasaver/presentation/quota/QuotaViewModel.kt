@@ -106,7 +106,7 @@ class QuotaViewModel @Inject constructor(
             // La SIM des données peut changer entre deux visites (double SIM).
             setState { copy(period = period, operatorName = getDataOperator()?.name) }
             if (!hasUsageAccess()) {
-                setState { copy(hasUsageAccess = false, usedMobileBytes = null, dailyMobileBytes = null) }
+                setState { copy(hasUsageAccess = false, usedMobileBytes = null, dailyMobileBytes = null, measuredDailyMobileBytes = null) }
                 return@launch
             }
             setState { copy(hasUsageAccess = true) }
@@ -124,7 +124,7 @@ class QuotaViewModel @Inject constructor(
                 } else {
                     daily
                 }
-                setState { copy(dailyMobileBytes = aligned) }
+                setState { copy(dailyMobileBytes = aligned, measuredDailyMobileBytes = daily) }
             }
         }
     }

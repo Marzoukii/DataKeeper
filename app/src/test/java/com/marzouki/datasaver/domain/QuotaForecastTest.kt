@@ -32,8 +32,8 @@ class QuotaForecastTest {
     fun `tight between the alert threshold and the quota, advice keeps a 5 percent margin`() {
         val forecast = forecast(160)
         assertEquals(ForecastOutlook.TIGHT, forecast.outlook)
-        // (4 750 Mo - 3 200 Mo) / 11 jours.
-        assertEquals(1_550 * mb / 11, forecast.safeDailyBytes)
+        // (4 750 Mo - 3 040 Mo consommés avant aujourd'hui) / 12 jours, aujourd'hui compris.
+        assertEquals(1_710 * mb / 12, forecast.safeDailyBytes)
     }
 
     @Test
@@ -45,8 +45,9 @@ class QuotaForecastTest {
     fun `over quota when the projection exceeds the plan, advice just keeps within it`() {
         val forecast = forecast(200)
         assertEquals(ForecastOutlook.OVER_QUOTA, forecast.outlook)
-        // (5 000 Mo - 4 000 Mo) / 11 jours.
-        assertEquals(1_000 * mb / 11, forecast.safeDailyBytes)
+        // (5 000 Mo - 3 800 Mo consommés avant aujourd'hui) / 12 jours, comme le budget du jour.
+        assertEquals(100 * mb, forecast.safeDailyBytes)
+        assertEquals(100 * mb, forecast.dailyBudgetBytes)
     }
 
     @Test
@@ -54,6 +55,26 @@ class QuotaForecastTest {
         val forecast = forecast(260)
         assertEquals(ForecastOutlook.EXCEEDED, forecast.outlook)
         assertEquals(0L, forecast.safeDailyBytes)
+    }
+
+    @Test
+    fun `a recalibrated balance is not extrapolated as a consumption rate`() {
+        // Cycle du 21 oct. au 20 nov., 3ᵉ jour : forfait de 25 Go recalé à 16 Go restants, donc
+        // 9 Go décomptés dont 8 Go partis avant le relevé, et 1,5 Go réellement mesuré en 3 jours.
+        val now = Calendar.getInstance().apply { set(2026, Calendar.OCTOBER, 23, 9, 55) }.timeInMillis
+        val cycle = MonthPeriod.current(now, cycleStartDay = 21)
+        val forecast = QuotaForecast(
+            DataQuota(25_000 * mb),
+            cycle,
+            dailyMobileBytes = listOf(8_000 * mb, 600 * mb, 400 * mb),
+            measuredDailyBytes = listOf(500 * mb, 600 * mb, 400 * mb),
+        )
+        // 9 Go + 500 Mo/jour × 28 jours = 23 Go, et non 9 Go × 31 / 3 = 93 Go.
+        assertEquals(23_000 * mb, forecast.projectedBytes)
+        assertEquals(ForecastOutlook.TIGHT, forecast.outlook)
+        // Ce matin il restait 25 - 8,6 = 16,4 Go pour 29 jours, aujourd'hui compris.
+        assertEquals(400 * mb, forecast.todayBytes)
+        assertEquals(16_400 * mb / 29, forecast.dailyBudgetBytes)
     }
 
     @Test
