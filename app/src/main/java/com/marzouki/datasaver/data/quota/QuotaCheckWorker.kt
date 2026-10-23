@@ -7,7 +7,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import com.marzouki.datasaver.domain.model.PlanStatus
+import com.marzouki.datasaver.domain.enums.PlanStatus
 import com.marzouki.datasaver.domain.repository.QuotaMonitorScheduler
 import com.marzouki.datasaver.domain.usecase.CheckQuotaAndAlertUseCase
 import com.marzouki.datasaver.domain.usecase.ClearStaleBalanceUseCase

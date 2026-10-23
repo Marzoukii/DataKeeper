@@ -1,5 +1,6 @@
 package com.marzouki.datasaver.domain.model
 
+import com.marzouki.datasaver.domain.enums.ForecastOutlook
 import kotlin.math.roundToLong
 
 /**
@@ -107,18 +108,4 @@ fun alignDailyToUsed(dailyBytes: List<Long>, usedBytes: Long, fromDayIndex: Int)
         rounded.dropLast(1) + (beforeTarget - rounded.dropLast(1).sum()).coerceAtLeast(0)
     }
     return scaled + after
-}
-
-enum class ForecastOutlook {
-    /** Fin de cycle sous le seuil d'alerte. */
-    COMFORTABLE,
-
-    /** Fin de cycle entre le seuil d'alerte et le forfait. */
-    TIGHT,
-
-    /** Le forfait sera dépassé avant la fin du cycle. */
-    OVER_QUOTA,
-
-    /** Le forfait est déjà dépassé. */
-    EXCEEDED,
 }

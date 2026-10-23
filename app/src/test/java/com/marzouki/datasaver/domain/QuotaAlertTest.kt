@@ -1,15 +1,15 @@
 package com.marzouki.datasaver.domain
 
+import com.marzouki.datasaver.domain.enums.AppKind
+import com.marzouki.datasaver.domain.enums.NetworkGeneration
+import com.marzouki.datasaver.domain.enums.PlanStatus
 import com.marzouki.datasaver.domain.model.AppDataUsage
-import com.marzouki.datasaver.domain.model.AppKind
 import com.marzouki.datasaver.domain.model.DataQuota
 import com.marzouki.datasaver.domain.model.DataUsage
 import com.marzouki.datasaver.domain.model.DayUsage
 import com.marzouki.datasaver.domain.model.MobileOperator
 import com.marzouki.datasaver.domain.model.MonthPeriod
-import com.marzouki.datasaver.domain.model.NetworkGeneration
 import com.marzouki.datasaver.domain.model.OperatorBalance
-import com.marzouki.datasaver.domain.model.PlanStatus
 import com.marzouki.datasaver.domain.model.PlanValidity
 import com.marzouki.datasaver.domain.model.PricePerGb
 import com.marzouki.datasaver.domain.model.QuotaStatus
