@@ -1,6 +1,7 @@
 package com.marzouki.datasaver.domain
 
 import android.telephony.TelephonyManager
+import com.marzouki.datasaver.LocaleRule
 import com.marzouki.datasaver.data.operator.generationOf
 import com.marzouki.datasaver.domain.enums.CycleOutcome
 import com.marzouki.datasaver.domain.enums.NetworkGeneration
@@ -25,10 +26,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Rule
 import org.junit.Test
 import java.util.Calendar
 
 class SavingsTest {
+
+    @get:Rule
+    val locale = LocaleRule()
 
     private val gb = 1_000_000_000L
     private val now = Calendar.getInstance().apply { set(2026, Calendar.OCTOBER, 20, 15, 0) }.timeInMillis

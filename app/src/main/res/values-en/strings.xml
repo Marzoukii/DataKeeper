@@ -1,0 +1,350 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="app_name">DataKeeper</string>
+
+    <string name="tab_usage">Usage</string>
+    <string name="tab_quota">Quota</string>
+    <string name="tab_downloads">Offline</string>
+    <string name="tab_speed_test">Speed</string>
+
+    <string name="action_retry">Retry</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="unit_gb">GB</string>
+
+    <plurals name="days">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+
+    <!-- Usage access -->
+    <string name="onboarding_logo_description">DataKeeper logo</string>
+    <string name="onboarding_illustration_description">Usage chart: four Wi‑Fi bars and a small mobile bar</string>
+    <string name="onboarding_title">Let’s see where your data goes</string>
+    <string name="onboarding_body">To compare your Wi‑Fi and mobile data, DataKeeper needs Android’s usage access.</string>
+    <string name="onboarding_point_volumes">We only read volumes (MB, GB), never the content of your apps.</string>
+    <string name="onboarding_point_local">Everything stays on your phone, nothing is sent over the Internet.</string>
+    <string name="onboarding_point_revoke">You can remove the access at any time.</string>
+    <string name="onboarding_open_settings">Open settings</string>
+    <string name="onboarding_later">Later</string>
+    <string name="onboarding_settings_path">Settings › Usage access › DataKeeper</string>
+    <string name="onboarding_restricted_title">Switch greyed out or access denied?</string>
+    <string name="onboarding_restricted_body">Since Android 15, access is blocked for any app installed outside the Play Store, even from a file manager. To unblock it:</string>
+    <string name="onboarding_restricted_step_toggle">In “Usage access”, tap DataKeeper’s greyed-out switch once, then OK. Without this step, the next option doesn’t appear.</string>
+    <string name="onboarding_restricted_step_allow">Open the app info, tap ⋮ then “Allow restricted settings” and confirm.</string>
+    <string name="onboarding_restricted_step_retry">Go back to “Usage access” and turn the switch on.</string>
+    <string name="onboarding_restricted_missing">Still no ⋮? Turn off Auto Blocker (Samsung) or Advanced Protection in Security and privacy.</string>
+    <string name="onboarding_restricted_button">Open app info</string>
+
+    <!-- Plan setup -->
+    <string name="setup_title">My plan</string>
+    <string name="setup_title_operator">My %1$s plan</string>
+    <string name="setup_body">Enter your plan once: tracking, forecast and alerts will follow your real plan instead of the 1st of the month.</string>
+    <string name="setup_body_operator_changed">New SIM for mobile data: the previous plan no longer applies. Enter this card’s plan.</string>
+    <string name="setup_plan_label">Plan size</string>
+    <string name="setup_plan_input">Other size</string>
+    <string name="setup_plan_custom_chip">Other</string>
+    <string name="setup_plan_custom_hint">Custom size: %1$s. Pick a chip or type your value.</string>
+    <string name="setup_plan_custom_empty">Type the size announced by your operator, e.g. 30.</string>
+    <string name="setup_plan_choose_error">Choose your plan size.</string>
+    <string name="setup_plan_placeholder">e.g. 25</string>
+    <string name="setup_remaining_label">What you have left today</string>
+    <string name="setup_remaining_placeholder">e.g. 19</string>
+    <string name="setup_remaining_hint">The balance announced by your operator. Leave empty if your plan has just renewed.</string>
+    <string name="setup_price_label">Plan price (optional)</string>
+    <string name="setup_price_input_label">Price paid for this plan</string>
+    <string name="setup_price_placeholder">e.g. 28</string>
+    <string name="setup_price_hint">Used to put a figure on what Wi‑Fi saves you.</string>
+    <string name="setup_price_per_gb">That’s %1$s per GB</string>
+    <string name="setup_price_error">Price too low or too high for this plan</string>
+    <string name="setup_submit">Show my dashboard</string>
+    <string name="setup_skip">I don’t have a mobile plan</string>
+    <string name="setup_saved_plans_label">Your %1$s plans</string>
+    <string name="setup_saved_plans_label_generic">Your plans</string>
+    <string name="setup_saved_plans_hint">Tap a plan you’ve used before to fill everything in. You can adjust the price if it changed.</string>
+    <string name="setup_saved_plan_forget">Forget this plan</string>
+    <string name="setup_validity_label">Plan duration</string>
+
+    <!-- Plan cycle: purchase day and validity -->
+    <string name="plan_cycle_purchase_title">Bought on %1$s</string>
+    <string name="plan_cycle_purchase_subtitle">Enter how many days it’s valid for</string>
+    <string name="plan_cycle_purchase_choose">Plan purchase day</string>
+    <string name="plan_cycle_pass_summary">Expires on %1$s · tap to change the date</string>
+    <string name="plan_cycle_monthly_summary">Renews on the %1$s of each month · next on %2$s</string>
+    <string name="plan_cycle_monthly_chip">Every month</string>
+    <string name="plan_cycle_custom_chip">Other</string>
+    <string name="plan_cycle_presets_hint">Validity period. The expiry date updates automatically.</string>
+    <string name="plan_cycle_monthly_hint">Subscription: the plan renews every month on the purchase date.</string>
+    <string name="plan_cycle_validity_label">Valid for</string>
+    <string name="plan_cycle_validity_unit">days</string>
+    <string name="plan_cycle_validity_hint">The duration announced by the operator, e.g. “Valid 30 days”.</string>
+    <string name="plan_cycle_validity_error">Enter a duration between 1 day and %1$s</string>
+    <plurals name="plan_cycle_days_chip">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+    <plurals name="plan_cycle_validity_short">
+        <item quantity="one">%d d</item>
+        <item quantity="other">%d d</item>
+    </plurals>
+    <string name="plan_cycle_title">Plan duration</string>
+    <string name="plan_cycle_pass_subtitle">Valid %1$s from %2$s · expires on %3$s</string>
+
+    <string name="usage_access_title">Usage access required</string>
+    <string name="usage_access_body">Without this access, DataKeeper can’t compare your Wi‑Fi and mobile data. Nothing leaves your phone.</string>
+    <string name="usage_access_button">Open settings</string>
+
+    <!-- Usage -->
+    <!-- “day 20 of 31”: “day” stays singular, no plural needed. -->
+    <string name="usage_overline" tools:ignore="PluralsCandidate">%1$s · day %2$d of %3$d</string>
+    <string name="usage_title">My usage</string>
+    <string name="usage_settings">Quota settings</string>
+    <string name="usage_split_title">Wi‑Fi vs mobile data</string>
+    <string name="usage_total">Total %1$s</string>
+    <string name="usage_wifi">Wi‑Fi</string>
+    <string name="usage_mobile">Mobile</string>
+    <string name="usage_wifi_all_networks">All networks</string>
+    <string name="usage_show_network">See whether you’re on 4G or 5G</string>
+    <string name="usage_share_of_total">%1$d%% of total</string>
+    <string name="usage_mobile_from_balance_operator">based on your %1$s balance</string>
+    <string name="usage_mobile_from_balance">based on your operator balance</string>
+    <string name="usage_last_7_days">Last 7 days</string>
+    <string name="usage_day_description">%1$s: %2$s on Wi‑Fi, %3$s on mobile</string>
+    <string name="usage_top_apps_title">Apps using the most mobile data</string>
+    <string name="usage_app_system">Android system</string>
+    <string name="usage_app_tethering">Hotspot and tethering</string>
+    <string name="usage_app_removed">Uninstalled apps</string>
+    <string name="usage_app_unknown">Unknown app</string>
+    <string name="usage_empty_title">Nothing to show yet</string>
+    <string name="usage_empty_body">No traffic measured since the start of the cycle. Check back a little later.</string>
+    <string name="usage_analyzing_title">Analysing your usage…</string>
+    <string name="usage_analyzing_days">The chart will fill in as soon as Android has measured traffic over the last few days.</string>
+    <string name="usage_analyzing_apps">No app has used mobile data this cycle yet.</string>
+    <string name="usage_day_hint">Tap a day to see its details.</string>
+    <string name="usage_day_total">%1$s in total</string>
+    <string name="usage_day_share">%1$s · %2$d%%</string>
+    <string name="usage_heavy_app_title">%1$s is eating your plan</string>
+    <string name="usage_heavy_app_body">%1$s used %2$s of mobile data, %3$d%% of your plan. Open it on Wi‑Fi instead.</string>
+    <string name="usage_load_failed">Couldn’t read the network statistics.</string>
+    <string name="usage_savings_title">Saved thanks to Wi‑Fi</string>
+    <string name="usage_savings_detail">%1$s × %2$s</string>
+    <string name="usage_savings_detail_operator">%1$s × %2$s · %3$s</string>
+    <string name="usage_savings_no_price">Enter the price per GB to put a figure on it</string>
+    <string name="usage_plan_label">My mobile plan</string>
+    <string name="usage_plan_label_operator">%1$s plan</string>
+    <string name="usage_plan_none">Enter the plan you subscribed to with your operator</string>
+    <string name="usage_plan_expires">Expires on %1$s</string>
+    <string name="usage_plan_bar_description">%1$d%% of the plan left</string>
+
+    <!-- Dashboard quota card -->
+    <string name="quota_summary_title">Mobile quota: %1$s</string>
+    <string name="quota_summary_remaining">%1$s left for %2$s.</string>
+    <string name="quota_summary_alert">Alert at %1$d%%.</string>
+    <string name="quota_summary_exceeded">Quota exceeded by %1$s. Switch to Wi‑Fi until %2$s.</string>
+    <string name="quota_summary_none_title">Set your mobile quota</string>
+    <string name="quota_summary_none_body">Choose your plan to be warned before you go over it.</string>
+    <string name="quota_open">Open mobile quota</string>
+    <string name="quota_ring_description">%1$d%% of mobile quota used</string>
+    <string name="percent">%1$d%%</string>
+
+    <!-- Mobile quota -->
+    <string name="quota_overline">Resets on %1$s</string>
+    <string name="quota_title">Mobile quota</string>
+    <string name="quota_of_total">of %1$s · %2$d%%</string>
+    <string name="quota_remaining_chip">%1$s left</string>
+    <string name="quota_per_day_chip">≈ %1$s / day</string>
+    <string name="quota_exceeded_chip">Over by %1$s</string>
+    <string name="quota_none">No quota set</string>
+    <string name="quota_no_value">—</string>
+    <string name="quota_plan_title">My mobile plan</string>
+    <string name="quota_slider_description">Monthly quota in gigabytes</string>
+    <string name="quota_preset">%1$d GB</string>
+    <string name="quota_preset_other">Other</string>
+    <string name="quota_input_label">Mobile data quota</string>
+    <string name="quota_input_error">Enter a positive value, e.g. 5 or 2.5</string>
+    <string name="quota_remove">Remove quota</string>
+    <string name="quota_alert_title">Alert at %1$d%%</string>
+    <string name="quota_alert_subtitle">Notification when %1$s are used</string>
+    <string name="quota_alert_subtitle_no_quota">Choose your plan first</string>
+    <string name="quota_cycle_title">Cycle start</string>
+    <string name="quota_cycle_subtitle">On the %1$s of each month · current cycle since %2$s</string>
+    <string name="quota_cycle_choose">Choose the cycle start day</string>
+    <string name="quota_price_title">Price per mobile GB</string>
+    <string name="quota_plan_price_title">Plan price</string>
+    <string name="quota_plan_price_subtitle">%1$s for %2$s · that’s %3$s per GB</string>
+    <string name="quota_plan_price_hint">What you pay for your %1$s plan. The price per GB is derived from it to put a figure on your savings.</string>
+    <string name="quota_plan_price_subtitle_none">Enter what your %1$s plan costs to put a figure on your savings</string>
+    <string name="quota_plan_price_saved">Plan price saved</string>
+    <string name="quota_price_subtitle">%1$s per GB · used to put a figure on your savings</string>
+    <string name="quota_price_subtitle_none">To put a figure on what Wi‑Fi saves you</string>
+    <string name="quota_price_choose">Enter the price per GB</string>
+    <string name="quota_price_hint">Use the price of a top-up or of one GB outside your plan.</string>
+    <string name="quota_price_input_label">Price per GB</string>
+    <string name="quota_price_input_error">Enter a price between 0.001 and 100 DT, e.g. 2 or 1.500</string>
+    <string name="quota_price_remove">Clear</string>
+    <string name="quota_price_saved">Price per GB saved</string>
+    <string name="quota_balance_title">Balance left with the operator</string>
+    <string name="quota_balance_title_operator">My %1$s plan</string>
+    <string name="quota_balance_subtitle">%1$s left · updated on %2$s</string>
+    <string name="quota_balance_subtitle_none">Enter what you have left for an exact count</string>
+    <string name="quota_balance_choose">Enter the remaining balance</string>
+    <string name="quota_balance_hint">Remaining data announced by your operator, e.g. 17 GB.</string>
+    <string name="quota_balance_input_label">Remaining data</string>
+    <string name="quota_balance_input_error">Enter a value between 0 and %1$s</string>
+    <string name="quota_balance_gauge">Adjusted to your %1$s balance from %2$s</string>
+    <string name="quota_balance_saved">Balance saved: the count restarts from there</string>
+    <string name="quota_balance_removed">Balance cleared: counting from the start of the cycle</string>
+    <string name="unit_dinar">DT</string>
+    <string name="quota_tip_label">Tip:</string>
+    <string name="quota_tip_body">schedule your videos and podcasts in “Offline” to download them on your next Wi‑Fi.</string>
+    <string name="budget_title">Today’s budget</string>
+    <string name="budget_today_of">Today: %1$s</string>
+    <string name="budget_left">%1$s more for today without eating into the next days.</string>
+    <string name="budget_over">Budget exceeded by %1$s: switch to Wi‑Fi for the rest of the day.</string>
+    <string name="forecast_title">End-of-cycle forecast</string>
+    <string name="forecast_badge_comfortable">Plenty of margin</string>
+    <string name="forecast_badge_tight">Tight</string>
+    <string name="forecast_badge_over">Overrun expected</string>
+    <string name="forecast_badge_exceeded">Exceeded</string>
+    <string name="forecast_body_comfortable">At this pace, you’ll end at %1$s on %2$s. You keep a good margin.</string>
+    <string name="forecast_body_tight">At this pace, you’ll end at %1$s on %2$s. Stay under %3$s a day to keep a margin.</string>
+    <string name="forecast_body_over">At this pace, you’ll end at %1$s on %2$s, beyond your plan. Stay under %3$s a day so you don’t go over.</string>
+    <string name="forecast_body_exceeded">Plan already exceeded: at this pace, you’ll end at %1$s on %2$s. Use Wi‑Fi as much as possible.</string>
+    <string name="forecast_chart_limit">%1$s plan</string>
+    <string name="forecast_chart_today">Today</string>
+    <string name="forecast_chart_description">Mobile data curve: %1$s used today, %2$s expected on %3$s, %4$s plan.</string>
+    <string name="quota_saved">Quota saved</string>
+    <string name="quota_removed">Quota removed</string>
+
+    <!-- Offline -->
+    <string name="downloads_overline">Downloaded on Wi‑Fi only</string>
+    <string name="downloads_title">Offline</string>
+    <string name="downloads_wifi_connected">Connected to Wi‑Fi</string>
+    <string name="downloads_wifi_waiting">Waiting for Wi‑Fi</string>
+    <!-- “in progress” and “waiting” don’t change with the number. -->
+    <string name="downloads_queue_summary" tools:ignore="PluralsCandidate">%1$d in progress · %2$d waiting · %3$s</string>
+    <string name="downloads_queue_empty">Nothing in the queue</string>
+    <string name="downloads_mobile_used">0 MB of mobile data used</string>
+    <string name="downloads_wifi_waiting_body">Downloads will resume as soon as you’re on Wi‑Fi.</string>
+    <string name="downloads_savings">Saved %1$s</string>
+    <string name="downloads_tab_pending">To download (%1$d)</string>
+    <string name="downloads_tab_available">Available (%1$d)</string>
+    <string name="downloads_empty_pending">Nothing to download. Add a link to get it on your next Wi‑Fi.</string>
+    <string name="downloads_empty_available">No file available offline yet.</string>
+    <string name="downloads_add_link">Add a link</string>
+    <string name="downloads_sheet_explanation">The file will only be downloaded on a Wi‑Fi network, then stay available offline.</string>
+    <string name="downloads_url_label">File URL</string>
+    <string name="downloads_url_error">Enter a valid http(s) URL</string>
+    <string name="downloads_file_name_label">Name (optional)</string>
+    <string name="downloads_schedule_label">When?</string>
+    <string name="downloads_submit_next_wifi">Download on next Wi‑Fi</string>
+    <string name="downloads_submit">Schedule on Wi‑Fi</string>
+    <string name="downloads_scheduled">“%1$s” will be downloaded on Wi‑Fi</string>
+    <string name="downloads_clear_finished">Clear finished downloads</string>
+    <string name="downloads_file_type">%1$s file</string>
+    <string name="tips_title">Tips to save your data</string>
+    <string name="tip_autoplay_title">Turn off video autoplay</string>
+    <string name="tip_autoplay_body">Instagram and Facebook: Settings › Data usage › Data saver.</string>
+    <string name="tip_video_quality_title">Lower video quality on mobile</string>
+    <string name="tip_video_quality_body">YouTube: Settings › Video quality preferences › On mobile networks: Data saver.</string>
+    <string name="tip_media_download_title">WhatsApp media on Wi‑Fi only</string>
+    <string name="tip_media_download_body">WhatsApp: Settings › Storage and data › Media auto-download.</string>
+    <string name="tip_updates_title">Updates on Wi‑Fi only</string>
+    <string name="tip_updates_body">Play Store: Settings › Network preferences › Auto-update apps › Over Wi‑Fi only.</string>
+    <string name="tip_data_saver_title">Turn on Android’s Data Saver</string>
+    <string name="tip_data_saver_body">Settings › Connections › Data usage: limits apps’ background data.</string>
+    <string name="schedule_asap">As soon as possible</string>
+    <string name="schedule_one_hour">In 1 h</string>
+    <string name="schedule_tonight">Tonight (2 am)</string>
+    <string name="download_state_waiting">Waiting for Wi‑Fi</string>
+    <string name="download_state_scheduled">Scheduled at %1$s (on Wi‑Fi)</string>
+    <string name="download_state_running">Downloading…</string>
+    <string name="download_state_running_progress">Downloading… %1$d%%</string>
+    <string name="download_state_done">Available offline</string>
+    <string name="download_state_failed">Download failed</string>
+    <string name="download_state_cancelled">Cancelled</string>
+
+    <!-- Widgets and tiles -->
+    <string name="widget_quota_label">Mobile quota</string>
+    <string name="widget_quota_picker_description">Mobile data and days left</string>
+    <string name="widget_savings_label">Wi‑Fi savings</string>
+    <string name="widget_savings_picker_description">Data used over Wi‑Fi this month</string>
+    <string name="widget_quota_bar_label">Mobile quota (bar)</string>
+    <string name="widget_quota_bar_picker_description">Quota used and end-of-month estimate</string>
+    <string name="widget_remaining">left</string>
+    <string name="widget_exceeded">over</string>
+    <plurals name="widget_days_left">
+        <item quantity="one">%d day left</item>
+        <item quantity="other">%d days left</item>
+    </plurals>
+    <string name="widget_quota_description">%1$s left of %2$s, %3$d%% used</string>
+    <string name="widget_quota_exceeded_description">Mobile quota exceeded by %1$s</string>
+    <string name="widget_no_access">Open DataKeeper to allow access</string>
+    <string name="widget_no_quota">Set your quota</string>
+    <string name="widget_new_sim">New SIM: enter your plan</string>
+    <string name="widget_saved_this_month">Saved this month</string>
+    <string name="widget_wifi_share">%1$d%% on Wi‑Fi</string>
+    <string name="widget_used_of_mobile">%1$s mobile</string>
+    <string name="widget_projection">Estimated end of month: %1$s</string>
+    <string name="tile_no_access">Access required</string>
+    <string name="tile_new_sim">New SIM</string>
+    <string name="tile_downloads_none">Nothing waiting</string>
+    <plurals name="tile_downloads_pending">
+        <item quantity="one">%d waiting</item>
+        <item quantity="other">%d waiting</item>
+    </plurals>
+
+    <string name="notification_channel_quota">Mobile quota alerts</string>
+    <string name="notification_quota_title">%1$d%% of your mobile quota used</string>
+    <string name="notification_quota_text">%1$s used of %2$s this month. Switch to Wi‑Fi to save your data.</string>
+    <string name="notification_recalibrate_title">Update your plan balance</string>
+    <plurals name="notification_recalibrate_text">
+        <item quantity="one">Your balance (%2$s left) was last updated yesterday. Check with your operator and update it.</item>
+        <item quantity="other">Your balance (%2$s left) was last updated %1$d days ago. Check with your operator and update it.</item>
+    </plurals>
+    <plurals name="notification_renewal_title">
+        <item quantity="one">Your plan expires tomorrow</item>
+        <item quantity="other">Your plan expires in %d days</item>
+    </plurals>
+    <string name="notification_renewal_text">Plan ends on %1$s. Remember to top it up so you don’t run out of mobile data.</string>
+
+    <!-- Speed test -->
+    <string name="speed_test_overline">Measure your internet speed</string>
+    <string name="speed_test_title">Speed test</string>
+    <string name="speed_test_running_overline">Test in progress…</string>
+    <string name="speed_test_done_overline">Test finished · %1$s</string>
+    <string name="speed_test_result_title">Result</string>
+    <string name="speed_test_unit_mbps">Mbps</string>
+    <string name="speed_test_unit_ms">ms</string>
+    <string name="speed_test_start">Start the test</string>
+    <string name="speed_test_restart">Run the test again</string>
+    <string name="speed_test_phase_ping">Ping</string>
+    <string name="speed_test_phase_download">Download</string>
+    <string name="speed_test_phase_upload">Upload</string>
+    <string name="speed_test_pending">Waiting</string>
+    <string name="speed_test_download">Download</string>
+    <string name="speed_test_upload">Upload</string>
+    <string name="speed_test_ping">Ping</string>
+    <string name="speed_test_ping_ms">Ping · ms</string>
+    <string name="speed_test_server">Server %1$s</string>
+    <string name="speed_test_wifi_title">Connected to Wi‑Fi</string>
+    <string name="speed_test_wifi_body">The test doesn’t use your mobile plan</string>
+    <string name="speed_test_mobile_title">On mobile data</string>
+    <string name="speed_test_mobile_body">The test uses up to %1$s of your plan</string>
+    <string name="speed_test_last">Last test</string>
+    <string name="speed_test_none">Run a test to measure your current speed.</string>
+    <string name="speed_test_history">History</string>
+    <string name="speed_test_network">Network</string>
+    <string name="speed_test_server_label">Server</string>
+    <string name="speed_test_network_wifi">Wi‑Fi</string>
+    <string name="speed_test_network_mobile">Mobile data</string>
+    <string name="speed_test_badge_wifi">Wi‑Fi</string>
+    <string name="speed_test_badge_mobile">Mob.</string>
+    <string name="speed_test_rating_excellent">Excellent · smooth HD video and video calls</string>
+    <string name="speed_test_rating_good">Good · HD video and video calls possible</string>
+    <string name="speed_test_rating_fair">Fair · browsing and SD video</string>
+    <string name="speed_test_rating_slow">Slow · messages and light browsing</string>
+    <string name="speed_test_mobile_dialog_title">Test on mobile data?</string>
+    <string name="speed_test_mobile_dialog_body">The test can use up to %1$s of your plan. Connect to Wi‑Fi to run it for free.</string>
+    <string name="speed_test_mobile_dialog_confirm">Start anyway</string>
+    <string name="speed_test_failed">Test interrupted: check your connection and try again.</string>
+</resources>

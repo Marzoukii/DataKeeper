@@ -1,5 +1,6 @@
 package com.marzouki.datasaver.domain
 
+import com.marzouki.datasaver.LocaleRule
 import com.marzouki.datasaver.data.speedtest.SpeedTestHistoryCodec
 import com.marzouki.datasaver.domain.enums.NetworkGeneration
 import com.marzouki.datasaver.domain.enums.SpeedTestPhase
@@ -18,11 +19,15 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
 
 private val server = SpeedTestServer("Agence Tunisienne d'Internet", "Kasbah")
 
 class SpeedTestTest {
+
+    @get:Rule
+    val locale = LocaleRule()
 
     private val wifiResult = SpeedTestResult(48.6, 12.3, 18, 1_000L, onWifi = true, server = server)
     private val mobileResult = SpeedTestResult(

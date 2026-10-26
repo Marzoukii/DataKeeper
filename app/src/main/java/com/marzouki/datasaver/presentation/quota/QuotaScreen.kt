@@ -31,8 +31,8 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.CalendarMonth
-import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.Payments
 import androidx.compose.material.icons.rounded.SimCard
@@ -563,7 +563,7 @@ private fun SettingsCard(
             onClick = if (quota != null) onBalanceClick else null,
         ) {
             Icon(
-                Icons.Rounded.ChevronRight,
+                Icons.AutoMirrored.Rounded.KeyboardArrowRight,
                 contentDescription = stringResource(R.string.quota_balance_choose),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -609,7 +609,7 @@ private fun SettingsCard(
             onClick = onCycleClick,
         ) {
             Icon(
-                Icons.Rounded.ChevronRight,
+                Icons.AutoMirrored.Rounded.KeyboardArrowRight,
                 contentDescription = stringResource(R.string.quota_cycle_choose),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -635,7 +635,7 @@ private fun SettingsCard(
             onClick = onPriceClick,
         ) {
             Icon(
-                Icons.Rounded.ChevronRight,
+                Icons.AutoMirrored.Rounded.KeyboardArrowRight,
                 contentDescription = stringResource(R.string.quota_price_choose),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
