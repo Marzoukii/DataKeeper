@@ -21,12 +21,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ShowChart
 import androidx.compose.material.icons.rounded.ArrowDownward
 import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Refresh
-import androidx.compose.material.icons.rounded.ShowChart
 import androidx.compose.material.icons.rounded.SignalCellularAlt
 import androidx.compose.material.icons.rounded.Wifi
 import androidx.compose.material3.AlertDialog
@@ -373,7 +373,7 @@ private fun ColumnScope.ResultContent(result: SpeedTestResult, previous: List<Sp
             formatMbps(result.uploadMbps), DataColors.mobile, stringResource(R.string.speed_test_upload), Modifier.weight(1f),
         )
         MetricCard(
-            Icons.Rounded.ShowChart, MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant,
+            Icons.AutoMirrored.Rounded.ShowChart, MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant,
             result.pingMs.toString(), MaterialTheme.colorScheme.onSurface, stringResource(R.string.speed_test_ping_ms), Modifier.weight(1f),
         )
     }

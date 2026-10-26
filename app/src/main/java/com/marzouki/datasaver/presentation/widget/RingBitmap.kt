@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
 import androidx.compose.ui.graphics.toArgb
+import androidx.core.graphics.createBitmap
 import com.marzouki.datasaver.ui.theme.DarkError
 import com.marzouki.datasaver.ui.theme.DarkOnSurface
 import com.marzouki.datasaver.ui.theme.DarkSurfaceVariant
@@ -41,7 +42,7 @@ internal fun quotaRingBitmap(
     }
     val markerColor = if (dark) DarkOnSurface else LightOnSurface
 
-    val bitmap = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
+    val bitmap = createBitmap(sizePx, sizePx)
     val canvas = Canvas(bitmap)
     val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE

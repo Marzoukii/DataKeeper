@@ -1,13 +1,13 @@
 package com.marzouki.datasaver.data.operator
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
-import android.telephony.PhoneStateListener
 import android.telephony.SubscriptionManager
 import android.telephony.TelephonyCallback
 import android.telephony.TelephonyDisplayInfo
@@ -84,7 +84,12 @@ class OperatorRepositoryImpl @Inject constructor(
                 trySend(Unit)
             }
         }
-        subscriptions?.addOnSubscriptionsChangedListener(listener)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            subscriptions?.addOnSubscriptionsChangedListener(context.mainExecutor, listener)
+        } else {
+            @Suppress("DEPRECATION")
+            subscriptions?.addOnSubscriptionsChangedListener(listener)
+        }
         awaitClose {
             context.unregisterReceiver(receiver)
             subscriptions?.removeOnSubscriptionsChangedListener(listener)
@@ -123,17 +128,17 @@ class OperatorRepositoryImpl @Inject constructor(
     @Suppress("DEPRECATION")
     @RequiresApi(Build.VERSION_CODES.R)
     private fun legacyDisplayInfoFlow(telephony: TelephonyManager): Flow<NetworkGeneration?> = callbackFlow {
-        val listener = object : PhoneStateListener(context.mainExecutor) {
+        val listener = object : android.telephony.PhoneStateListener(context.mainExecutor) {
             override fun onDisplayInfoChanged(info: TelephonyDisplayInfo) {
                 trySend(generationOf(info))
             }
         }
         trySend(generationOf(telephony.safeDataNetworkType()))
         try {
-            telephony.listen(listener, PhoneStateListener.LISTEN_DISPLAY_INFO_CHANGED)
+            telephony.listen(listener, android.telephony.PhoneStateListener.LISTEN_DISPLAY_INFO_CHANGED)
         } catch (_: SecurityException) {
         }
-        awaitClose { telephony.listen(listener, PhoneStateListener.LISTEN_NONE) }
+        awaitClose { telephony.listen(listener, android.telephony.PhoneStateListener.LISTEN_NONE) }
     }
 
     private fun dataTelephony(): TelephonyManager? {
@@ -154,6 +159,8 @@ class OperatorRepositoryImpl @Inject constructor(
         }
 
     // NR_NSA_MMWAVE est l'ancien nom de NR_ADVANCED (Android 12) ; les constantes sont copiées à la compilation.
+    // Lint ne le connaît pas parmi les valeurs permises, d'où SwitchIntDef.
+    @SuppressLint("SwitchIntDef")
     @Suppress("DEPRECATION")
     @RequiresApi(Build.VERSION_CODES.R)
     private fun generationOf(info: TelephonyDisplayInfo): NetworkGeneration? =
