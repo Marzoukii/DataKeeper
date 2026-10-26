@@ -45,8 +45,8 @@ import com.marzouki.datasaver.ui.theme.numeric
 import java.util.Calendar
 import java.util.TimeZone
 
-/** Validités proposées en un appui : celles des offres courantes (30 jours, une semaine, 4 jours). */
-private val VALIDITY_PRESETS = listOf(30, 7, 4)
+/** Validités proposées en un appui : celles des offres courantes (une semaine, 15 jours, 30 jours). */
+private val VALIDITY_PRESETS = listOf(7, 15, 30)
 
 /**
  * Cycle du forfait tel que saisi : jour d'achat et validité en jours, ou renouvellement chaque mois
@@ -55,13 +55,18 @@ private val VALIDITY_PRESETS = listOf(30, 7, 4)
 data class PlanCycleInput(
     /** Minuit, heure locale, du jour d'achat ou de renouvellement. */
     val purchaseMillis: Long = startOfDay(System.currentTimeMillis()),
-    val validityInput: String = VALIDITY_PRESETS.first().toString(),
+    val validityInput: String = VALIDITY_PRESETS.last().toString(),
     val monthly: Boolean = false,
+    /** « Autre » choisi : la validité se tape en jours, même si elle tombe sur une puce. */
+    val customValidity: Boolean = false,
 ) {
     /** Null pour un cycle mensuel ou une saisie invalide (voir [isValid]). */
     val validityDays: Int? get() = if (monthly) null else validityInput.trim().toIntOrNull()?.takeIf { it in 1..MonthPeriod.MAX_VALIDITY_DAYS }
 
     val isValid: Boolean get() = monthly || validityDays != null
+
+    /** Champ en jours affiché : « Autre » choisi, ou validité enregistrée hors des puces (pass de 4 jours). */
+    val showsCustomValidity: Boolean get() = !monthly && (customValidity || validityDays !in VALIDITY_PRESETS)
 
     /** Cycle qui en découle aujourd'hui, pour annoncer sa fin. */
     fun period(nowMillis: Long = System.currentTimeMillis()): MonthPeriod {
@@ -139,8 +144,8 @@ fun PlanCycleFields(
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             VALIDITY_PRESETS.forEach { days ->
                 FilterChip(
-                    selected = !input.monthly && input.validityDays == days,
-                    onClick = { onChange(input.copy(validityInput = days.toString(), monthly = false)) },
+                    selected = !input.showsCustomValidity && !input.monthly && input.validityDays == days,
+                    onClick = { onChange(input.copy(validityInput = days.toString(), monthly = false, customValidity = false)) },
                     label = {
                         Text(
                             pluralStringResource(R.plurals.plan_cycle_days_chip, days, days),
@@ -152,14 +157,27 @@ fun PlanCycleFields(
                 )
             }
             FilterChip(
+                selected = input.showsCustomValidity,
+                onClick = { onChange(input.copy(monthly = false, customValidity = true)) },
+                label = { Text(stringResource(R.string.plan_cycle_custom_chip), style = MaterialTheme.typography.labelLarge) },
+                shape = CircleShape,
+                colors = chipColors,
+            )
+            FilterChip(
                 selected = input.monthly,
-                onClick = { onChange(input.copy(monthly = true)) },
+                onClick = { onChange(input.copy(monthly = true, customValidity = false)) },
                 label = { Text(stringResource(R.string.plan_cycle_monthly_chip), style = MaterialTheme.typography.labelLarge) },
                 shape = CircleShape,
                 colors = chipColors,
             )
         }
-        if (!input.monthly) {
+        if (!input.showsCustomValidity) {
+            Text(
+                stringResource(if (input.monthly) R.string.plan_cycle_monthly_hint else R.string.plan_cycle_presets_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        } else {
             OutlinedTextField(
                 value = input.validityInput,
                 onValueChange = { onChange(input.copy(validityInput = it.filter(Char::isDigit).take(3))) },

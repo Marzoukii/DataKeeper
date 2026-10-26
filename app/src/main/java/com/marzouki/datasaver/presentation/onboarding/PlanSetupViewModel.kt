@@ -55,7 +55,8 @@ class PlanSetupViewModel @Inject constructor(
     override fun onIntent(intent: PlanSetupIntent) {
         when (intent) {
             is PlanSetupIntent.PlanChanged -> setState { copy(planInput = intent.value) }
-            is PlanSetupIntent.PresetSelected -> setState { copy(planInput = intent.gigabytes.toString()) }
+            is PlanSetupIntent.PresetSelected -> setState { copy(planInput = intent.gigabytes.toString(), customPlan = false) }
+            PlanSetupIntent.CustomPlanSelected -> setState { copy(customPlan = true) }
             is PlanSetupIntent.RemainingChanged -> setState { copy(remainingInput = intent.value) }
             is PlanSetupIntent.PriceChanged -> setState { copy(priceInput = intent.value) }
             is PlanSetupIntent.CycleChanged -> setState { copy(cycle = intent.cycle) }
@@ -63,10 +64,12 @@ class PlanSetupViewModel @Inject constructor(
                 val plan = intent.plan
                 copy(
                     planInput = QuotaViewModel.bytesToInput(plan.limitBytes),
+                    customPlan = false,
                     priceInput = plan.priceMillimes?.let(QuotaViewModel::millimesToInput).orEmpty(),
                     cycle = cycle.copy(
                         validityInput = plan.validityDays?.toString() ?: cycle.validityInput,
                         monthly = plan.validityDays == null,
+                        customValidity = false,
                     ),
                 )
             }

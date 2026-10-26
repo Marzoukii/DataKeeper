@@ -37,12 +37,16 @@
     <string name="onboarding_restricted_button">Ouvrir les infos de l’appli</string>
 
     <!-- Configuration du forfait -->
-    <string name="setup_title">Configure ton forfait</string>
-    <string name="setup_title_operator">Configure ton forfait %1$s</string>
-    <string name="setup_body">Ton tableau de bord partira de ces chiffres : décompte, prévision et alertes suivront ton vrai forfait.</string>
+    <string name="setup_title">Mon forfait</string>
+    <string name="setup_title_operator">Mon forfait %1$s</string>
+    <string name="setup_body">Saisis ton forfait une fois : le décompte, la prévision et les alertes suivront ton vrai forfait au lieu du 1er du mois.</string>
     <string name="setup_body_operator_changed">Nouvelle SIM pour les données mobiles : l’ancien forfait ne s’applique plus. Saisis celui de cette carte.</string>
     <string name="setup_plan_label">Taille du forfait</string>
-    <string name="setup_plan_input">Forfait mobile</string>
+    <string name="setup_plan_input">Autre taille</string>
+    <string name="setup_plan_custom_chip">Autre</string>
+    <string name="setup_plan_custom_hint">Taille personnalisée : %1$s. Choisis une puce ou tape ta valeur.</string>
+    <string name="setup_plan_custom_empty">Tape la taille annoncée par ton opérateur, ex. 30.</string>
+    <string name="setup_plan_choose_error">Choisis la taille de ton forfait.</string>
     <string name="setup_plan_placeholder">ex. 25</string>
     <string name="setup_remaining_label">Ce qu’il te reste aujourd’hui</string>
     <string name="setup_remaining_placeholder">ex. 19</string>
@@ -65,9 +69,12 @@
     <string name="plan_cycle_purchase_title">Acheté le %1$s</string>
     <string name="plan_cycle_purchase_subtitle">Indique combien de jours il est valable</string>
     <string name="plan_cycle_purchase_choose">Jour d’achat du forfait</string>
-    <string name="plan_cycle_pass_summary">Expire le %1$s · touche pour changer la date d’achat</string>
+    <string name="plan_cycle_pass_summary">Expire le %1$s · touche pour changer la date</string>
     <string name="plan_cycle_monthly_summary">Repart le %1$s de chaque mois · prochain le %2$s</string>
     <string name="plan_cycle_monthly_chip">Chaque mois</string>
+    <string name="plan_cycle_custom_chip">Autre</string>
+    <string name="plan_cycle_presets_hint">Durée de validité. L’expiration se recalcule automatiquement.</string>
+    <string name="plan_cycle_monthly_hint">Abonnement : le forfait repart chaque mois à la date d’achat.</string>
     <string name="plan_cycle_validity_label">Valable</string>
     <string name="plan_cycle_validity_unit">jours</string>
     <string name="plan_cycle_validity_hint">La durée annoncée par l’opérateur, ex. « Valable 30 jours ».</string>
