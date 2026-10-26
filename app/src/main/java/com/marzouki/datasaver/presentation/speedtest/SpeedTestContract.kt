@@ -16,9 +16,7 @@ data class SpeedTestState(
     val history: List<SpeedTestResult> = emptyList(),
     /** Demande de confirmation avant un test en données mobiles. */
     val showMobileWarning: Boolean = false,
-) {
-    val isRunning: Boolean get() = progress != null
-}
+)
 
 sealed interface SpeedTestIntent {
     data object StartClicked : SpeedTestIntent

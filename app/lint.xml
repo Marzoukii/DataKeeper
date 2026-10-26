@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Faux positifs connus : le reste des avertissements de lint doit rester visible. -->
+<lint>
+    <!-- Textes en français : le correcteur anglais de lint signale « trafic » comme une faute. -->
+    <issue id="Typos" severity="ignore" />
+
+    <!-- targetCellWidth/Height : taille par défaut des widgets sur Android 12+, ignorée sans risque avant. -->
+    <issue id="UnusedAttribute">
+        <ignore path="src/main/res/xml/widget_*_info.xml" />
+    </issue>
+</lint>

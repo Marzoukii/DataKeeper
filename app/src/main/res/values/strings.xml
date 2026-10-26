@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">DataKeeper</string>
 
     <string name="tab_usage">Conso</string>
@@ -90,7 +90,8 @@
     <string name="usage_access_button">Ouvrir les paramètres</string>
 
     <!-- Conso -->
-    <string name="usage_overline">%1$s · jour %2$d sur %3$d</string>
+    <!-- « jour 20 sur 31 » : « jour » reste au singulier, pas besoin de pluriel. -->
+    <string name="usage_overline" tools:ignore="PluralsCandidate">%1$s · jour %2$d sur %3$d</string>
     <string name="usage_title">Ma consommation</string>
     <string name="usage_settings">Réglages du quota</string>
     <string name="usage_split_title">Wi‑Fi vs données mobiles</string>
