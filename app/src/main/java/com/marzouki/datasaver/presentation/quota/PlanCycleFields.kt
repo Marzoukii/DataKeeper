@@ -9,8 +9,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.CalendarMonth
-import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -131,7 +131,7 @@ fun PlanCycleFields(
                 onClick = { showDatePicker = true },
             ) {
                 Icon(
-                    Icons.Rounded.ChevronRight,
+                    Icons.AutoMirrored.Rounded.KeyboardArrowRight,
                     contentDescription = stringResource(R.string.plan_cycle_purchase_choose),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
