@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.marzouki.datasaver.ui.theme.Spacing
@@ -27,6 +28,7 @@ fun ScreenHeader(
     overline: String,
     title: String,
     modifier: Modifier = Modifier,
+    overlineColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     action: (@Composable () -> Unit)? = null,
 ) {
     Row(
@@ -36,7 +38,7 @@ fun ScreenHeader(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f)) {
-            Text(overline, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(overline, style = MaterialTheme.typography.bodySmall, color = overlineColor)
             Text(title, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onSurface)
         }
         action?.invoke()
