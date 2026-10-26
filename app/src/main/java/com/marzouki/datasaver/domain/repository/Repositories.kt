@@ -13,6 +13,8 @@ import com.marzouki.datasaver.domain.model.PricePerGb
 import com.marzouki.datasaver.domain.model.QuotaStatus
 import com.marzouki.datasaver.domain.model.SavedPlan
 import com.marzouki.datasaver.domain.model.ScheduledDownload
+import com.marzouki.datasaver.domain.model.SpeedTestProgress
+import com.marzouki.datasaver.domain.model.SpeedTestResult
 import kotlinx.coroutines.flow.Flow
 
 interface UsageRepository {
@@ -83,6 +85,19 @@ interface OperatorRepository {
 interface ConnectivityRepository {
     /** Vrai tant que l'appareil est sur un réseau non facturé (Wi-Fi), condition des téléchargements. */
     fun observeUnmeteredConnection(): Flow<Boolean>
+}
+
+interface SpeedTestRepository {
+    /** Derniers tests terminés, du plus récent au plus ancien. */
+    val history: Flow<List<SpeedTestResult>>
+    suspend fun addToHistory(result: SpeedTestResult)
+
+    /**
+     * Mesure ping, téléchargement puis envoi ; le flux se termine une fois l'envoi mesuré.
+     * [maxBytesPerPhase] arrête chaque sens plus tôt une fois ce volume transféré.
+     * @throws java.io.IOException si le réseau ou le serveur de mesure fait défaut.
+     */
+    fun measure(maxBytesPerPhase: Long?): Flow<SpeedTestProgress>
 }
 
 /** Planifie la vérification périodique du quota en arrière-plan. */

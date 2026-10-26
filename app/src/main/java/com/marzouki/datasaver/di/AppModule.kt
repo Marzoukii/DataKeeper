@@ -11,6 +11,7 @@ import com.marzouki.datasaver.data.operator.OperatorRepositoryImpl
 import com.marzouki.datasaver.data.quota.NotificationQuotaAlertNotifier
 import com.marzouki.datasaver.data.quota.QuotaRepositoryImpl
 import com.marzouki.datasaver.data.quota.WorkManagerQuotaMonitorScheduler
+import com.marzouki.datasaver.data.speedtest.SpeedTestRepositoryImpl
 import com.marzouki.datasaver.data.usage.UsageRepositoryImpl
 import com.marzouki.datasaver.domain.repository.ConnectivityRepository
 import com.marzouki.datasaver.domain.repository.DownloadRepository
@@ -18,6 +19,7 @@ import com.marzouki.datasaver.domain.repository.OperatorRepository
 import com.marzouki.datasaver.domain.repository.QuotaAlertNotifier
 import com.marzouki.datasaver.domain.repository.QuotaMonitorScheduler
 import com.marzouki.datasaver.domain.repository.QuotaRepository
+import com.marzouki.datasaver.domain.repository.SpeedTestRepository
 import com.marzouki.datasaver.domain.repository.UsageRepository
 import dagger.Binds
 import dagger.Module
@@ -72,6 +74,10 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindConnectivityRepository(impl: ConnectivityRepositoryImpl): ConnectivityRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSpeedTestRepository(impl: SpeedTestRepositoryImpl): SpeedTestRepository
 
     @Binds
     abstract fun bindOperatorRepository(impl: OperatorRepositoryImpl): OperatorRepository

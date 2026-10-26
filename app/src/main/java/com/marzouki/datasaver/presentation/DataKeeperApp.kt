@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.BarChart
 import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.NetworkCheck
 import androidx.compose.material.icons.rounded.Speed
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -52,6 +53,7 @@ import com.marzouki.datasaver.presentation.onboarding.OnboardingViewModel
 import com.marzouki.datasaver.presentation.onboarding.PlanSetupScreen
 import com.marzouki.datasaver.presentation.onboarding.UsageAccessScreen
 import com.marzouki.datasaver.presentation.quota.QuotaScreen
+import com.marzouki.datasaver.presentation.speedtest.SpeedTestScreen
 import com.marzouki.datasaver.presentation.usage.UsageScreen
 import com.marzouki.datasaver.presentation.widget.refreshHomeSurfaces
 
@@ -59,6 +61,7 @@ private enum class Destination(val route: String, @param:StringRes val labelRes:
     USAGE(AppRoutes.USAGE, R.string.tab_usage, Icons.Rounded.BarChart),
     QUOTA(AppRoutes.QUOTA, R.string.tab_quota, Icons.Rounded.Speed),
     DOWNLOADS(AppRoutes.DOWNLOADS, R.string.tab_downloads, Icons.Rounded.Download),
+    SPEED_TEST(AppRoutes.SPEED_TEST, R.string.tab_speed_test, Icons.Rounded.NetworkCheck),
 }
 
 /**
@@ -160,6 +163,7 @@ private fun MainScaffold(requestedTab: String?, onTabRequestHandled: () -> Unit)
                 QuotaScreen(snackbarHostState, onOpenDownloads = { navController.navigateToTab(Destination.DOWNLOADS) })
             }
             composable(Destination.DOWNLOADS.route) { DownloadsScreen(snackbarHostState) }
+            composable(Destination.SPEED_TEST.route) { SpeedTestScreen(snackbarHostState) }
         }
     }
 }

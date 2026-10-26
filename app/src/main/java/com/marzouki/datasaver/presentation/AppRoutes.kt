@@ -5,6 +5,7 @@ object AppRoutes {
     const val USAGE = "usage"
     const val QUOTA = "quota"
     const val DOWNLOADS = "downloads"
+    const val SPEED_TEST = "speed_test"
 
     /** Extra d'Intent de [com.marzouki.datasaver.MainActivity] : route de l'onglet à ouvrir. */
     const val EXTRA_TAB = "com.marzouki.datasaver.extra.TAB"

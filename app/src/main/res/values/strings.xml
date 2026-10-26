@@ -4,6 +4,7 @@
     <string name="tab_usage">Conso</string>
     <string name="tab_quota">Quota</string>
     <string name="tab_downloads">Hors ligne</string>
+    <string name="tab_speed_test">Débit</string>
 
     <string name="action_retry">Réessayer</string>
     <string name="action_save">Enregistrer</string>
@@ -302,4 +303,45 @@
         <item quantity="other">Ton forfait expire dans %d jours</item>
     </plurals>
     <string name="notification_renewal_text">Fin du forfait le %1$s. Pense à le recharger pour ne pas te retrouver sans data mobile.</string>
+
+    <!-- Test de débit -->
+    <string name="speed_test_overline">Mesure ta vitesse internet</string>
+    <string name="speed_test_title">Test de débit</string>
+    <string name="speed_test_running_overline">Test en cours…</string>
+    <string name="speed_test_done_overline">Test terminé · %1$s</string>
+    <string name="speed_test_result_title">Résultat</string>
+    <string name="speed_test_unit_mbps">Mbps</string>
+    <string name="speed_test_unit_ms">ms</string>
+    <string name="speed_test_start">Lancer le test</string>
+    <string name="speed_test_restart">Refaire le test</string>
+    <string name="speed_test_phase_ping">Ping</string>
+    <string name="speed_test_phase_download">Téléchargement</string>
+    <string name="speed_test_phase_upload">Envoi</string>
+    <string name="speed_test_pending">En attente</string>
+    <string name="speed_test_download">Download</string>
+    <string name="speed_test_upload">Upload</string>
+    <string name="speed_test_ping">Ping</string>
+    <string name="speed_test_ping_ms">Ping · ms</string>
+    <string name="speed_test_server">Serveur %1$s</string>
+    <string name="speed_test_wifi_title">Connecté en Wi‑Fi</string>
+    <string name="speed_test_wifi_body">Le test n’utilise pas ton forfait mobile</string>
+    <string name="speed_test_mobile_title">Sur données mobiles</string>
+    <string name="speed_test_mobile_body">Le test consomme jusqu’à %1$s de ton forfait</string>
+    <string name="speed_test_last">Dernier test</string>
+    <string name="speed_test_none">Lance un test pour mesurer ton débit actuel.</string>
+    <string name="speed_test_history">Historique</string>
+    <string name="speed_test_network">Réseau</string>
+    <string name="speed_test_server_label">Serveur</string>
+    <string name="speed_test_network_wifi">Wi‑Fi</string>
+    <string name="speed_test_network_mobile">Données mobiles</string>
+    <string name="speed_test_badge_wifi">Wi‑Fi</string>
+    <string name="speed_test_badge_mobile">Mob.</string>
+    <string name="speed_test_rating_excellent">Excellent · vidéo HD et visio fluides</string>
+    <string name="speed_test_rating_good">Bon · vidéo HD et visio possibles</string>
+    <string name="speed_test_rating_fair">Correct · navigation et vidéo SD</string>
+    <string name="speed_test_rating_slow">Lent · messages et navigation légère</string>
+    <string name="speed_test_mobile_dialog_title">Tester sur données mobiles ?</string>
+    <string name="speed_test_mobile_dialog_body">Le test peut consommer jusqu’à %1$s de ton forfait. Connecte-toi au Wi‑Fi pour le faire gratuitement.</string>
+    <string name="speed_test_mobile_dialog_confirm">Lancer quand même</string>
+    <string name="speed_test_failed">Test interrompu : vérifie ta connexion et réessaie.</string>
 </resources>

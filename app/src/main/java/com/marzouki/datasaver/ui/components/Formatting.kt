@@ -96,3 +96,37 @@ fun dayName(millis: Long): String = SimpleDateFormat("EEEE", Locale.FRANCE).form
 
 /** "31 oct.", "1 nov." : date courte des axes de graphique. */
 fun formatShortDate(millis: Long): String = SimpleDateFormat("d MMM", Locale.FRANCE).format(Date(millis))
+
+/** Débit à la française : "48,6" sous 100 Mbit/s, "312" au-delà. */
+fun formatMbps(mbps: Double): String {
+    val pattern = if (mbps >= 99.95) "0" else "0.0"
+    return DecimalFormat(pattern, DecimalFormatSymbols(Locale.FRANCE))
+        .apply { roundingMode = RoundingMode.HALF_UP }
+        .format(mbps.coerceAtLeast(0.0))
+}
+
+/** "Aujourd'hui 09:12", "Hier 18:40", "12 oct. 18:40". */
+fun formatDayTime(millis: Long, nowMillis: Long): String {
+    val time = SimpleDateFormat("HH:mm", Locale.FRANCE).format(Date(millis))
+    val day = Calendar.getInstance().apply { timeInMillis = millis }
+    val today = Calendar.getInstance().apply { timeInMillis = nowMillis }
+    val yesterday = (today.clone() as Calendar).apply { add(Calendar.DAY_OF_YEAR, -1) }
+    return when {
+        day.isSameDay(today) -> "Aujourd’hui $time"
+        day.isSameDay(yesterday) -> "Hier $time"
+        else -> "${formatShortDate(millis)} $time"
+    }
+}
+
+/** "à l'instant", "il y a 5 min", puis l'heure du jour comme [formatDayTime]. */
+fun formatElapsed(millis: Long, nowMillis: Long): String {
+    val minutes = (nowMillis - millis).coerceAtLeast(0L) / 60_000
+    return when {
+        minutes < 1 -> "à l’instant"
+        minutes < 60 -> "il y a $minutes${NBSP}min"
+        else -> formatDayTime(millis, nowMillis).replaceFirstChar { it.lowercase(Locale.FRANCE) }
+    }
+}
+
+private fun Calendar.isSameDay(other: Calendar): Boolean =
+    get(Calendar.YEAR) == other.get(Calendar.YEAR) && get(Calendar.DAY_OF_YEAR) == other.get(Calendar.DAY_OF_YEAR)
