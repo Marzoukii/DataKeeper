@@ -187,6 +187,7 @@
     <string name="quota_balance_subtitle">%1$s left · updated on %2$s</string>
     <string name="quota_balance_subtitle_none">Enter what you have left for an exact count</string>
     <string name="quota_balance_choose">Enter the remaining balance</string>
+    <string name="quota_balance_no_plan">First choose a plan in “My mobile plan”, then enter what you have left.</string>
     <string name="quota_balance_hint">Remaining data announced by your operator, e.g. 17 GB.</string>
     <string name="quota_balance_input_label">Remaining data</string>
     <string name="quota_balance_input_error">Enter a value between 0 and %1$s</string>

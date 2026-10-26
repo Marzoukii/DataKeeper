@@ -59,6 +59,8 @@ sealed interface QuotaIntent {
     data class PlanPriceSaved(val priceMillimes: Long?) : QuotaIntent
     /** Data restante saisie par l'utilisateur ; null revient au décompte depuis le début du cycle. */
     data class BalanceSaved(val remainingBytes: Long?) : QuotaIntent
+    /** Ligne du solde touchée avant d'avoir choisi un forfait. */
+    data object BalanceWithoutPlanClicked : QuotaIntent
 }
 
 sealed interface QuotaEffect {

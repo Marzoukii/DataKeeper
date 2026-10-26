@@ -199,6 +199,7 @@
     <string name="quota_balance_subtitle">تبقّى %1$s · ضُبط يوم %2$s</string>
     <string name="quota_balance_subtitle_none">أدخل ما تبقّى لك لعدّ دقيق</string>
     <string name="quota_balance_choose">إدخال الرصيد المتبقّي</string>
+    <string name="quota_balance_no_plan">اختر أولًا باقة في «باقتي الخلوية»، ثم أدخل ما تبقّى لك.</string>
     <string name="quota_balance_hint">البيانات المتبقّية التي أعلنها المشغّل، مثل 17 جيغا.</string>
     <string name="quota_balance_input_label">البيانات المتبقّية</string>
     <string name="quota_balance_input_error">أدخل قيمة بين 0 و%1$s</string>

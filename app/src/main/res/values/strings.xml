@@ -190,6 +190,7 @@
     <string name="quota_balance_subtitle">%1$s restants · recalé le %2$s</string>
     <string name="quota_balance_subtitle_none">Indique ce qu’il te reste pour un décompte exact</string>
     <string name="quota_balance_choose">Indiquer le solde restant</string>
+    <string name="quota_balance_no_plan">Choisis d’abord un forfait dans « Mon forfait mobile », puis indique ce qu’il te reste.</string>
     <string name="quota_balance_hint">Data restante annoncée par ton opérateur, ex. 17 Go.</string>
     <string name="quota_balance_input_label">Data restante</string>
     <string name="quota_balance_input_error">Saisis une valeur entre 0 et %1$s</string>

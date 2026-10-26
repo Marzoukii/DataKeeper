@@ -101,6 +101,7 @@ class QuotaViewModel @Inject constructor(
             is QuotaIntent.PlanCycleSaved -> viewModelScope.launch {
                 setPlanCycle(intent.cycle.purchaseMillis, intent.cycle.validityDays)
             }
+            QuotaIntent.BalanceWithoutPlanClicked -> sendEffect(QuotaEffect.ShowMessage(R.string.quota_balance_no_plan))
             is QuotaIntent.BalanceSaved -> viewModelScope.launch {
                 setOperatorBalance(intent.remainingBytes)
                 sendEffect(
