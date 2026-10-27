@@ -8,6 +8,7 @@ object AppRoutes {
     const val SPEED_TEST = "speed_test"
     /** Réglages de l'appli (thème, langue), ouverts par la roue dentée de « Ma consommation ». */
     const val SETTINGS = "settings"
+    const val WIFI = "wifi"
 
     /** Extra d'Intent de [com.marzouki.datasaver.MainActivity] : route de l'onglet à ouvrir. */
     const val EXTRA_TAB = "com.marzouki.datasaver.extra.TAB"

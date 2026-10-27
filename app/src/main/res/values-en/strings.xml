@@ -5,6 +5,7 @@
     <string name="tab_quota">Quota</string>
     <string name="tab_downloads">Offline</string>
     <string name="tab_speed_test">Speed</string>
+    <string name="tab_wifi">Wi‑Fi</string>
 
     <string name="action_retry">Retry</string>
     <string name="action_save">Save</string>
@@ -366,4 +367,40 @@
     <string name="speed_test_mobile_dialog_body">The test can use up to %1$s of your plan. Connect to Wi‑Fi to run it for free.</string>
     <string name="speed_test_mobile_dialog_confirm">Start anyway</string>
     <string name="speed_test_failed">Test interrupted: check your connection and try again.</string>
+
+    <!-- Free Wi-Fi -->
+    <string name="wifi_title">Free Wi‑Fi</string>
+    <string name="wifi_subtitle">Open networks near you</string>
+    <string name="wifi_area_title">Around you</string>
+    <string name="wifi_area_updated">Updated %1$s</string>
+    <string name="wifi_area_scanning">Looking for networks…</string>
+    <string name="wifi_refresh">Refresh</string>
+    <string name="wifi_warning">Without a password, traffic isn’t encrypted. Avoid banking and passwords on these networks.</string>
+    <string name="wifi_filter_all">All · %1$d</string>
+    <string name="wifi_filter_no_ads">No ads · %1$d</string>
+    <string name="wifi_filter_nearest">Closest</string>
+    <string name="wifi_distance">~%1$d m</string>
+    <string name="wifi_details">%1$s · %2$s</string>
+    <string name="wifi_signal_strong">Strong signal</string>
+    <string name="wifi_signal_medium">Medium signal</string>
+    <string name="wifi_signal_weak">Weak signal</string>
+    <string name="wifi_portal">Portal with ads</string>
+    <string name="wifi_no_portal">Open · no ads</string>
+    <string name="wifi_untested">Not tried yet</string>
+    <string name="wifi_connect">Connect</string>
+    <string name="wifi_connected">Connected</string>
+    <string name="wifi_footer">A Wi‑Fi with a portal makes you go through a login page, often with ads, before downloads can go through.</string>
+    <string name="wifi_empty_title">No open network here</string>
+    <string name="wifi_empty_body">Move around or refresh in a moment.</string>
+    <string name="wifi_empty_filter">No network for this filter.</string>
+    <string name="wifi_permission_title">Allow location</string>
+    <string name="wifi_permission_body">Android requires location to list the Wi‑Fi networks around you. DataKeeper neither stores it nor sends it anywhere.</string>
+    <string name="wifi_permission_button">Allow</string>
+    <string name="wifi_permission_settings">Open app settings</string>
+    <string name="wifi_off_title">Wi‑Fi is off</string>
+    <string name="wifi_off_body">Turn it on to see the open networks around you.</string>
+    <string name="wifi_off_button">Turn on Wi‑Fi</string>
+    <string name="wifi_location_off_title">Location is off</string>
+    <string name="wifi_location_off_body">Android only shows the Wi‑Fi networks around you when location is on.</string>
+    <string name="wifi_location_off_button">Turn on location</string>
 </resources>
