@@ -2,19 +2,23 @@ package com.marzouki.datasaver.di
 
 import com.marzouki.datasaver.data.connectivity.ConnectivityRepositoryImpl
 import com.marzouki.datasaver.data.download.WorkManagerDownloadRepository
+import com.marzouki.datasaver.data.language.LanguageRepositoryImpl
 import com.marzouki.datasaver.data.operator.OperatorRepositoryImpl
 import com.marzouki.datasaver.data.quota.NotificationQuotaAlertNotifier
 import com.marzouki.datasaver.data.quota.QuotaRepositoryImpl
 import com.marzouki.datasaver.data.quota.WorkManagerQuotaMonitorScheduler
 import com.marzouki.datasaver.data.speedtest.SpeedTestRepositoryImpl
+import com.marzouki.datasaver.data.theme.ThemeRepositoryImpl
 import com.marzouki.datasaver.data.usage.UsageRepositoryImpl
 import com.marzouki.datasaver.domain.repository.ConnectivityRepository
 import com.marzouki.datasaver.domain.repository.DownloadRepository
+import com.marzouki.datasaver.domain.repository.LanguageRepository
 import com.marzouki.datasaver.domain.repository.OperatorRepository
 import com.marzouki.datasaver.domain.repository.QuotaAlertNotifier
 import com.marzouki.datasaver.domain.repository.QuotaMonitorScheduler
 import com.marzouki.datasaver.domain.repository.QuotaRepository
 import com.marzouki.datasaver.domain.repository.SpeedTestRepository
+import com.marzouki.datasaver.domain.repository.ThemeRepository
 import com.marzouki.datasaver.domain.repository.UsageRepository
 import dagger.Binds
 import dagger.Module
@@ -49,6 +53,12 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindOperatorRepository(impl: OperatorRepositoryImpl): OperatorRepository
+
+    @Binds
+    abstract fun bindLanguageRepository(impl: LanguageRepositoryImpl): LanguageRepository
+
+    @Binds
+    abstract fun bindThemeRepository(impl: ThemeRepositoryImpl): ThemeRepository
 
     @Binds
     abstract fun bindQuotaMonitorScheduler(impl: WorkManagerQuotaMonitorScheduler): QuotaMonitorScheduler

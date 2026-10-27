@@ -109,7 +109,7 @@
     <!-- «اليوم 20 من 31»: لا حاجة إلى الجمع. -->
     <string name="usage_overline" tools:ignore="PluralsCandidate">%1$s · اليوم %2$d من %3$d</string>
     <string name="usage_title">استهلاكي</string>
-    <string name="usage_settings">إعدادات الحصة</string>
+    <string name="usage_settings">الإعدادات</string>
     <string name="usage_split_title">الواي فاي مقابل البيانات الخلوية</string>
     <string name="usage_total">المجموع %1$s</string>
     <string name="usage_wifi">واي فاي</string>
@@ -199,6 +199,7 @@
     <string name="quota_balance_subtitle">تبقّى %1$s · ضُبط يوم %2$s</string>
     <string name="quota_balance_subtitle_none">أدخل ما تبقّى لك لعدّ دقيق</string>
     <string name="quota_balance_choose">إدخال الرصيد المتبقّي</string>
+    <string name="quota_balance_no_plan">اختر أولًا باقة في «باقتي الخلوية»، ثم أدخل ما تبقّى لك.</string>
     <string name="quota_balance_hint">البيانات المتبقّية التي أعلنها المشغّل، مثل 17 جيغا.</string>
     <string name="quota_balance_input_label">البيانات المتبقّية</string>
     <string name="quota_balance_input_error">أدخل قيمة بين 0 و%1$s</string>
@@ -333,6 +334,24 @@
         <item quantity="other">تنتهي باقتك بعد %d يوم</item>
     </plurals>
     <string name="notification_renewal_text">تنتهي الباقة يوم %1$s. لا تنسَ شحنها حتى لا تبقى بدون بيانات خلوية.</string>
+
+    <!-- الإعدادات -->
+    <string name="settings_title">الإعدادات</string>
+    <string name="settings_back">رجوع</string>
+    <string name="settings_appearance">المظهر</string>
+    <string name="settings_theme_system">النظام</string>
+    <string name="settings_theme_light">فاتحة</string>
+    <string name="settings_theme_dark">داكنة</string>
+    <string name="settings_theme_system_hint">«النظام» يتبع إعداد الوضع الفاتح/الداكن في هاتفك.</string>
+    <string name="settings_rtl_notice">بالعربية، تنتقل الواجهة كلها تلقائيًا إلى الكتابة من اليمين إلى اليسار.</string>
+    <string name="settings_about">حول التطبيق</string>
+    <string name="settings_version">الإصدار</string>
+
+    <!-- لغة التطبيق -->
+    <string name="language_title">اللغة</string>
+    <string name="language_french_name">الفرنسية</string>
+    <string name="language_english_name">الإنجليزية</string>
+    <string name="language_arabic_name">العربية</string>
 
     <!-- اختبار السرعة -->
     <string name="speed_test_overline">قِس سرعة الإنترنت لديك</string>

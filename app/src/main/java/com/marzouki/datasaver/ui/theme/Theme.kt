@@ -10,6 +10,8 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 
 // Le secondaire reprend le bleu : chips, onglets et indicateurs restent dans la palette Wi-Fi.
 internal val LightColorScheme = lightColorScheme(
@@ -112,7 +114,8 @@ fun DataKeeperTheme(
     CompositionLocalProvider(LocalExtendedColors provides extendedColors) {
         MaterialTheme(
             colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme,
-            typography = Typography,
+            // De droite à gauche, c'est-à-dire en arabe : pas d'espacement des lettres (voir RtlTypography).
+            typography = if (LocalLayoutDirection.current == LayoutDirection.Rtl) RtlTypography else Typography,
             shapes = DataKeeperShapes,
             content = content,
         )

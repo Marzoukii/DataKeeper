@@ -2,9 +2,9 @@ package com.marzouki.datasaver
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -16,8 +16,9 @@ import com.marzouki.datasaver.ui.theme.DataKeeperTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
+/** AppCompatActivity : applique la langue choisie dans l'appli, aussi avant Android 13. */
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     /** Onglet demandé par un widget ou une tuile, consommé une fois la navigation faite. */
     private var requestedTab by mutableStateOf<String?>(null)

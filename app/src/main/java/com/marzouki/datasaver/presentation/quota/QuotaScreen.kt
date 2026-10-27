@@ -203,7 +203,10 @@ private fun QuotaContent(
                 onIntent,
                 onCycleClick = { showCycleDialog = true },
                 onPriceClick = { showPriceDialog = true },
-                onBalanceClick = { showBalanceDialog = true },
+                onBalanceClick = {
+                    // Sans forfait, pas de solde à recaler : on explique plutôt que de rester muet.
+                    if (state.quota != null) showBalanceDialog = true else onIntent(QuotaIntent.BalanceWithoutPlanClicked)
+                },
             )
         }
         item { TipBox(onClick = onOpenDownloads) }
@@ -560,7 +563,7 @@ private fun SettingsCard(
             },
             iconContainerColor = MaterialTheme.colorScheme.primaryContainer,
             iconTint = MaterialTheme.colorScheme.onPrimaryContainer,
-            onClick = if (quota != null) onBalanceClick else null,
+            onClick = onBalanceClick,
         ) {
             Icon(
                 Icons.AutoMirrored.Rounded.KeyboardArrowRight,

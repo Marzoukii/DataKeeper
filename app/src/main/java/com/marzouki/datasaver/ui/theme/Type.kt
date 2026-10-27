@@ -57,5 +57,33 @@ val Typography = Typography(
     labelSmall = Default.labelSmall.copy(fontFamily = DmSans, fontWeight = FontWeight.Medium),
 )
 
+/**
+ * [Typography] sans espacement des lettres, pour l'arabe : ses lettres sont liées et Android ne les
+ * espace pas, alors que la mise en page compte l'espacement négatif des titres. Le mot paraît plus
+ * étroit qu'il n'est dessiné, et sa dernière lettre passe à la ligne (« استهلاك » puis « ي »).
+ */
+val RtlTypography = Typography.withoutLetterSpacing()
+
+private fun Typography.withoutLetterSpacing(): Typography {
+    fun TextStyle.flat() = copy(letterSpacing = 0.sp)
+    return Typography(
+        displayLarge = displayLarge.flat(),
+        displayMedium = displayMedium.flat(),
+        displaySmall = displaySmall.flat(),
+        headlineLarge = headlineLarge.flat(),
+        headlineMedium = headlineMedium.flat(),
+        headlineSmall = headlineSmall.flat(),
+        titleLarge = titleLarge.flat(),
+        titleMedium = titleMedium.flat(),
+        titleSmall = titleSmall.flat(),
+        bodyLarge = bodyLarge.flat(),
+        bodyMedium = bodyMedium.flat(),
+        bodySmall = bodySmall.flat(),
+        labelLarge = labelLarge.flat(),
+        labelMedium = labelMedium.flat(),
+        labelSmall = labelSmall.flat(),
+    )
+}
+
 /** Même style en Space Grotesk, pour un chiffre placé dans un texte en DM Sans. */
 fun TextStyle.numeric(): TextStyle = copy(fontFamily = SpaceGrotesk)

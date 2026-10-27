@@ -33,6 +33,7 @@ class FormattingTest(private val case: Case) {
         val today: String,
         val minutesAgo: String,
         val monday: String,
+        val sunday: String,
     ) {
         override fun toString() = locale.toLanguageTag()
     }
@@ -42,6 +43,7 @@ class FormattingTest(private val case: Case) {
 
     private val nov1 = Calendar.getInstance().apply { clear(); set(2026, Calendar.NOVEMBER, 1, 9, 12) }.timeInMillis
     private val monday = Calendar.getInstance().apply { clear(); set(2026, Calendar.OCTOBER, 26) }.timeInMillis
+    private val sunday = Calendar.getInstance().apply { clear(); set(2026, Calendar.OCTOBER, 25) }.timeInMillis
 
     @Test
     fun `tailles, prix et débit`() {
@@ -57,6 +59,7 @@ class FormattingTest(private val case: Case) {
         assertEquals(case.today, formatDayTime(nov1, nowMillis = nov1))
         assertEquals(case.minutesAgo, formatElapsed(nov1, nowMillis = nov1 + 5 * 60_000))
         assertEquals(case.monday, dayInitial(monday))
+        assertEquals(case.sunday, dayInitial(sunday))
     }
 
     @Test
@@ -72,11 +75,11 @@ class FormattingTest(private val case: Case) {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
         fun cases() = listOf(
-            Case(Locale.FRANCE, "3,2${NBSP}Go", "27,6${NBSP}DT", "48,6", "1er${NBSP}novembre", "1er", "Aujourd’hui 09:12", "il y a 5${NBSP}min", "L"),
-            Case(Locale.UK, "3.2${NBSP}GB", "27.6${NBSP}DT", "48.6", "1${NBSP}November", "1st", "Today 09:12", "5${NBSP}min ago", "M"),
-            Case(Locale.forLanguageTag("ar-TN"), "3,2${NBSP}جيغا", "27,6${NBSP}د.ت", "48,6", "1${NBSP}نوفمبر", "1", "اليوم 09:12", "منذ 5${NBSP}د", "ن"),
+            Case(Locale.FRANCE, "3,2${NBSP}Go", "27,6${NBSP}DT", "48,6", "1er${NBSP}novembre", "1er", "Aujourd’hui 09:12", "il y a 5${NBSP}min", "L", "D"),
+            Case(Locale.UK, "3.2${NBSP}GB", "27.6${NBSP}DT", "48.6", "1${NBSP}November", "1st", "Today 09:12", "5${NBSP}min ago", "M", "S"),
+            Case(Locale.forLanguageTag("ar-TN"), "3,2${NBSP}جيغا", "27,6${NBSP}د.ت", "48,6", "1${NBSP}نوفمبر", "1", "اليوم 09:12", "منذ 5${NBSP}د", "الإثنين", "الأحد"),
             // Langue non traduite : formats français, comme les textes.
-            Case(Locale.GERMANY, "3,2${NBSP}Go", "27,6${NBSP}DT", "48,6", "1er${NBSP}novembre", "1er", "Aujourd’hui 09:12", "il y a 5${NBSP}min", "L"),
+            Case(Locale.GERMANY, "3,2${NBSP}Go", "27,6${NBSP}DT", "48,6", "1er${NBSP}novembre", "1er", "Aujourd’hui 09:12", "il y a 5${NBSP}min", "L", "D"),
         )
     }
 }
