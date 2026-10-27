@@ -46,7 +46,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -58,8 +57,6 @@ import com.marzouki.datasaver.ui.components.ScreenPreviews
 import com.marzouki.datasaver.ui.components.formatDinars
 import com.marzouki.datasaver.ui.components.toReadableSize
 import com.marzouki.datasaver.ui.theme.numeric
-
-private val PRESETS_GB = listOf(5, 10, 20, 25)
 
 /**
  * Écran 1 : configuration du forfait avant le premier tableau de bord, pour que ses chiffres
@@ -114,11 +111,11 @@ private fun PlanSetupContent(state: PlanSetupState, onIntent: (PlanSetupIntent) 
                     } else {
                         stringResource(R.string.setup_title)
                     },
-                    style = MaterialTheme.typography.headlineLarge.copy(fontSize = 30.sp, lineHeight = 36.sp),
+                    style = MaterialTheme.typography.headlineSmall,
                 )
                 Text(
                     stringResource(if (state.operatorChanged) R.string.setup_body_operator_changed else R.string.setup_body),
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
 
@@ -132,7 +129,7 @@ private fun PlanSetupContent(state: PlanSetupState, onIntent: (PlanSetupIntent) 
                     Text(
                         state.operatorName?.let { stringResource(R.string.setup_saved_plans_label, it) }
                             ?: stringResource(R.string.setup_saved_plans_label_generic),
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.titleSmall,
                     )
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -157,29 +154,51 @@ private fun PlanSetupContent(state: PlanSetupState, onIntent: (PlanSetupIntent) 
                 }
 
                 // 1. Forfait.
-                Text(stringResource(R.string.setup_plan_label), style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.setup_plan_label), style = MaterialTheme.typography.titleSmall)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    PRESETS_GB.forEach { gb ->
+                    PLAN_PRESETS_GB.forEach { gb ->
                         FilterChip(
-                            selected = state.planInput == gb.toString(),
+                            selected = !state.showsCustomPlan && state.planInput == gb.toString(),
                             onClick = { onIntent(PlanSetupIntent.PresetSelected(gb)) },
                             label = { Text(stringResource(R.string.quota_preset, gb), style = MaterialTheme.typography.labelLarge.numeric()) },
                             shape = CircleShape,
                             colors = chipColors,
                         )
                     }
+                    FilterChip(
+                        selected = state.showsCustomPlan,
+                        onClick = { onIntent(PlanSetupIntent.CustomPlanSelected) },
+                        label = { Text(stringResource(R.string.setup_plan_custom_chip), style = MaterialTheme.typography.labelLarge) },
+                        shape = CircleShape,
+                        colors = chipColors,
+                    )
                 }
-                GigabyteField(
-                    value = state.planInput,
-                    onValueChange = { onIntent(PlanSetupIntent.PlanChanged(it)) },
-                    label = stringResource(R.string.setup_plan_input),
-                    placeholder = stringResource(R.string.setup_plan_placeholder),
-                    supporting = stringResource(R.string.quota_input_error).takeIf { state.showErrors && state.planError },
-                    isError = state.showErrors && state.planError,
-                )
+                val planError = state.showErrors && state.planError
+                if (state.showsCustomPlan) {
+                    val planBytes = state.planBytes
+                    GigabyteField(
+                        value = state.planInput,
+                        onValueChange = { onIntent(PlanSetupIntent.PlanChanged(it)) },
+                        label = stringResource(R.string.setup_plan_input),
+                        placeholder = stringResource(R.string.setup_plan_placeholder),
+                        supporting = when {
+                            planError -> stringResource(R.string.quota_input_error)
+                            planBytes != null -> stringResource(R.string.setup_plan_custom_hint, planBytes.toReadableSize())
+                            else -> stringResource(R.string.setup_plan_custom_empty)
+                        },
+                        isError = planError,
+                    )
+                } else if (planError) {
+                    // Aucune puce choisie : l'erreur s'affiche sous les puces, faute de champ.
+                    Text(
+                        stringResource(R.string.setup_plan_choose_error),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
 
                 // 2. Data restante chez l'opérateur.
-                Text(stringResource(R.string.setup_remaining_label), style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.setup_remaining_label), style = MaterialTheme.typography.titleSmall)
                 val planBytes = state.planBytes
                 GigabyteField(
                     value = state.remainingInput,
@@ -194,12 +213,12 @@ private fun PlanSetupContent(state: PlanSetupState, onIntent: (PlanSetupIntent) 
                     isError = state.remainingError,
                 )
 
-                // 3. Durée : pass de 30 jours, de 4 jours, ou abonnement qui repart chaque mois.
-                Text(stringResource(R.string.setup_validity_label), style = MaterialTheme.typography.titleMedium)
+                // 3. Durée : pass de 7, 15 ou 30 jours, autre durée, ou abonnement qui repart chaque mois.
+                Text(stringResource(R.string.setup_validity_label), style = MaterialTheme.typography.titleSmall)
                 PlanCycleFields(state.cycle, onChange = { onIntent(PlanSetupIntent.CycleChanged(it)) })
 
                 // 4. Prix du forfait, ramené au Go pour chiffrer les économies.
-                Text(stringResource(R.string.setup_price_label), style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.setup_price_label), style = MaterialTheme.typography.titleSmall)
                 OutlinedTextField(
                     value = state.priceInput,
                     onValueChange = { onIntent(PlanSetupIntent.PriceChanged(it)) },
@@ -307,7 +326,7 @@ private fun PlanSetupPreview() {
     PreviewSurface(padded = false) {
         PlanSetupContent(
             PlanSetupState(
-                planInput = "25", remainingInput = "19", priceInput = "28,5", operatorName = "Ooredoo",
+                planInput = "30", remainingInput = "22,7", priceInput = "28,5", operatorName = "Ooredoo",
                 savedPlans = listOf(
                     SavedPlan("60503", 25_000_000_000L, 28_500, 30),
                     SavedPlan("60503", 220_000_000L, 950, 4),

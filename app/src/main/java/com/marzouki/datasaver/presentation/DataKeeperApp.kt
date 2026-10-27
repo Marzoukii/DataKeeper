@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.BarChart
 import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.NetworkCheck
 import androidx.compose.material.icons.rounded.Speed
+import androidx.compose.material.icons.rounded.Wifi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -52,13 +54,19 @@ import com.marzouki.datasaver.presentation.onboarding.OnboardingViewModel
 import com.marzouki.datasaver.presentation.onboarding.PlanSetupScreen
 import com.marzouki.datasaver.presentation.onboarding.UsageAccessScreen
 import com.marzouki.datasaver.presentation.quota.QuotaScreen
+import com.marzouki.datasaver.presentation.settings.SettingsScreen
+import com.marzouki.datasaver.presentation.speedtest.SpeedTestScreen
+import com.marzouki.datasaver.presentation.tethering.TetheringScreen
 import com.marzouki.datasaver.presentation.usage.UsageScreen
+import com.marzouki.datasaver.presentation.wifi.WifiScreen
 import com.marzouki.datasaver.presentation.widget.refreshHomeSurfaces
 
 private enum class Destination(val route: String, @param:StringRes val labelRes: Int, val icon: ImageVector) {
     USAGE(AppRoutes.USAGE, R.string.tab_usage, Icons.Rounded.BarChart),
     QUOTA(AppRoutes.QUOTA, R.string.tab_quota, Icons.Rounded.Speed),
     DOWNLOADS(AppRoutes.DOWNLOADS, R.string.tab_downloads, Icons.Rounded.Download),
+    SPEED_TEST(AppRoutes.SPEED_TEST, R.string.tab_speed_test, Icons.Rounded.NetworkCheck),
+    WIFI(AppRoutes.WIFI, R.string.tab_wifi, Icons.Rounded.Wifi),
 }
 
 /**
@@ -121,7 +129,8 @@ private fun MainScaffold(requestedTab: String?, onTabRequestHandled: () -> Unit)
         Destination.entries.firstOrNull { it.route == requestedTab }?.let { navController.navigateToTab(it) }
         if (requestedTab != null) onTabRequestHandled()
     }
-    val current = Destination.entries.firstOrNull { it.route == backStackEntry?.destination?.route } ?: Destination.USAGE
+    val currentRoute = backStackEntry?.destination?.route
+    val current = Destination.entries.firstOrNull { it.route == currentRoute } ?: Destination.USAGE
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -129,6 +138,8 @@ private fun MainScaffold(requestedTab: String?, onTabRequestHandled: () -> Unit)
         contentWindowInsets = WindowInsets.safeDrawing,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
+            // Réglages et partage de connexion sont des sous-écrans, avec leur flèche retour : pas d'onglets dessous.
+            if (currentRoute == AppRoutes.SETTINGS || currentRoute == AppRoutes.TETHERING) return@Scaffold
             NavigationBar(containerColor = MaterialTheme.colorScheme.surface, tonalElevation = 0.dp) {
                 Destination.entries.forEach { destination ->
                     NavigationBarItem(
@@ -154,12 +165,25 @@ private fun MainScaffold(requestedTab: String?, onTabRequestHandled: () -> Unit)
             modifier = Modifier.padding(innerPadding),
         ) {
             composable(Destination.USAGE.route) {
-                UsageScreen(snackbarHostState, onOpenQuota = { navController.navigateToTab(Destination.QUOTA) })
+                UsageScreen(
+                    snackbarHostState,
+                    onOpenQuota = { navController.navigateToTab(Destination.QUOTA) },
+                    onOpenSettings = { navController.navigate(AppRoutes.SETTINGS) { launchSingleTop = true } },
+                    onOpenTethering = { navController.navigate(AppRoutes.TETHERING) { launchSingleTop = true } },
+                )
+            }
+            composable(AppRoutes.SETTINGS) {
+                SettingsScreen(onBack = { navController.popBackStack() })
+            }
+            composable(AppRoutes.TETHERING) {
+                TetheringScreen(onBack = { navController.popBackStack() })
             }
             composable(Destination.QUOTA.route) {
                 QuotaScreen(snackbarHostState, onOpenDownloads = { navController.navigateToTab(Destination.DOWNLOADS) })
             }
             composable(Destination.DOWNLOADS.route) { DownloadsScreen(snackbarHostState) }
+            composable(Destination.SPEED_TEST.route) { SpeedTestScreen(snackbarHostState) }
+            composable(Destination.WIFI.route) { WifiScreen() }
         }
     }
 }

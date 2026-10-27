@@ -5,12 +5,17 @@ import com.marzouki.datasaver.domain.model.SavedPlan
 import com.marzouki.datasaver.presentation.quota.PlanCycleInput
 import com.marzouki.datasaver.presentation.quota.QuotaViewModel
 
+/** Tailles proposées en un appui ; les autres se tapent après « Autre ». */
+val PLAN_PRESETS_GB = listOf(5, 10, 20, 25, 50)
+
 /**
  * Configuration du forfait, avant le premier tableau de bord : forfait (ex. 25 Go), data restante
  * annoncée par l'opérateur (ex. 19 Go), jour d'achat et validité (30 jours), prix du forfait (28 DT).
  */
 data class PlanSetupState(
     val planInput: String = "",
+    /** « Autre » choisi : la taille se tape dans le champ, même si elle tombe sur une puce. */
+    val customPlan: Boolean = false,
     val remainingInput: String = "",
     val priceInput: String = "",
     /** Jour d'achat et validité ; un pass de 30 jours acheté aujourd'hui par défaut. */
@@ -36,6 +41,9 @@ data class PlanSetupState(
     /** [planPriceMillimes] ramené au Go, affiché sous le champ et utilisé pour chiffrer les économies. */
     val pricePerGb: PricePerGb? get() = planBytes?.let { plan -> planPriceMillimes?.let { PricePerGb.ofPlan(it, plan) } }
 
+    /** Champ de taille affiché : « Autre » choisi, ou taille hors des puces (forfait déjà saisi de 30 Go). */
+    val showsCustomPlan: Boolean get() = customPlan || (planInput.isNotBlank() && planInput.trim() !in PLAN_PRESETS_GB.map(Int::toString))
+
     val planError: Boolean get() = planBytes == null
     val remainingError: Boolean get() = remainingInput.isNotBlank() && remainingBytes == null
     // Sans forfait valide, l'erreur est déjà sur le forfait : le prix ne peut pas encore être jugé.
@@ -47,6 +55,8 @@ data class PlanSetupState(
 sealed interface PlanSetupIntent {
     data class PlanChanged(val value: String) : PlanSetupIntent
     data class PresetSelected(val gigabytes: Int) : PlanSetupIntent
+    /** « Autre » : affiche le champ pour taper une taille hors des puces. */
+    data object CustomPlanSelected : PlanSetupIntent
     data class RemainingChanged(val value: String) : PlanSetupIntent
     data class PriceChanged(val value: String) : PlanSetupIntent
     data class CycleChanged(val cycle: PlanCycleInput) : PlanSetupIntent

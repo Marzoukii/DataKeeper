@@ -22,9 +22,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.DataUsage
 import androidx.compose.material.icons.rounded.HourglassTop
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.WifiTethering
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -74,6 +76,7 @@ import com.marzouki.datasaver.ui.components.QuotaSummaryCard
 import com.marzouki.datasaver.ui.components.SavingsAndPlanRow
 import com.marzouki.datasaver.ui.components.ScreenHeader
 import com.marzouki.datasaver.ui.components.ScreenPreviews
+import com.marzouki.datasaver.ui.components.SettingRow
 import com.marzouki.datasaver.ui.components.ThinBar
 import com.marzouki.datasaver.ui.components.UsageSplitCard
 import com.marzouki.datasaver.ui.components.dayName
@@ -91,6 +94,8 @@ import kotlin.math.roundToInt
 fun UsageScreen(
     snackbarHostState: SnackbarHostState,
     onOpenQuota: () -> Unit,
+    onOpenSettings: () -> Unit,
+    onOpenTethering: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: UsageViewModel = hiltViewModel(),
 ) {
@@ -119,6 +124,8 @@ fun UsageScreen(
         state = state,
         onIntent = viewModel::onIntent,
         onOpenQuota = onOpenQuota,
+        onOpenSettings = onOpenSettings,
+        onOpenTethering = onOpenTethering,
         onRequestPhonePermission = {
             if (phonePermissionBlocked) {
                 openAppDetailsSettings(context)
@@ -138,6 +145,8 @@ private fun UsageContent(
     onOpenQuota: () -> Unit,
     modifier: Modifier = Modifier,
     onRequestPhonePermission: () -> Unit = {},
+    onOpenSettings: () -> Unit = {},
+    onOpenTethering: () -> Unit = {},
 ) {
     val period = state.period ?: MonthPeriod.current()
     // Jour du graphique dont le détail est affiché en feuille de bas de page.
@@ -162,8 +171,11 @@ private fun UsageContent(
                     ),
                     title = stringResource(R.string.usage_title),
                 ) {
-                    HeaderIconButton(Icons.Rounded.Settings, stringResource(R.string.usage_settings), onOpenQuota)
+                    HeaderIconButton(Icons.Rounded.Settings, stringResource(R.string.usage_settings), onOpenSettings)
                 }
+            }
+            state.tethering?.let { tethering ->
+                item { TetheringBanner(tethering.usedBytes, onClick = onOpenTethering) }
             }
             val usage = state.usage
             when {
@@ -278,6 +290,29 @@ private fun androidx.compose.foundation.lazy.LazyListScope.dashboard(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun TetheringBanner(usedBytes: Long, onClick: () -> Unit) {
+    DataKeeperCard(
+        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+        contentPadding = 0.dp,
+        onClick = onClick,
+    ) {
+        SettingRow(
+            icon = Icons.Rounded.WifiTethering,
+            title = stringResource(R.string.usage_tethering_title),
+            subtitle = stringResource(R.string.usage_tethering_body, usedBytes.toReadableSize()),
+            iconContainerColor = DataColors.mobile,
+            iconTint = MaterialTheme.colorScheme.onTertiary,
+        ) {
+            Icon(
+                Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onTertiaryContainer,
+            )
         }
     }
 }

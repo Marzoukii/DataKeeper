@@ -1,7 +1,10 @@
 package com.marzouki.datasaver.domain.repository
 
+import com.marzouki.datasaver.domain.enums.AppLanguageChoice
 import com.marzouki.datasaver.domain.enums.DownloadSchedule
 import com.marzouki.datasaver.domain.enums.NetworkGeneration
+import com.marzouki.datasaver.domain.enums.ThemeMode
+import com.marzouki.datasaver.domain.enums.WifiAvailability
 import com.marzouki.datasaver.domain.model.AppDataUsage
 import com.marzouki.datasaver.domain.model.DataQuota
 import com.marzouki.datasaver.domain.model.DataUsage
@@ -13,6 +16,11 @@ import com.marzouki.datasaver.domain.model.PricePerGb
 import com.marzouki.datasaver.domain.model.QuotaStatus
 import com.marzouki.datasaver.domain.model.SavedPlan
 import com.marzouki.datasaver.domain.model.ScheduledDownload
+import com.marzouki.datasaver.domain.model.SpeedTestProgress
+import com.marzouki.datasaver.domain.model.SpeedTestResult
+import com.marzouki.datasaver.domain.model.TetheringAlert
+import com.marzouki.datasaver.domain.model.TetheringSession
+import com.marzouki.datasaver.domain.model.WifiScan
 import kotlinx.coroutines.flow.Flow
 
 interface UsageRepository {
@@ -26,6 +34,37 @@ interface UsageRepository {
 
     /** Applications ayant consommé le plus de data mobile sur la période, par ordre décroissant. */
     suspend fun getTopMobileApps(period: MonthPeriod, limit: Int): List<AppDataUsage>
+}
+
+interface TetheringRepository {
+    /** Partage de connexion allumé (point d'accès Wi-Fi, USB ou Bluetooth), relu à chaque changement. */
+    fun observeHotspotActive(): Flow<Boolean>
+
+    /** État du partage à cet instant, pour le travail en arrière-plan. */
+    fun isHotspotActive(): Boolean
+
+    /** Data mobile envoyée et reçue par le téléphone depuis son démarrage, en temps réel ; null si illisible. */
+    fun mobileCounterBytes(): Long?
+
+    /**
+     * Tient à jour la session d'après l'état du partage : début et compteur [counterBytes] retenus
+     * quand on le voit allumé pour la première fois, session oubliée quand il s'éteint.
+     * Renvoie la session en cours, null s'il est éteint.
+     */
+    suspend fun syncSession(active: Boolean, nowMillis: Long, counterBytes: Long): TetheringSession?
+
+    val alert: Flow<TetheringAlert>
+    suspend fun setAlert(alert: TetheringAlert)
+
+    /** Début de la session ([TetheringSession.startMillis]) déjà signalée par une notification ; null si aucune. */
+    val alertedSessionStart: Flow<Long?>
+    suspend fun setAlertedSessionStart(startMillis: Long?)
+}
+
+/** Planifie la surveillance du partage de connexion, tant que son alerte est active. */
+interface TetheringMonitorScheduler {
+    fun start()
+    fun stop()
 }
 
 interface QuotaRepository {
@@ -80,9 +119,56 @@ interface OperatorRepository {
     fun observeDataNetworkGeneration(): Flow<NetworkGeneration?>
 }
 
+interface LanguageRepository {
+    fun current(): AppLanguageChoice
+
+    /** Applique la langue tout de suite : l'écran se recrée dans la nouvelle langue. À appeler sur le fil principal. */
+    fun set(choice: AppLanguageChoice)
+}
+
+interface ThemeRepository {
+    val themeMode: Flow<ThemeMode>
+
+    /** Enregistre le thème et l'applique tout de suite : l'écran se recrée. À appeler sur le fil principal. */
+    suspend fun setThemeMode(mode: ThemeMode)
+
+    /** Applique le thème enregistré, au démarrage de l'appli. */
+    suspend fun applySavedThemeMode()
+}
+
 interface ConnectivityRepository {
     /** Vrai tant que l'appareil est sur un réseau non facturé (Wi-Fi), condition des téléchargements. */
     fun observeUnmeteredConnection(): Flow<Boolean>
+}
+
+interface WifiRepository {
+    /** Permission, Wi-Fi et localisation : relu à chaque appel, l'utilisateur peut tout changer hors de l'appli. */
+    fun availability(): WifiAvailability
+
+    /**
+     * Wi-Fi ouverts du dernier scan, relus à chaque nouveau scan et à chaque connexion. Tant qu'il est
+     * collecté, retient aussi pour chaque Wi-Fi ouvert rejoint s'il passe par un portail de connexion.
+     */
+    fun observeOpenNetworks(): Flow<WifiScan>
+
+    /**
+     * Lance un nouveau scan ; faux s'il n'a pas pu partir (Android en limite le nombre), les
+     * résultats précédents restent alors affichés.
+     */
+    fun requestScan(): Boolean
+}
+
+interface SpeedTestRepository {
+    /** Derniers tests terminés, du plus récent au plus ancien. */
+    val history: Flow<List<SpeedTestResult>>
+    suspend fun addToHistory(result: SpeedTestResult)
+
+    /**
+     * Mesure ping, téléchargement puis envoi ; le flux se termine une fois l'envoi mesuré.
+     * [maxBytesPerPhase] arrête chaque sens plus tôt une fois ce volume transféré.
+     * @throws java.io.IOException si le réseau ou le serveur de mesure fait défaut.
+     */
+    fun measure(maxBytesPerPhase: Long?): Flow<SpeedTestProgress>
 }
 
 /** Planifie la vérification périodique du quota en arrière-plan. */
@@ -99,4 +185,7 @@ interface QuotaAlertNotifier {
 
     /** Prévient que le forfait arrive à son terme le [renewalMillis] et qu'il faudra le recharger. */
     fun notifyPlanRenewal(renewalMillis: Long)
+
+    /** Prévient que les appareils connectés au partage ont consommé [usedBytes], au-delà de [thresholdBytes]. */
+    fun notifyTetheringThreshold(usedBytes: Long, thresholdBytes: Long)
 }

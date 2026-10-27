@@ -15,10 +15,9 @@ import com.marzouki.datasaver.MainActivity
 import com.marzouki.datasaver.R
 import com.marzouki.datasaver.domain.model.QuotaStatus
 import com.marzouki.datasaver.domain.repository.QuotaAlertNotifier
+import com.marzouki.datasaver.ui.components.formatDayMonth
+import com.marzouki.datasaver.ui.components.toReadableSize
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import javax.inject.Inject
 import kotlin.math.roundToInt
 
@@ -47,12 +46,22 @@ class NotificationQuotaAlertNotifier @Inject constructor(
     override fun notifyPlanRenewal(renewalMillis: Long) {
         // Arrondi au jour supérieur : à 36 h de l'échéance, « dans 2 jours ».
         val days = ((renewalMillis - System.currentTimeMillis() + DAY_MILLIS - 1) / DAY_MILLIS).coerceAtLeast(1).toInt()
-        val date = SimpleDateFormat("d MMMM", Locale.FRANCE).format(Date(renewalMillis))
+        // Même date que dans l'appli, dans sa langue : « 1er novembre », « 1 November », « 1 نوفمبر ».
+        val date = formatDayMonth(renewalMillis)
         post(
             RENEWAL_NOTIFICATION_ID,
             context.resources.getQuantityString(R.plurals.notification_renewal_title, days, days),
             context.getString(R.string.notification_renewal_text, date),
             NotificationCompat.PRIORITY_DEFAULT,
+        )
+    }
+
+    override fun notifyTetheringThreshold(usedBytes: Long, thresholdBytes: Long) {
+        post(
+            TETHERING_NOTIFICATION_ID,
+            context.getString(R.string.notification_tethering_title, usedBytes.toReadableSize()),
+            context.getString(R.string.notification_tethering_text, thresholdBytes.toReadableSize()),
+            NotificationCompat.PRIORITY_HIGH,
         )
     }
 
@@ -92,6 +101,7 @@ class NotificationQuotaAlertNotifier @Inject constructor(
         const val NOTIFICATION_ID = 80
         const val RECALIBRATE_NOTIFICATION_ID = 81
         const val RENEWAL_NOTIFICATION_ID = 82
+        const val TETHERING_NOTIFICATION_ID = 83
         const val DAY_MILLIS = 24L * 60 * 60 * 1000
     }
 }

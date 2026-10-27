@@ -13,8 +13,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.CalendarMonth
-import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -94,7 +94,7 @@ private fun SettingRowPreview() {
                 title = "Début du cycle",
                 subtitle = "Le 1er de chaque mois",
                 onClick = {},
-            ) { Icon(Icons.Rounded.ChevronRight, contentDescription = null) }
+            ) { Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, contentDescription = null) }
         }
     }
 }

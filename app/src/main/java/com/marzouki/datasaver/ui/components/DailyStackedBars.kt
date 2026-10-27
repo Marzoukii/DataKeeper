@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,15 +27,18 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.marzouki.datasaver.R
 import com.marzouki.datasaver.domain.model.DayUsage
 import com.marzouki.datasaver.ui.theme.DataColors
 
 private val ChartHeight = 120.dp
+
 /** Part de la colonne du jour occupée par la barre. */
 private const val BarWidthFraction = 0.78f
 private val SegmentGap = 3.dp
 private val MinSegment = 3.dp
+private val MinDayLabelSize = 8.sp
 
 /**
  * Histogramme empilé des derniers jours : Wi-Fi en bas, mobile au-dessus.
@@ -52,10 +56,15 @@ fun DailyStackedBars(
     val max = days.maxOfOrNull { it.totalBytes }?.takeIf { it > 0 } ?: 1L
     // Un jour sorti de la fenêtre ne doit pas estomper toutes les barres.
     val selected = selectedDayMillis?.takeIf { millis -> days.any { it.dayStartMillis == millis } }
+
     Column(modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (title != null) {
-                Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                Text(
+                    title,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f)
+                )
             } else {
                 Spacer(Modifier.weight(1f))
             }
@@ -107,11 +116,19 @@ fun DailyStackedBars(
                     }
                     Spacer(Modifier.height(8.dp))
                     val isToday = index == days.lastIndex
+                    val labelStyle = MaterialTheme.typography.labelMedium
+                    // « الأربعاء » déborde d'une colonne étroite : le nom rétrécit plutôt que d'être coupé.
                     Text(
                         dayInitial(day.dayStartMillis),
-                        style = MaterialTheme.typography.labelMedium,
+                        style = labelStyle,
                         color = if (isToday) MaterialTheme.colorScheme.onSurface
                         else MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        softWrap = false,
+                        autoSize = TextAutoSize.StepBased(
+                            minFontSize = MinDayLabelSize,
+                            maxFontSize = labelStyle.fontSize,
+                        ),
                     )
                 }
             }
@@ -147,7 +164,11 @@ private fun LegendItem(color: Color, label: String) {
                 .background(color),
         )
         Spacer(Modifier.width(6.dp))
-        Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(
+            label,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
