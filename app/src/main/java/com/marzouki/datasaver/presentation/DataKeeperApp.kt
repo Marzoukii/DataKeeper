@@ -14,6 +14,7 @@ import androidx.compose.material.icons.rounded.BarChart
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.NetworkCheck
 import androidx.compose.material.icons.rounded.Speed
+import androidx.compose.material.icons.rounded.Wifi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -55,6 +56,7 @@ import com.marzouki.datasaver.presentation.onboarding.UsageAccessScreen
 import com.marzouki.datasaver.presentation.quota.QuotaScreen
 import com.marzouki.datasaver.presentation.speedtest.SpeedTestScreen
 import com.marzouki.datasaver.presentation.usage.UsageScreen
+import com.marzouki.datasaver.presentation.wifi.WifiScreen
 import com.marzouki.datasaver.presentation.widget.refreshHomeSurfaces
 
 private enum class Destination(val route: String, @param:StringRes val labelRes: Int, val icon: ImageVector) {
@@ -62,6 +64,7 @@ private enum class Destination(val route: String, @param:StringRes val labelRes:
     QUOTA(AppRoutes.QUOTA, R.string.tab_quota, Icons.Rounded.Speed),
     DOWNLOADS(AppRoutes.DOWNLOADS, R.string.tab_downloads, Icons.Rounded.Download),
     SPEED_TEST(AppRoutes.SPEED_TEST, R.string.tab_speed_test, Icons.Rounded.NetworkCheck),
+    WIFI(AppRoutes.WIFI, R.string.tab_wifi, Icons.Rounded.Wifi),
 }
 
 /**
@@ -164,6 +167,7 @@ private fun MainScaffold(requestedTab: String?, onTabRequestHandled: () -> Unit)
             }
             composable(Destination.DOWNLOADS.route) { DownloadsScreen(snackbarHostState) }
             composable(Destination.SPEED_TEST.route) { SpeedTestScreen(snackbarHostState) }
+            composable(Destination.WIFI.route) { WifiScreen() }
         }
     }
 }

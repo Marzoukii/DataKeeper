@@ -5,6 +5,7 @@
     <string name="tab_quota">الحصة</string>
     <string name="tab_downloads">بدون اتصال</string>
     <string name="tab_speed_test">السرعة</string>
+    <string name="tab_wifi">واي فاي</string>
 
     <string name="action_retry">إعادة المحاولة</string>
     <string name="action_save">حفظ</string>
@@ -374,4 +375,40 @@
     <string name="speed_test_mobile_dialog_body">قد يستهلك الاختبار حتى %1$s من باقتك. اتصل بالواي فاي لإجرائه مجانًا.</string>
     <string name="speed_test_mobile_dialog_confirm">البدء على أي حال</string>
     <string name="speed_test_failed">توقّف الاختبار: تحقّق من اتصالك وأعد المحاولة.</string>
+
+    <!-- واي فاي مجاني -->
+    <string name="wifi_title">واي فاي مجاني</string>
+    <string name="wifi_subtitle">شبكات مفتوحة بالقرب منك</string>
+    <string name="wifi_area_title">من حولك</string>
+    <string name="wifi_area_updated">حُدِّث %1$s</string>
+    <string name="wifi_area_scanning">جارٍ البحث عن الشبكات…</string>
+    <string name="wifi_refresh">تحديث</string>
+    <string name="wifi_warning">بدون كلمة سر، لا تكون البيانات مشفّرة. تجنّب العمليات البنكية وكلمات السر على هذه الشبكات.</string>
+    <string name="wifi_filter_all">الكل · %1$d</string>
+    <string name="wifi_filter_no_ads">بدون إعلانات · %1$d</string>
+    <string name="wifi_filter_nearest">الأقرب</string>
+    <string name="wifi_distance">~%1$d م</string>
+    <string name="wifi_details">%1$s · %2$s</string>
+    <string name="wifi_signal_strong">إشارة قوية</string>
+    <string name="wifi_signal_medium">إشارة متوسطة</string>
+    <string name="wifi_signal_weak">إشارة ضعيفة</string>
+    <string name="wifi_portal">بوابة بإعلانات</string>
+    <string name="wifi_no_portal">مفتوحة · بدون إعلانات</string>
+    <string name="wifi_untested">لم تُجرَّب بعد</string>
+    <string name="wifi_connect">اتصال</string>
+    <string name="wifi_connected">متّصل</string>
+    <string name="wifi_footer">شبكة الواي فاي ذات البوابة تطلب المرور بصفحة دخول، غالبًا مع إعلانات، قبل السماح بالتنزيلات.</string>
+    <string name="wifi_empty_title">لا توجد شبكة مفتوحة هنا</string>
+    <string name="wifi_empty_body">تنقّل أو حدّث بعد قليل.</string>
+    <string name="wifi_empty_filter">لا توجد شبكة لهذا التصنيف.</string>
+    <string name="wifi_permission_title">اسمح بالوصول إلى الموقع</string>
+    <string name="wifi_permission_body">يشترط أندرويد إذن الموقع لعرض شبكات الواي فاي من حولك. لا يحفظه DataKeeper ولا يرسله إلى أي مكان.</string>
+    <string name="wifi_permission_button">السماح</string>
+    <string name="wifi_permission_settings">فتح إعدادات التطبيق</string>
+    <string name="wifi_off_title">الواي فاي متوقف</string>
+    <string name="wifi_off_body">شغّله لرؤية الشبكات المفتوحة من حولك.</string>
+    <string name="wifi_off_button">تشغيل الواي فاي</string>
+    <string name="wifi_location_off_title">تحديد الموقع متوقف</string>
+    <string name="wifi_location_off_body">لا يعرض أندرويد شبكات الواي فاي القريبة إلا إذا كان تحديد الموقع مفعّلًا.</string>
+    <string name="wifi_location_off_button">تفعيل تحديد الموقع</string>
 </resources>

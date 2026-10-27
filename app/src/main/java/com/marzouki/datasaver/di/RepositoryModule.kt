@@ -8,6 +8,7 @@ import com.marzouki.datasaver.data.quota.QuotaRepositoryImpl
 import com.marzouki.datasaver.data.quota.WorkManagerQuotaMonitorScheduler
 import com.marzouki.datasaver.data.speedtest.SpeedTestRepositoryImpl
 import com.marzouki.datasaver.data.usage.UsageRepositoryImpl
+import com.marzouki.datasaver.data.wifi.WifiRepositoryImpl
 import com.marzouki.datasaver.domain.repository.ConnectivityRepository
 import com.marzouki.datasaver.domain.repository.DownloadRepository
 import com.marzouki.datasaver.domain.repository.OperatorRepository
@@ -16,6 +17,7 @@ import com.marzouki.datasaver.domain.repository.QuotaMonitorScheduler
 import com.marzouki.datasaver.domain.repository.QuotaRepository
 import com.marzouki.datasaver.domain.repository.SpeedTestRepository
 import com.marzouki.datasaver.domain.repository.UsageRepository
+import com.marzouki.datasaver.domain.repository.WifiRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -49,6 +51,9 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindOperatorRepository(impl: OperatorRepositoryImpl): OperatorRepository
+
+    @Binds
+    abstract fun bindWifiRepository(impl: WifiRepositoryImpl): WifiRepository
 
     @Binds
     abstract fun bindQuotaMonitorScheduler(impl: WorkManagerQuotaMonitorScheduler): QuotaMonitorScheduler

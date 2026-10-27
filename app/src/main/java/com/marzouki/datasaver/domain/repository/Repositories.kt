@@ -2,6 +2,7 @@ package com.marzouki.datasaver.domain.repository
 
 import com.marzouki.datasaver.domain.enums.DownloadSchedule
 import com.marzouki.datasaver.domain.enums.NetworkGeneration
+import com.marzouki.datasaver.domain.enums.WifiAvailability
 import com.marzouki.datasaver.domain.model.AppDataUsage
 import com.marzouki.datasaver.domain.model.DataQuota
 import com.marzouki.datasaver.domain.model.DataUsage
@@ -15,6 +16,7 @@ import com.marzouki.datasaver.domain.model.SavedPlan
 import com.marzouki.datasaver.domain.model.ScheduledDownload
 import com.marzouki.datasaver.domain.model.SpeedTestProgress
 import com.marzouki.datasaver.domain.model.SpeedTestResult
+import com.marzouki.datasaver.domain.model.WifiScan
 import kotlinx.coroutines.flow.Flow
 
 interface UsageRepository {
@@ -85,6 +87,23 @@ interface OperatorRepository {
 interface ConnectivityRepository {
     /** Vrai tant que l'appareil est sur un réseau non facturé (Wi-Fi), condition des téléchargements. */
     fun observeUnmeteredConnection(): Flow<Boolean>
+}
+
+interface WifiRepository {
+    /** Permission, Wi-Fi et localisation : relu à chaque appel, l'utilisateur peut tout changer hors de l'appli. */
+    fun availability(): WifiAvailability
+
+    /**
+     * Wi-Fi ouverts du dernier scan, relus à chaque nouveau scan et à chaque connexion. Tant qu'il est
+     * collecté, retient aussi pour chaque Wi-Fi ouvert rejoint s'il passe par un portail de connexion.
+     */
+    fun observeOpenNetworks(): Flow<WifiScan>
+
+    /**
+     * Lance un nouveau scan ; faux s'il n'a pas pu partir (Android en limite le nombre), les
+     * résultats précédents restent alors affichés.
+     */
+    fun requestScan(): Boolean
 }
 
 interface SpeedTestRepository {

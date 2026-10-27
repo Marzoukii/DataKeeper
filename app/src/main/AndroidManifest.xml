@@ -7,6 +7,14 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Facultative : affiche 4G ou 5G à côté de l'opérateur des données mobiles. -->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <!-- Onglet Wi-Fi gratuits : Android exige la localisation précise pour lister les Wi-Fi autour
+         et lire le nom du Wi-Fi rejoint. Rien n'est enregistré ni envoyé. -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES" />
+    <uses-feature android:name="android.hardware.wifi" android:required="false" />
     <!-- La téléphonie reste facultative : l'appli s'installe aussi sur les tablettes sans SIM. -->
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
     <!-- Accordée manuellement par l'utilisateur dans "Accès aux données d'utilisation". -->
