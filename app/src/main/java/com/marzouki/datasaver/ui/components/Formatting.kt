@@ -27,7 +27,7 @@ internal enum class AppLanguage(
     val justNow: String,
     /** « il y a 5 min » ; %d est le nombre de minutes. */
     val minutesAgo: String,
-    /** Initiales des jours, du lundi au dimanche. */
+    /** Initiales des jours, du lundi au dimanche ; noms complets en arabe, où une lettre ne se lit pas. */
     val dayInitials: List<String>,
 ) {
     FR(
@@ -43,7 +43,7 @@ internal enum class AppLanguage(
     AR(
         Locale.forLanguageTag("ar-TN-u-nu-latn"), listOf("بايت", "كيلو", "ميغا", "جيغا", "تيرا"), "د.ت",
         "اليوم", "أمس", "الآن", "منذ %d${NBSP}د",
-        listOf("ن", "ث", "ر", "خ", "ج", "س", "ح"),
+        listOf("الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت", "الأحد"),
     ),
     ;
 
@@ -139,10 +139,10 @@ fun formatDayOrdinal(day: Int): String = when (AppLanguage.current()) {
     AppLanguage.AR -> day.toString()
 }
 
-/** Initiale du jour de la semaine : L M M J V S D, M T W T F S S, ن ث ر خ ج س ح. */
+/** Jour de la semaine sous l'axe : L M M J V S D, M T W T F S S, الإثنين … الأحد. */
 fun dayInitial(millis: Long): String {
     val dayOfWeek = Calendar.getInstance().apply { timeInMillis = millis }.get(Calendar.DAY_OF_WEEK)
-    // Calendar numérote du dimanche (1) au samedi (7) ; les initiales vont du lundi au dimanche.
+    // Calendar numérote du dimanche (1) au samedi (7) ; les listes vont du lundi au dimanche.
     return AppLanguage.current().dayInitials[(dayOfWeek + 5) % 7]
 }
 

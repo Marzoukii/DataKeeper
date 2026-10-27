@@ -53,6 +53,7 @@ import com.marzouki.datasaver.presentation.onboarding.OnboardingViewModel
 import com.marzouki.datasaver.presentation.onboarding.PlanSetupScreen
 import com.marzouki.datasaver.presentation.onboarding.UsageAccessScreen
 import com.marzouki.datasaver.presentation.quota.QuotaScreen
+import com.marzouki.datasaver.presentation.settings.SettingsScreen
 import com.marzouki.datasaver.presentation.speedtest.SpeedTestScreen
 import com.marzouki.datasaver.presentation.usage.UsageScreen
 import com.marzouki.datasaver.presentation.widget.refreshHomeSurfaces
@@ -124,7 +125,8 @@ private fun MainScaffold(requestedTab: String?, onTabRequestHandled: () -> Unit)
         Destination.entries.firstOrNull { it.route == requestedTab }?.let { navController.navigateToTab(it) }
         if (requestedTab != null) onTabRequestHandled()
     }
-    val current = Destination.entries.firstOrNull { it.route == backStackEntry?.destination?.route } ?: Destination.USAGE
+    val currentRoute = backStackEntry?.destination?.route
+    val current = Destination.entries.firstOrNull { it.route == currentRoute } ?: Destination.USAGE
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -132,6 +134,8 @@ private fun MainScaffold(requestedTab: String?, onTabRequestHandled: () -> Unit)
         contentWindowInsets = WindowInsets.safeDrawing,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
+            // Les réglages sont un sous-écran, avec sa flèche retour : pas d'onglets dessous.
+            if (currentRoute == AppRoutes.SETTINGS) return@Scaffold
             NavigationBar(containerColor = MaterialTheme.colorScheme.surface, tonalElevation = 0.dp) {
                 Destination.entries.forEach { destination ->
                     NavigationBarItem(
@@ -157,7 +161,14 @@ private fun MainScaffold(requestedTab: String?, onTabRequestHandled: () -> Unit)
             modifier = Modifier.padding(innerPadding),
         ) {
             composable(Destination.USAGE.route) {
-                UsageScreen(snackbarHostState, onOpenQuota = { navController.navigateToTab(Destination.QUOTA) })
+                UsageScreen(
+                    snackbarHostState,
+                    onOpenQuota = { navController.navigateToTab(Destination.QUOTA) },
+                    onOpenSettings = { navController.navigate(AppRoutes.SETTINGS) { launchSingleTop = true } },
+                )
+            }
+            composable(AppRoutes.SETTINGS) {
+                SettingsScreen(onBack = { navController.popBackStack() })
             }
             composable(Destination.QUOTA.route) {
                 QuotaScreen(snackbarHostState, onOpenDownloads = { navController.navigateToTab(Destination.DOWNLOADS) })

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.DataKeeper" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- Thème AppCompat, exigé par AppCompatActivity ; l'écran lui-même est dessiné par Compose. -->
+    <style name="Theme.DataKeeper" parent="Theme.AppCompat.DayNight.NoActionBar" />
 </resources>

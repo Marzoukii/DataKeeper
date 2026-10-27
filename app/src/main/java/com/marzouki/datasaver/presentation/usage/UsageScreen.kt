@@ -91,6 +91,7 @@ import kotlin.math.roundToInt
 fun UsageScreen(
     snackbarHostState: SnackbarHostState,
     onOpenQuota: () -> Unit,
+    onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: UsageViewModel = hiltViewModel(),
 ) {
@@ -119,6 +120,7 @@ fun UsageScreen(
         state = state,
         onIntent = viewModel::onIntent,
         onOpenQuota = onOpenQuota,
+        onOpenSettings = onOpenSettings,
         onRequestPhonePermission = {
             if (phonePermissionBlocked) {
                 openAppDetailsSettings(context)
@@ -138,6 +140,7 @@ private fun UsageContent(
     onOpenQuota: () -> Unit,
     modifier: Modifier = Modifier,
     onRequestPhonePermission: () -> Unit = {},
+    onOpenSettings: () -> Unit = {},
 ) {
     val period = state.period ?: MonthPeriod.current()
     // Jour du graphique dont le détail est affiché en feuille de bas de page.
@@ -162,7 +165,7 @@ private fun UsageContent(
                     ),
                     title = stringResource(R.string.usage_title),
                 ) {
-                    HeaderIconButton(Icons.Rounded.Settings, stringResource(R.string.usage_settings), onOpenQuota)
+                    HeaderIconButton(Icons.Rounded.Settings, stringResource(R.string.usage_settings), onOpenSettings)
                 }
             }
             val usage = state.usage

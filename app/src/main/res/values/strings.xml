@@ -100,7 +100,7 @@
     <!-- « jour 20 sur 31 » : « jour » reste au singulier, pas besoin de pluriel. -->
     <string name="usage_overline" tools:ignore="PluralsCandidate">%1$s · jour %2$d sur %3$d</string>
     <string name="usage_title">Ma consommation</string>
-    <string name="usage_settings">Réglages du quota</string>
+    <string name="usage_settings">Réglages</string>
     <string name="usage_split_title">Wi‑Fi vs données mobiles</string>
     <string name="usage_total">Total %1$s</string>
     <string name="usage_wifi">Wi‑Fi</string>
@@ -312,6 +312,29 @@
         <item quantity="other">Ton forfait expire dans %d jours</item>
     </plurals>
     <string name="notification_renewal_text">Fin du forfait le %1$s. Pense à le recharger pour ne pas te retrouver sans data mobile.</string>
+
+    <!-- Réglages -->
+    <string name="settings_title">Paramètres</string>
+    <string name="settings_back">Retour</string>
+    <string name="settings_appearance">Apparence</string>
+    <string name="settings_theme_system">Système</string>
+    <string name="settings_theme_light">Clair</string>
+    <string name="settings_theme_dark">Sombre</string>
+    <string name="settings_theme_system_hint">« Système » suit le réglage clair/sombre de ton téléphone.</string>
+    <string name="settings_rtl_notice">En arabe, toute l’interface passe de droite à gauche (RTL) automatiquement.</string>
+    <string name="settings_about">À propos</string>
+    <string name="settings_version">Version</string>
+
+    <!-- Langue de l'appli -->
+    <string name="language_title">Langue</string>
+    <!-- Nom de chaque langue dans la langue de l'appli. -->
+    <string name="language_french_name">Français</string>
+    <string name="language_english_name">Anglais</string>
+    <string name="language_arabic_name">Arabe</string>
+    <!-- Chaque langue s'écrit dans sa propre langue, quelle que soit celle de l'appli. -->
+    <string name="language_french" translatable="false">Français</string>
+    <string name="language_english" translatable="false">English</string>
+    <string name="language_arabic" translatable="false">العربية</string>
 
     <!-- Test de débit -->
     <string name="speed_test_overline">Mesure ta vitesse internet</string>

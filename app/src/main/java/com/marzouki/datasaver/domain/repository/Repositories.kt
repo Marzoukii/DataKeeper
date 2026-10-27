@@ -1,7 +1,9 @@
 package com.marzouki.datasaver.domain.repository
 
+import com.marzouki.datasaver.domain.enums.AppLanguageChoice
 import com.marzouki.datasaver.domain.enums.DownloadSchedule
 import com.marzouki.datasaver.domain.enums.NetworkGeneration
+import com.marzouki.datasaver.domain.enums.ThemeMode
 import com.marzouki.datasaver.domain.model.AppDataUsage
 import com.marzouki.datasaver.domain.model.DataQuota
 import com.marzouki.datasaver.domain.model.DataUsage
@@ -80,6 +82,23 @@ interface OperatorRepository {
 
     /** 2G à 5G pour la SIM des données, mise à jour en continu ; null sans permission ou hors réseau. */
     fun observeDataNetworkGeneration(): Flow<NetworkGeneration?>
+}
+
+interface LanguageRepository {
+    fun current(): AppLanguageChoice
+
+    /** Applique la langue tout de suite : l'écran se recrée dans la nouvelle langue. À appeler sur le fil principal. */
+    fun set(choice: AppLanguageChoice)
+}
+
+interface ThemeRepository {
+    val themeMode: Flow<ThemeMode>
+
+    /** Enregistre le thème et l'applique tout de suite : l'écran se recrée. À appeler sur le fil principal. */
+    suspend fun setThemeMode(mode: ThemeMode)
+
+    /** Applique le thème enregistré, au démarrage de l'appli. */
+    suspend fun applySavedThemeMode()
 }
 
 interface ConnectivityRepository {
