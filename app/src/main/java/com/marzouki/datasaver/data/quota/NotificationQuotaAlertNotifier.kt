@@ -16,6 +16,7 @@ import com.marzouki.datasaver.R
 import com.marzouki.datasaver.domain.model.QuotaStatus
 import com.marzouki.datasaver.domain.repository.QuotaAlertNotifier
 import com.marzouki.datasaver.ui.components.formatDayMonth
+import com.marzouki.datasaver.ui.components.toReadableSize
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlin.math.roundToInt
@@ -55,6 +56,15 @@ class NotificationQuotaAlertNotifier @Inject constructor(
         )
     }
 
+    override fun notifyTetheringThreshold(usedBytes: Long, thresholdBytes: Long) {
+        post(
+            TETHERING_NOTIFICATION_ID,
+            context.getString(R.string.notification_tethering_title, usedBytes.toReadableSize()),
+            context.getString(R.string.notification_tethering_text, thresholdBytes.toReadableSize()),
+            NotificationCompat.PRIORITY_HIGH,
+        )
+    }
+
     /** Publie sur le canal des alertes de quota ; rien sans la permission de notifier (Android 13+). */
     private fun post(id: Int, title: String, text: String, priority: Int) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
@@ -91,6 +101,7 @@ class NotificationQuotaAlertNotifier @Inject constructor(
         const val NOTIFICATION_ID = 80
         const val RECALIBRATE_NOTIFICATION_ID = 81
         const val RENEWAL_NOTIFICATION_ID = 82
+        const val TETHERING_NOTIFICATION_ID = 83
         const val DAY_MILLIS = 24L * 60 * 60 * 1000
     }
 }

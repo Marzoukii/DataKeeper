@@ -413,4 +413,29 @@
     <string name="wifi_location_off_title">La localisation est désactivée</string>
     <string name="wifi_location_off_body">Android ne montre les Wi‑Fi autour de toi que si la localisation est activée.</string>
     <string name="wifi_location_off_button">Activer la localisation</string>
+
+    <!-- Partage de connexion -->
+    <string name="tethering_title">Partage de connexion</string>
+    <string name="tethering_subtitle">Conso de tes appareils connectés</string>
+    <string name="tethering_active">Point d’accès actif</string>
+    <string name="tethering_active_badge">Actif</string>
+    <string name="tethering_since">depuis %1$s</string>
+    <string name="tethering_since_unknown">allumé avant %1$s</string>
+    <string name="tethering_inactive">Point d’accès éteint</string>
+    <string name="tethering_inactive_body">Allume le partage de connexion dans Android pour suivre la conso de tes appareils.</string>
+    <string name="tethering_used_label">Consommé par tes appareils</string>
+    <string name="tethering_rate">≈ %1$s / h · estimation</string>
+    <string name="tethering_rate_pending">Le rythme s’affiche après 2 min de partage.</string>
+    <string name="tethering_eta">Au rythme actuel, il reste environ %1$s avant %2$s.</string>
+    <string name="tethering_alert_title">Me prévenir à %1$s</string>
+    <string name="tethering_alert_body">Notification quand le partage dépasse ce seuil</string>
+    <string name="tethering_threshold_title">Seuil d’alerte</string>
+    <string name="tethering_devices_section">Appareils connectés</string>
+    <string name="tethering_devices_title">Voir les appareils dans Android</string>
+    <string name="tethering_devices_body">Ouvre les réglages du point d’accès</string>
+    <string name="tethering_info">Android ne donne pas la conso par appareil. Le total est une estimation (trafic mobile pendant le partage) et inclut aussi tes autres applis.</string>
+    <string name="usage_tethering_title">Partage de connexion actif</string>
+    <string name="usage_tethering_body">%1$s consommés par tes appareils</string>
+    <string name="notification_tethering_title">Partage de connexion : %1$s consommés</string>
+    <string name="notification_tethering_text">Tes appareils connectés ont dépassé %1$s. Coupe le partage pour préserver ton forfait.</string>
 </resources>

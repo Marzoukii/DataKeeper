@@ -5,11 +5,13 @@ import com.marzouki.datasaver.domain.usecase.GetCurrentPeriodUseCase
 import com.marzouki.datasaver.domain.usecase.GetDailyUsageUseCase
 import com.marzouki.datasaver.domain.usecase.GetMonthlyUsageUseCase
 import com.marzouki.datasaver.domain.usecase.GetQuotaUsedBytesUseCase
+import com.marzouki.datasaver.domain.usecase.GetTetheringUsageUseCase
 import com.marzouki.datasaver.domain.usecase.GetTopMobileAppsUseCase
 import com.marzouki.datasaver.domain.usecase.HasPhoneStatePermissionUseCase
 import com.marzouki.datasaver.domain.usecase.HasUsageAccessUseCase
 import com.marzouki.datasaver.domain.usecase.ObserveDataNetworkGenerationUseCase
 import com.marzouki.datasaver.domain.usecase.ObserveDataOperatorUseCase
+import com.marzouki.datasaver.domain.usecase.ObserveHotspotActiveUseCase
 import com.marzouki.datasaver.domain.usecase.ObservePricePerGbUseCase
 import com.marzouki.datasaver.domain.usecase.ObserveQuotaUseCase
 import com.marzouki.datasaver.presentation.mvi.MviViewModel
@@ -17,9 +19,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -40,9 +44,12 @@ class UsageViewModel @Inject constructor(
     observeDataOperator: ObserveDataOperatorUseCase,
     private val hasPhoneStatePermission: HasPhoneStatePermissionUseCase,
     observeDataNetworkGeneration: ObserveDataNetworkGenerationUseCase,
+    observeHotspotActive: ObserveHotspotActiveUseCase,
+    private val getTetheringUsage: GetTetheringUsageUseCase,
 ) : MviViewModel<UsageState, UsageIntent, UsageEffect>(UsageState()) {
 
     private var refreshJob: Job? = null
+    private var hotspotActive = false
 
     /** Relue au retour sur l'écran : la permission a pu être accordée ou retirée dans les paramètres. */
     private val phonePermission = MutableStateFlow(hasPhoneStatePermission())
@@ -66,6 +73,38 @@ class UsageViewModel @Inject constructor(
         observeDataOperator()
             .onEach { operator -> setState { copy(operatorName = operator?.name) } }
             .launchIn(viewModelScope)
+        // Carte du partage de connexion : affichée dès qu'il s'allume, sa conso relue toutes les 5 s.
+        observeHotspotActive()
+            .onEach { active -> hotspotActive = active }
+            .flatMapLatest { active ->
+                if (active) {
+                    flow {
+                        while (true) {
+                            emit(Unit)
+                            delay(TETHERING_REFRESH_MILLIS)
+                        }
+                    }
+                } else {
+                    flowOf(Unit)
+                }
+            }
+            .onEach { refreshTethering() }
+            .launchIn(viewModelScope)
+    }
+
+    private fun refreshTethering() {
+        if (!hotspotActive) {
+            setState { copy(tethering = null) }
+            return
+        }
+        viewModelScope.launch {
+            val usage = getTetheringUsage(active = true)
+            setState { copy(tethering = usage) }
+        }
+    }
+
+    private companion object {
+        const val TETHERING_REFRESH_MILLIS = 5_000L
     }
 
     override fun onIntent(intent: UsageIntent) {
@@ -73,6 +112,7 @@ class UsageViewModel @Inject constructor(
             UsageIntent.Refresh -> {
                 phonePermission.value = hasPhoneStatePermission()
                 refresh()
+                refreshTethering()
             }
             UsageIntent.GrantAccessClicked -> sendEffect(UsageEffect.OpenUsageAccessSettings)
             UsageIntent.PhonePermissionResult -> phonePermission.value = hasPhoneStatePermission()

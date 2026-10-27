@@ -174,6 +174,31 @@ fun formatDayTime(millis: Long, nowMillis: Long): String {
     }
 }
 
+/** Heure seule pour aujourd'hui ("14:20"), sinon le jour et l'heure comme [formatDayTime] ("Hier 18:40"). */
+fun formatTimeOrDay(millis: Long, nowMillis: Long): String {
+    val day = Calendar.getInstance().apply { timeInMillis = millis }
+    val today = Calendar.getInstance().apply { timeInMillis = nowMillis }
+    return if (day.isSameDay(today)) dateFormat("HH:mm").format(Date(millis)) else formatDayTime(millis, nowMillis)
+}
+
+/** Durée arrondie à la minute : "1 h 10", "50 min", "2 h" ; "1 h 10 min" ; "1 س 10 د". */
+fun formatDuration(millis: Long): String {
+    val totalMinutes = ((millis + 30_000) / 60_000).coerceAtLeast(1)
+    val hours = totalMinutes / 60
+    val minutes = totalMinutes % 60
+    val (h, min) = when (AppLanguage.current()) {
+        AppLanguage.AR -> "س" to "د"
+        else -> "h" to "min"
+    }
+    return when {
+        hours == 0L -> "$minutes$NBSP$min"
+        minutes == 0L -> "$hours$NBSP$h"
+        // En français, « 1 h 10 » se lit sans unité de minutes.
+        AppLanguage.current() == AppLanguage.FR -> "$hours$NBSP$h$NBSP${"%02d".format(minutes)}"
+        else -> "$hours$NBSP$h$NBSP$minutes$NBSP$min"
+    }
+}
+
 /** "à l'instant", "il y a 5 min", puis l'heure du jour comme [formatDayTime]. */
 fun formatElapsed(millis: Long, nowMillis: Long): String {
     val language = AppLanguage.current()

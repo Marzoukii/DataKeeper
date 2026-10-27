@@ -18,6 +18,8 @@ import com.marzouki.datasaver.domain.model.SavedPlan
 import com.marzouki.datasaver.domain.model.ScheduledDownload
 import com.marzouki.datasaver.domain.model.SpeedTestProgress
 import com.marzouki.datasaver.domain.model.SpeedTestResult
+import com.marzouki.datasaver.domain.model.TetheringAlert
+import com.marzouki.datasaver.domain.model.TetheringSession
 import com.marzouki.datasaver.domain.model.WifiScan
 import kotlinx.coroutines.flow.Flow
 
@@ -32,6 +34,37 @@ interface UsageRepository {
 
     /** Applications ayant consommé le plus de data mobile sur la période, par ordre décroissant. */
     suspend fun getTopMobileApps(period: MonthPeriod, limit: Int): List<AppDataUsage>
+}
+
+interface TetheringRepository {
+    /** Partage de connexion allumé (point d'accès Wi-Fi, USB ou Bluetooth), relu à chaque changement. */
+    fun observeHotspotActive(): Flow<Boolean>
+
+    /** État du partage à cet instant, pour le travail en arrière-plan. */
+    fun isHotspotActive(): Boolean
+
+    /** Data mobile envoyée et reçue par le téléphone depuis son démarrage, en temps réel ; null si illisible. */
+    fun mobileCounterBytes(): Long?
+
+    /**
+     * Tient à jour la session d'après l'état du partage : début et compteur [counterBytes] retenus
+     * quand on le voit allumé pour la première fois, session oubliée quand il s'éteint.
+     * Renvoie la session en cours, null s'il est éteint.
+     */
+    suspend fun syncSession(active: Boolean, nowMillis: Long, counterBytes: Long): TetheringSession?
+
+    val alert: Flow<TetheringAlert>
+    suspend fun setAlert(alert: TetheringAlert)
+
+    /** Début de la session ([TetheringSession.startMillis]) déjà signalée par une notification ; null si aucune. */
+    val alertedSessionStart: Flow<Long?>
+    suspend fun setAlertedSessionStart(startMillis: Long?)
+}
+
+/** Planifie la surveillance du partage de connexion, tant que son alerte est active. */
+interface TetheringMonitorScheduler {
+    fun start()
+    fun stop()
 }
 
 interface QuotaRepository {
@@ -152,4 +185,7 @@ interface QuotaAlertNotifier {
 
     /** Prévient que le forfait arrive à son terme le [renewalMillis] et qu'il faudra le recharger. */
     fun notifyPlanRenewal(renewalMillis: Long)
+
+    /** Prévient que les appareils connectés au partage ont consommé [usedBytes], au-delà de [thresholdBytes]. */
+    fun notifyTetheringThreshold(usedBytes: Long, thresholdBytes: Long)
 }

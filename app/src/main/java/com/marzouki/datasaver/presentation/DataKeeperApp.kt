@@ -56,6 +56,7 @@ import com.marzouki.datasaver.presentation.onboarding.UsageAccessScreen
 import com.marzouki.datasaver.presentation.quota.QuotaScreen
 import com.marzouki.datasaver.presentation.settings.SettingsScreen
 import com.marzouki.datasaver.presentation.speedtest.SpeedTestScreen
+import com.marzouki.datasaver.presentation.tethering.TetheringScreen
 import com.marzouki.datasaver.presentation.usage.UsageScreen
 import com.marzouki.datasaver.presentation.wifi.WifiScreen
 import com.marzouki.datasaver.presentation.widget.refreshHomeSurfaces
@@ -137,8 +138,8 @@ private fun MainScaffold(requestedTab: String?, onTabRequestHandled: () -> Unit)
         contentWindowInsets = WindowInsets.safeDrawing,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
-            // Les réglages sont un sous-écran, avec sa flèche retour : pas d'onglets dessous.
-            if (currentRoute == AppRoutes.SETTINGS) return@Scaffold
+            // Réglages et partage de connexion sont des sous-écrans, avec leur flèche retour : pas d'onglets dessous.
+            if (currentRoute == AppRoutes.SETTINGS || currentRoute == AppRoutes.TETHERING) return@Scaffold
             NavigationBar(containerColor = MaterialTheme.colorScheme.surface, tonalElevation = 0.dp) {
                 Destination.entries.forEach { destination ->
                     NavigationBarItem(
@@ -168,10 +169,14 @@ private fun MainScaffold(requestedTab: String?, onTabRequestHandled: () -> Unit)
                     snackbarHostState,
                     onOpenQuota = { navController.navigateToTab(Destination.QUOTA) },
                     onOpenSettings = { navController.navigate(AppRoutes.SETTINGS) { launchSingleTop = true } },
+                    onOpenTethering = { navController.navigate(AppRoutes.TETHERING) { launchSingleTop = true } },
                 )
             }
             composable(AppRoutes.SETTINGS) {
                 SettingsScreen(onBack = { navController.popBackStack() })
+            }
+            composable(AppRoutes.TETHERING) {
+                TetheringScreen(onBack = { navController.popBackStack() })
             }
             composable(Destination.QUOTA.route) {
                 QuotaScreen(snackbarHostState, onOpenDownloads = { navController.navigateToTab(Destination.DOWNLOADS) })

@@ -403,4 +403,29 @@
     <string name="wifi_location_off_title">Location is off</string>
     <string name="wifi_location_off_body">Android only shows the Wi‑Fi networks around you when location is on.</string>
     <string name="wifi_location_off_button">Turn on location</string>
+
+    <!-- Hotspot -->
+    <string name="tethering_title">Hotspot</string>
+    <string name="tethering_subtitle">Data used by your connected devices</string>
+    <string name="tethering_active">Hotspot on</string>
+    <string name="tethering_active_badge">On</string>
+    <string name="tethering_since">since %1$s</string>
+    <string name="tethering_since_unknown">on before %1$s</string>
+    <string name="tethering_inactive">Hotspot off</string>
+    <string name="tethering_inactive_body">Turn on the hotspot in Android to track your devices’ data.</string>
+    <string name="tethering_used_label">Used by your devices</string>
+    <string name="tethering_rate">≈ %1$s / h · estimate</string>
+    <string name="tethering_rate_pending">The rate shows after 2 min of sharing.</string>
+    <string name="tethering_eta">At this rate, about %1$s left before %2$s.</string>
+    <string name="tethering_alert_title">Notify me at %1$s</string>
+    <string name="tethering_alert_body">Notification when sharing goes over this threshold</string>
+    <string name="tethering_threshold_title">Alert threshold</string>
+    <string name="tethering_devices_section">Connected devices</string>
+    <string name="tethering_devices_title">See devices in Android</string>
+    <string name="tethering_devices_body">Opens the hotspot settings</string>
+    <string name="tethering_info">Android doesn’t give per-device usage. The total is an estimate (mobile traffic while sharing) and also includes your other apps.</string>
+    <string name="usage_tethering_title">Hotspot on</string>
+    <string name="usage_tethering_body">%1$s used by your devices</string>
+    <string name="notification_tethering_title">Hotspot: %1$s used</string>
+    <string name="notification_tethering_text">Your connected devices went over %1$s. Turn off the hotspot to save your plan.</string>
 </resources>
