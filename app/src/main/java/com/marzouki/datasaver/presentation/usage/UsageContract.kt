@@ -7,6 +7,7 @@ import com.marzouki.datasaver.domain.model.DayUsage
 import com.marzouki.datasaver.domain.model.MonthPeriod
 import com.marzouki.datasaver.domain.model.PricePerGb
 import com.marzouki.datasaver.domain.model.QuotaStatus
+import com.marzouki.datasaver.domain.model.TetheringUsage
 import com.marzouki.datasaver.domain.model.heavyAppFor
 
 data class UsageState(
@@ -27,6 +28,8 @@ data class UsageState(
     val networkGeneration: NetworkGeneration? = null,
     /** Data mobile décomptée du forfait, recalée sur le solde opérateur s'il a été relevé. */
     val quotaUsedBytes: Long? = null,
+    /** Partage de connexion en cours et sa conso ; null quand il est éteint. */
+    val tethering: TetheringUsage? = null,
 ) {
     val quotaStatus: QuotaStatus? get() = if (quota != null && quotaUsedBytes != null) QuotaStatus(quota, quotaUsedBytes) else null
 

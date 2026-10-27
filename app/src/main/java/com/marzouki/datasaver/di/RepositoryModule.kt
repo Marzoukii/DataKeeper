@@ -8,6 +8,8 @@ import com.marzouki.datasaver.data.quota.NotificationQuotaAlertNotifier
 import com.marzouki.datasaver.data.quota.QuotaRepositoryImpl
 import com.marzouki.datasaver.data.quota.WorkManagerQuotaMonitorScheduler
 import com.marzouki.datasaver.data.speedtest.SpeedTestRepositoryImpl
+import com.marzouki.datasaver.data.tethering.TetheringRepositoryImpl
+import com.marzouki.datasaver.data.tethering.WorkManagerTetheringMonitorScheduler
 import com.marzouki.datasaver.data.theme.ThemeRepositoryImpl
 import com.marzouki.datasaver.data.usage.UsageRepositoryImpl
 import com.marzouki.datasaver.data.wifi.WifiRepositoryImpl
@@ -19,6 +21,8 @@ import com.marzouki.datasaver.domain.repository.QuotaAlertNotifier
 import com.marzouki.datasaver.domain.repository.QuotaMonitorScheduler
 import com.marzouki.datasaver.domain.repository.QuotaRepository
 import com.marzouki.datasaver.domain.repository.SpeedTestRepository
+import com.marzouki.datasaver.domain.repository.TetheringMonitorScheduler
+import com.marzouki.datasaver.domain.repository.TetheringRepository
 import com.marzouki.datasaver.domain.repository.ThemeRepository
 import com.marzouki.datasaver.domain.repository.UsageRepository
 import com.marzouki.datasaver.domain.repository.WifiRepository
@@ -64,6 +68,12 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindWifiRepository(impl: WifiRepositoryImpl): WifiRepository
+
+    @Binds
+    abstract fun bindTetheringRepository(impl: TetheringRepositoryImpl): TetheringRepository
+
+    @Binds
+    abstract fun bindTetheringMonitorScheduler(impl: WorkManagerTetheringMonitorScheduler): TetheringMonitorScheduler
 
     @Binds
     abstract fun bindQuotaMonitorScheduler(impl: WorkManagerQuotaMonitorScheduler): QuotaMonitorScheduler

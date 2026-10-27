@@ -113,6 +113,7 @@ class QuotaAlertTest {
         override fun notifyBalanceRecalibration(remainingBytes: Long, sinceMillis: Long) { recalibrations += remainingBytes }
         val renewals = mutableListOf<Long>()
         override fun notifyPlanRenewal(renewalMillis: Long) { renewals += renewalMillis }
+        override fun notifyTetheringThreshold(usedBytes: Long, thresholdBytes: Long) = Unit
     }
 
     @Test

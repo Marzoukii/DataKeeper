@@ -430,4 +430,29 @@
     <string name="wifi_location_off_title">تحديد الموقع متوقف</string>
     <string name="wifi_location_off_body">لا يعرض أندرويد شبكات الواي فاي القريبة إلا إذا كان تحديد الموقع مفعّلًا.</string>
     <string name="wifi_location_off_button">تفعيل تحديد الموقع</string>
+
+    <!-- مشاركة الاتصال -->
+    <string name="tethering_title">مشاركة الاتصال</string>
+    <string name="tethering_subtitle">استهلاك أجهزتك المتصلة</string>
+    <string name="tethering_active">نقطة الاتصال مفعّلة</string>
+    <string name="tethering_active_badge">مفعّلة</string>
+    <string name="tethering_since">منذ %1$s</string>
+    <string name="tethering_since_unknown">مفعّلة قبل %1$s</string>
+    <string name="tethering_inactive">نقطة الاتصال متوقفة</string>
+    <string name="tethering_inactive_body">شغّل مشاركة الاتصال في أندرويد لمتابعة استهلاك أجهزتك.</string>
+    <string name="tethering_used_label">ما استهلكته أجهزتك</string>
+    <string name="tethering_rate">≈ %1$s / س · تقدير</string>
+    <string name="tethering_rate_pending">يظهر المعدّل بعد دقيقتين من المشاركة.</string>
+    <string name="tethering_eta">بالمعدّل الحالي، يتبقى حوالي %1$s قبل %2$s.</string>
+    <string name="tethering_alert_title">نبّهني عند %1$s</string>
+    <string name="tethering_alert_body">إشعار عندما تتجاوز المشاركة هذا الحد</string>
+    <string name="tethering_threshold_title">حدّ التنبيه</string>
+    <string name="tethering_devices_section">الأجهزة المتصلة</string>
+    <string name="tethering_devices_title">عرض الأجهزة في أندرويد</string>
+    <string name="tethering_devices_body">يفتح إعدادات نقطة الاتصال</string>
+    <string name="tethering_info">لا يعطي أندرويد استهلاك كل جهاز. المجموع تقدير (بيانات الهاتف أثناء المشاركة) ويشمل أيضًا تطبيقاتك الأخرى.</string>
+    <string name="usage_tethering_title">مشاركة الاتصال مفعّلة</string>
+    <string name="usage_tethering_body">استهلكت أجهزتك %1$s</string>
+    <string name="notification_tethering_title">مشاركة الاتصال: استُهلك %1$s</string>
+    <string name="notification_tethering_text">تجاوزت أجهزتك المتصلة %1$s. أوقف المشاركة للحفاظ على باقتك.</string>
 </resources>
