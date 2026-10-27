@@ -2,17 +2,9 @@ package com.marzouki.datasaver.domain.usecase
 
 import com.marzouki.datasaver.domain.enums.DownloadSchedule
 import com.marzouki.datasaver.domain.model.InvalidDownloadUrlException
-import com.marzouki.datasaver.domain.model.ScheduledDownload
 import com.marzouki.datasaver.domain.repository.DownloadRepository
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import java.net.URI
 import javax.inject.Inject
-
-class ObserveDownloadsUseCase @Inject constructor(private val repository: DownloadRepository) {
-    operator fun invoke(): Flow<List<ScheduledDownload>> =
-        repository.observeDownloads().map { list -> list.sortedByDescending { it.createdAtMillis } }
-}
 
 class ScheduleDownloadUseCase @Inject constructor(private val repository: DownloadRepository) {
 
@@ -34,12 +26,4 @@ class ScheduleDownloadUseCase @Inject constructor(private val repository: Downlo
 
     private fun sanitizeFileName(raw: String): String =
         raw.trim().replace(Regex("""[\\/:*?"<>|]"""), "_").trimStart('.')
-}
-
-class CancelDownloadUseCase @Inject constructor(private val repository: DownloadRepository) {
-    operator fun invoke(id: String) = repository.cancel(id)
-}
-
-class ClearFinishedDownloadsUseCase @Inject constructor(private val repository: DownloadRepository) {
-    operator fun invoke() = repository.clearFinished()
 }

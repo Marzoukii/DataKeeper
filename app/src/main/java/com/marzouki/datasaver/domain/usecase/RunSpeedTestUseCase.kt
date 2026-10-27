@@ -9,10 +9,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-class ObserveSpeedTestHistoryUseCase @Inject constructor(private val repository: SpeedTestRepository) {
-    operator fun invoke(): Flow<List<SpeedTestResult>> = repository.history
-}
-
 class RunSpeedTestUseCase @Inject constructor(private val repository: SpeedTestRepository) {
 
     /**
