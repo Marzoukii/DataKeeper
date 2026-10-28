@@ -9,12 +9,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.lifecycleScope
+import com.marzouki.datasaver.domain.repository.AnalyticsTracker
 import com.marzouki.datasaver.presentation.AppRoutes
 import com.marzouki.datasaver.presentation.DataKeeperApp
 import com.marzouki.datasaver.presentation.widget.refreshHomeSurfaces
 import com.marzouki.datasaver.ui.theme.DataKeeperTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /** AppCompatActivity : applique la langue choisie dans l'appli, aussi avant Android 13. */
 @AndroidEntryPoint
@@ -23,13 +25,20 @@ class MainActivity : AppCompatActivity() {
     /** Onglet demandé par un widget ou une tuile, consommé une fois la navigation faite. */
     private var requestedTab by mutableStateOf<String?>(null)
 
+    @Inject
+    lateinit var analytics: AnalyticsTracker
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         if (savedInstanceState == null) requestedTab = intent.getStringExtra(AppRoutes.EXTRA_TAB)
         setContent {
             DataKeeperTheme {
-                DataKeeperApp(requestedTab = requestedTab, onTabRequestHandled = { requestedTab = null })
+                DataKeeperApp(
+                    requestedTab = requestedTab,
+                    onTabRequestHandled = { requestedTab = null },
+                    onScreenView = analytics::logScreenView,
+                )
             }
         }
     }

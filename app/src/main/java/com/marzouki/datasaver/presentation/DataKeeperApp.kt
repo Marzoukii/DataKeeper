@@ -78,6 +78,7 @@ private enum class Destination(val route: String, @param:StringRes val labelRes:
 fun DataKeeperApp(
     requestedTab: String? = null,
     onTabRequestHandled: () -> Unit = {},
+    onScreenView: (String) -> Unit = {},
     onboardingViewModel: OnboardingViewModel = hiltViewModel(),
 ) {
     val onboarding by onboardingViewModel.state.collectAsStateWithLifecycle()
@@ -98,6 +99,15 @@ fun DataKeeperApp(
         }
     }
 
+    // Écrans d'accueil comptés comme les onglets, pour voir où l'on décroche avant d'arriver à l'appli.
+    LaunchedEffect(onboarding.step) {
+        when (onboarding.step) {
+            OnboardingStep.USAGE_ACCESS -> onScreenView("onboarding_usage_access")
+            OnboardingStep.PLAN_SETUP -> onScreenView("onboarding_plan_setup")
+            OnboardingStep.LOADING, OnboardingStep.DONE -> Unit
+        }
+    }
+
     Crossfade(targetState = onboarding.step, label = "root") { step ->
         when (step) {
             OnboardingStep.USAGE_ACCESS -> UsageAccessScreen(
@@ -114,13 +124,13 @@ fun DataKeeperApp(
                     .background(MaterialTheme.colorScheme.background),
             )
             OnboardingStep.PLAN_SETUP -> PlanSetupScreen()
-            OnboardingStep.DONE -> MainScaffold(requestedTab, onTabRequestHandled)
+            OnboardingStep.DONE -> MainScaffold(requestedTab, onTabRequestHandled, onScreenView)
         }
     }
 }
 
 @Composable
-private fun MainScaffold(requestedTab: String?, onTabRequestHandled: () -> Unit) {
+private fun MainScaffold(requestedTab: String?, onTabRequestHandled: () -> Unit, onScreenView: (String) -> Unit) {
     val navController = rememberNavController()
     val snackbarHostState = remember { SnackbarHostState() }
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -131,6 +141,9 @@ private fun MainScaffold(requestedTab: String?, onTabRequestHandled: () -> Unit)
     }
     val currentRoute = backStackEntry?.destination?.route
     val current = Destination.entries.firstOrNull { it.route == currentRoute } ?: Destination.USAGE
+    LaunchedEffect(currentRoute) {
+        currentRoute?.let(onScreenView)
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
