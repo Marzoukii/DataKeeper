@@ -179,7 +179,7 @@ private fun MainScaffold(requestedTab: String?, onTabRequestHandled: () -> Unit)
                 TetheringScreen(onBack = { navController.popBackStack() })
             }
             composable(Destination.QUOTA.route) {
-                QuotaScreen(snackbarHostState, onOpenDownloads = { navController.navigateToTab(Destination.DOWNLOADS) })
+                QuotaScreen(snackbarHostState)
             }
             composable(Destination.DOWNLOADS.route) { DownloadsScreen(snackbarHostState) }
             composable(Destination.SPEED_TEST.route) { SpeedTestScreen(snackbarHostState) }
