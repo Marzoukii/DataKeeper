@@ -83,10 +83,10 @@ Use delegation (`by`) to compose shared behavior instead of base classes.
 class AuthViewModel @Inject constructor(
     crashReporter: CrashReporter,
     logger: Logger
-) : ViewModel(), 
+) : ViewModel(),
     CrashReporter by crashReporter,
     Logger by logger {
-    
+
     fun onLoginClicked() {
         log("Login clicked") // Delegated
         // ... logic
@@ -321,11 +321,11 @@ class UserRepository @Inject constructor(
     override suspend fun getById(id: String): Result<User> = runCatching {
         dao.getUserById(id)
     }
-    
+
     override suspend fun save(entity: User): Result<Unit> = runCatching {
         dao.insert(entity)
     }
-    
+
     override fun observeAll(): Flow<List<User>> = dao.observeAll()
 }
 ```
@@ -336,20 +336,20 @@ Add domain-specific behavior to existing types without inheritance.
 
 ```kotlin
 // Domain logic extensions
-fun User.isActive(): Boolean = 
+fun User.isActive(): Boolean =
     isVerified && lastActiveAt > Clock.System.now().minus(30.days).toEpochMilliseconds()
 
-fun User.displayName(): String = 
+fun User.displayName(): String =
     name.ifEmpty { email.substringBefore("@") }
 
-fun List<User>.filterActive(): List<User> = 
+fun List<User>.filterActive(): List<User> =
     filter { it.isActive() }
 
 // UI formatting extensions
 fun Long.toRelativeTime(): String {
     val now = Clock.System.now().toEpochMilliseconds()
     val diff = (now - this).milliseconds
-    
+
     return when {
         diff < 1.minutes -> "Just now"
         diff < 1.hours -> "${diff.inWholeMinutes}m ago"
@@ -565,7 +565,7 @@ data class User private constructor(
                 name = name.trim()
             ))
         }
-        
+
         private val EMAIL_REGEX = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
     }
 }
@@ -958,7 +958,7 @@ Always use scoped coroutines; never `GlobalScope`.
 class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
-    
+
     fun login(email: String, password: String) {
         viewModelScope.launch { // Canceled when ViewModel cleared
             authRepository.login(email, password)
@@ -972,7 +972,7 @@ class AuthRepository @Inject constructor(
     @IoDispatcher private val dispatcher: CoroutineDispatcher
 ) {
     private val scope = CoroutineScope(dispatcher + SupervisorJob())
-    
+
     fun cleanup() {
         scope.cancel()
     }
@@ -994,7 +994,7 @@ suspend fun <T> retryWithBackoff(
 ): Result<T> {
     var currentDelay = initialDelay
     var lastException: Exception? = null
-    
+
     repeat(maxAttempts) { attempt ->
         try {
             return Result.success(block())
@@ -1006,7 +1006,7 @@ suspend fun <T> retryWithBackoff(
             }
         }
     }
-    
+
     return Result.failure(lastException ?: Exception("Unknown error"))
 }
 

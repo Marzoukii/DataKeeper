@@ -266,7 +266,7 @@ Guidance for events vs state:
 
 ### Convert Cold Flows to Hot StateFlows with `stateIn`
 
-Use `stateIn` to share expensive Flow operations across multiple collectors and cache the latest value. 
+Use `stateIn` to share expensive Flow operations across multiple collectors and cache the latest value.
 This prevents repeated work when multiple UI components observe the same data.
 
 ```kotlin
@@ -277,7 +277,7 @@ class AuthViewModel @Inject constructor(
 ) : ViewModel() {
     // Cold flow: each collector triggers separate database query
     private val authSessionFlow: Flow<AuthSession?> = authRepository.observeAuthSession()
-    
+
     // Hot StateFlow: shared across all collectors, 5s stop timeout
     val authSession: StateFlow<AuthSession?> = authSessionFlow
         .stateIn(
@@ -446,7 +446,7 @@ suspend fun syncAuthData(): SyncResult = coroutineScope {
             async { syncPermissions() },
             async { syncPreferences() }
         ).awaitAll()
-        
+
         SyncResult.Success(results)
     } catch (e: Exception) {
         // All remaining work is cancelled on first failure

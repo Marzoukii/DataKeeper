@@ -87,9 +87,9 @@ Edge-to-edge is mandatory on API 36. Use `Scaffold` which handles system bar ins
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         enableEdgeToEdge()
-        
+
         setContent {
             AppTheme {
                 Scaffold(
@@ -916,7 +916,7 @@ val AppTypography = Typography(
         lineHeight = 44.sp,
         letterSpacing = 0.sp
     ),
-    
+
     // Headline styles
     headlineLarge = TextStyle(
         fontFamily = Roboto,
@@ -939,7 +939,7 @@ val AppTypography = Typography(
         lineHeight = 32.sp,
         letterSpacing = 0.sp
     ),
-    
+
     // Title styles
     titleLarge = TextStyle(
         fontFamily = Roboto,
@@ -962,7 +962,7 @@ val AppTypography = Typography(
         lineHeight = 20.sp,
         letterSpacing = 0.1.sp
     ),
-    
+
     // Body styles
     bodyLarge = TextStyle(
         fontFamily = Roboto,
@@ -985,7 +985,7 @@ val AppTypography = Typography(
         lineHeight = 16.sp,
         letterSpacing = 0.4.sp
     ),
-    
+
     // Label styles
     labelLarge = TextStyle(
         fontFamily = Roboto,
@@ -1028,18 +1028,18 @@ fun ArticleScreen(article: Article) {
             style = MaterialTheme.typography.displayMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         // Use body for content
         Text(
             text = article.content,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         // Use label for metadata
         Text(
             text = "By ${article.author}",
@@ -1147,14 +1147,14 @@ fun ProductCard(product: Product) {
                     .height(200.dp)
                     .clip(MaterialTheme.shapes.large)
             )
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             Text(
                 text = product.name,
                 style = MaterialTheme.typography.titleLarge
             )
-            
+
             // Button uses large shape by default
             Button(
                 onClick = { /* Add to cart */ },
@@ -1320,17 +1320,17 @@ fun ThemeSettingsScreen(
             text = "Theme Settings",
             style = MaterialTheme.typography.headlineMedium
         )
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         // Theme selection
         Text(
             text = "Appearance",
             style = MaterialTheme.typography.titleMedium
         )
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         ThemePreference.entries.forEach { preference ->
             Row(
                 modifier = Modifier
@@ -1358,9 +1358,9 @@ fun ThemeSettingsScreen(
                 )
             }
         }
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         // Dynamic color toggle (API 31+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             Row(
@@ -1448,7 +1448,7 @@ class ThemePreferencesDataSource @Inject constructor(
         val themePreference = preferences[PreferencesKeys.THEME_PREFERENCE]?.let {
             ThemePreference.valueOf(it)
         } ?: ThemePreference.SYSTEM
-        
+
         val useDynamicColor = preferences[PreferencesKeys.USE_DYNAMIC_COLOR] ?: true
 
         ThemeConfig(
@@ -1505,7 +1505,7 @@ class ThemeRepositoryImpl @Inject constructor(
     private val themePreferencesDataSource: ThemePreferencesDataSource
 ) : ThemeRepository {
 
-    override val themeConfig: Flow<ThemeConfig> = 
+    override val themeConfig: Flow<ThemeConfig> =
         themePreferencesDataSource.themeConfig
 
     override suspend fun setThemePreference(preference: ThemePreference) {
@@ -1863,9 +1863,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         enableEdgeToEdge()
-        
+
         setContent {
             val themeConfig by themeRepository.themeConfig
                 .collectAsStateWithLifecycle(initialValue = ThemeConfig())
@@ -2081,7 +2081,7 @@ fun ThemedCard() {
         targetValue = MaterialTheme.colorScheme.surface,
         label = "background"
     )
-    
+
     Card(
         colors = CardDefaults.cardColors(
             containerColor = backgroundColor

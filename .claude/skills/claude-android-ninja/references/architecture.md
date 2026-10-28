@@ -313,7 +313,7 @@ Always provide `DataStore` as a `@Singleton` to guarantee a single instance per 
 @Module
 @InstallIn(SingletonComponent::class)
 object DataStoreModule {
-    
+
     @Provides
     @Singleton
     fun provideUserSettingsDataStore(
@@ -464,7 +464,7 @@ Use mappers when transformations add business logic, not for simple 1:1 field ma
 class AuthMapper @Inject constructor(
     private val dateFormatter: DateFormatter
 ) {
-    
+
     // Entity → Domain (with date formatting)
     fun toDomain(entity: UserEntity?): User = User(
         id = entity?.id.orEmpty(),
@@ -474,7 +474,7 @@ class AuthMapper @Inject constructor(
         memberSince = entity?.createdAt?.let { dateFormatter.formatMemberSince(it) } ?: "Unknown",
         lastActive = entity?.lastActiveAt?.let { dateFormatter.formatRelativeTime(it) } ?: "Never"
     )
-    
+
     // Network → Entity (with timestamp normalization)
     fun toEntity(user: NetworkUser): UserEntity = UserEntity(
         id = user.id,
@@ -484,7 +484,7 @@ class AuthMapper @Inject constructor(
         createdAt = user.createdAt,
         lastActiveAt = Clock.System.now().toEpochMilliseconds() // Track local access time
     )
-    
+
     // Domain → Network (for register/update)
     fun toNetwork(user: User): NetworkUser = NetworkUser(
         id = user.id,
@@ -634,13 +634,13 @@ Official docs: [Hilt Android](https://developer.android.com/training/dependency-
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class DataModule {
-    
+
     @Binds
     @Singleton
     abstract fun bindAuthRepository(
         impl: AuthRepositoryImpl
     ): AuthRepository
-    
+
     @Binds
     @Singleton
     abstract fun bindUserRepository(
@@ -686,7 +686,7 @@ class GetUserProfileWithStatsUseCase @Inject constructor(
             completionRate = calculateCompletionRate(activityCount, achievements)
         )
     }
-    
+
     private fun calculateCompletionRate(activities: Int, achievements: List<Achievement>): Float {
         if (activities == 0) return 0f
         val completed = achievements.count { it.isCompleted }
@@ -711,7 +711,7 @@ class ValidateRegistrationUseCase @Inject constructor() {
         }
         return Result.success(Unit)
     }
-    
+
     companion object {
         private val EMAIL_REGEX = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
         private val PASSWORD_STRENGTH_REGEX = Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$")

@@ -9,7 +9,7 @@
 ![Min SDK](https://img.shields.io/badge/Min_SDK-24-green)
 ![Target SDK](https://img.shields.io/badge/Target_SDK-37-green)
 
-This repository is an **Agent Skill** package for Android development with Kotlin and Jetpack Compose.  
+This repository is an **Agent Skill** package for Android development with Kotlin and Jetpack Compose.
 It provides a structured set of instructions, templates, and references that help agents build
 production-quality Android apps consistently and efficiently.
 

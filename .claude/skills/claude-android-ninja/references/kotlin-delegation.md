@@ -60,7 +60,7 @@ abstract class BaseViewModel : ViewModel() {
     abstract fun log(message: String)
     abstract fun validateEmail(email: String): String?
     abstract fun trackEvent(name: String)
-    
+
     fun commonLogic() {
         log("Common logic executed")
     }
@@ -70,15 +70,15 @@ class LoginViewModel : BaseViewModel() {
     override fun log(message: String) {
         println("LOG: $message")
     }
-    
+
     override fun validateEmail(email: String): String? {
         return if (email.contains("@")) null else "Invalid email"
     }
-    
+
     override fun trackEvent(name: String) {
         // Analytics logic
     }
-    
+
     // Tightly coupled to base class
 }
 
@@ -104,7 +104,7 @@ class LoginViewModel @Inject constructor(
     Logger by logger,
     FormValidator by validator,
     Analytics by analytics {
-    
+
     // Independent, testable, swappable behavior
     fun onLoginClicked(email: String) {
         val result = validateEmail(email)
@@ -129,7 +129,7 @@ class AuthViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     crashReporter: CrashReporter, // No private - delegated only
     logger: CrashlyticsStateLogger // No private - delegated only
-) : ViewModel(), 
+) : ViewModel(),
     CrashReporter by crashReporter,
     CrashlyticsStateLogger by logger {
 
@@ -137,7 +137,7 @@ class AuthViewModel @Inject constructor(
         logUiState("auth_role", role) // From CrashlyticsStateLogger
         logAction("Auth role selected: $role") // From CrashlyticsStateLogger
     }
-    
+
     fun onLoginFailed(error: Throwable) {
         recordException( // From CrashReporter
             error,
@@ -159,7 +159,7 @@ Example of overriding delegated methods:
 class PrivacyAwareCrashReporter(
     crashReporter: CrashReporter // No private - delegated only
 ) : CrashReporter by crashReporter {
-    
+
     // Override to add custom behavior
     override fun recordException(
         throwable: Throwable,
@@ -167,11 +167,11 @@ class PrivacyAwareCrashReporter(
     ) {
         // Custom pre-processing (scrub sensitive data)
         val scrubbedContext = scrubbingLogic(context)
-        
+
         // Call delegated implementation
         super.recordException(throwable, scrubbedContext)
     }
-    
+
     // Other methods (setUserId, setUserProperty, log) are fully delegated
 }
 ```
@@ -201,28 +201,28 @@ interface FormValidator {
 
 // core/data - Implementation
 class DefaultFormValidator @Inject constructor() : FormValidator {
-    
+
     override fun validateEmail(email: String): ValidationResult =
         if (email.matches(EMAIL_REGEX)) {
             ValidationResult.Valid
         } else {
             ValidationResult.Invalid(ValidationError.InvalidEmail)
         }
-    
+
     override fun validatePassword(password: String): ValidationResult =
         when {
             password.length < 8 -> ValidationResult.Invalid(ValidationError.PasswordTooShort)
             !password.matches(PASSWORD_STRENGTH_REGEX) -> ValidationResult.Invalid(ValidationError.PasswordTooWeak)
             else -> ValidationResult.Valid
         }
-    
+
     override fun validatePasswordMatch(password: String, confirmPassword: String): ValidationResult =
         if (password == confirmPassword) {
             ValidationResult.Valid
         } else {
             ValidationResult.Invalid(ValidationError.PasswordMismatch)
         }
-    
+
     companion object {
         private val EMAIL_REGEX = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
         private val PASSWORD_STRENGTH_REGEX = Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$")
@@ -242,7 +242,7 @@ class RegisterViewModel @Inject constructor(
 
     fun onEmailChanged(email: String) {
         _formState.update { it.copy(email = email) }
-        
+
         val result = validateEmail(email) // Delegated method
         _formState.update {
             when (result) {
@@ -251,10 +251,10 @@ class RegisterViewModel @Inject constructor(
             }
         }
     }
-    
+
     fun onPasswordChanged(password: String) {
         _formState.update { it.copy(password = password) }
-        
+
         val result = validatePassword(password) // Delegated method
         _formState.update {
             when (result) {
@@ -263,7 +263,7 @@ class RegisterViewModel @Inject constructor(
             }
         }
     }
-    
+
     private fun ValidationError.toMessage(): String = when (this) {
         ValidationError.InvalidEmail -> "Invalid email format"
         ValidationError.PasswordTooShort -> "Password must be at least 8 characters"
@@ -286,7 +286,7 @@ class UserRepository @Inject constructor(
     private val userCache: MutableMap<String, User> by lazy {
         mutableMapOf<String, User>()
     }
-    
+
     suspend fun getUser(userId: String): User =
         userCache.getOrPut(userId) {
             api.getUser(userId)
@@ -300,7 +300,7 @@ class AnalyticsManager @Inject constructor(
     private val analytics: FirebaseAnalytics by lazy {
         FirebaseAnalytics.getInstance(context)
     }
-    
+
     fun logEvent(name: String) {
         analytics.logEvent(name, null)
     }
@@ -314,29 +314,29 @@ class AnalyticsManager @Inject constructor(
 class SearchState {
     var query by mutableStateOf("")
         private set
-    
+
     var isLoading by mutableStateOf(false)
         private set
-    
+
     var results by mutableStateOf<List<SearchResult>>(emptyList())
         private set
-    
+
     var error by mutableStateOf<String?>(null)
         private set
-    
+
     fun updateQuery(newQuery: String) {
         query = newQuery
     }
-    
+
     fun setLoading(loading: Boolean) {
         isLoading = loading
     }
-    
+
     fun setResults(newResults: List<SearchResult>) {
         results = newResults
         error = null
     }
-    
+
     fun setError(message: String) {
         error = message
         results = emptyList()
@@ -348,12 +348,12 @@ class SearchViewModel @Inject constructor(
     private val searchRepository: SearchRepository
 ) : ViewModel() {
     val state = SearchState()
-    
+
     fun onQueryChanged(query: String) {
         state.updateQuery(query)
         search()
     }
-    
+
     private fun search() {
         viewModelScope.launch {
             state.setLoading(true)
@@ -376,7 +376,7 @@ class Observable<T>(
     private val onChange: (T) -> Unit
 ) {
     operator fun getValue(thisRef: Any?, property: KProperty<*>): T = value
-    
+
     operator fun setValue(thisRef: Any?, property: KProperty<*>, newValue: T) {
         if (value != newValue) {
             value = newValue
@@ -392,14 +392,14 @@ fun <T> observable(initialValue: T, onChange: (T) -> Unit) =
 class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository
 ) : ViewModel() {
-    
+
     var darkMode by observable(false) { newValue ->
         // Called whenever darkMode changes
         viewModelScope.launch {
             settingsRepository.saveDarkMode(newValue)
         }
     }
-    
+
     var notificationsEnabled by observable(true) { newValue ->
         viewModelScope.launch {
             settingsRepository.saveNotifications(newValue)
@@ -447,40 +447,40 @@ class AuthViewModel @Inject constructor(
     CrashReporter by crashReporter,
     Analytics by analytics,
     FormValidator by validator {
-    
+
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
-    
+
     fun onLoginClicked(email: String, password: String) {
         viewModelScope.launch {
             // Validation (delegated)
             val emailResult = validateEmail(email)
             val passwordResult = validatePassword(password)
-            
+
             if (emailResult is ValidationResult.Invalid) {
                 logError("Email validation failed", Exception("Invalid: ${emailResult.error}"))
                 _uiState.update { it.copy(emailError = emailResult.error.toMessage()) }
                 return@launch
             }
-            
+
             if (passwordResult is ValidationResult.Invalid) {
                 logError("Password validation failed", Exception("Invalid: ${passwordResult.error}"))
                 _uiState.update { it.copy(passwordError = passwordResult.error.toMessage()) }
                 return@launch
             }
-            
+
             // Logging (delegated)
             log("Login attempt started for: $email")
-            
+
             // Set user context (delegated)
             setUserId(email)
             setUserProperty("login_method", "email")
-            
+
             // Analytics (delegated)
             trackEvent("login_attempt", mapOf("method" to "email"))
-            
+
             _uiState.update { it.copy(isLoading = true) }
-            
+
             authRepository.login(email, password).fold(
                 onSuccess = { token ->
                     log("Login successful")
@@ -514,11 +514,11 @@ class AuthViewModel @Inject constructor(
 class FakeLogger : Logger {
     val messages = mutableListOf<String>()
     val errors = mutableListOf<Pair<String, Throwable>>()
-    
+
     override fun log(message: String) {
         messages.add(message)
     }
-    
+
     override fun logError(message: String, throwable: Throwable) {
         errors.add(message to throwable)
     }
@@ -530,19 +530,19 @@ class FakeCrashReporter : CrashReporter {
     val properties = mutableMapOf<String, String>()
     val logMessages = mutableListOf<String>()
     val exceptions = mutableListOf<Pair<Throwable, Map<String, String>>>()
-    
+
     override fun setUserId(id: String?) {
         userId = id
     }
-    
+
     override fun setUserProperty(key: String, value: String) {
         properties[key] = value
     }
-    
+
     override fun log(message: String) {
         logMessages.add(message)
     }
-    
+
     override fun recordException(throwable: Throwable, context: Map<String, String>) {
         exceptions.add(throwable to context)
     }
@@ -550,7 +550,7 @@ class FakeCrashReporter : CrashReporter {
 
 class FakeAnalytics : Analytics {
     val events = mutableListOf<Pair<String, Map<String, Any>>>()
-    
+
     override fun trackEvent(name: String, properties: Map<String, Any>) {
         events.add(name to properties)
     }
@@ -572,7 +572,7 @@ fun `login tracks analytics event on success`() = runTest {
     val fakeValidator = FakeFormValidator()
     val fakeCrashReporter = FakeCrashReporter()
     val fakeAuthRepository = FakeAuthRepository()
-    
+
     val viewModel = AuthViewModel(
         authRepository = fakeAuthRepository,
         savedStateHandle = SavedStateHandle(),
@@ -581,11 +581,11 @@ fun `login tracks analytics event on success`() = runTest {
         analytics = fakeAnalytics,
         validator = fakeValidator
     )
-    
+
     viewModel.onLoginClicked("test@example.com", "password123")
-    
+
     advanceUntilIdle()
-    
+
     // Verify analytics was tracked via delegation
     assertThat(fakeAnalytics.events).contains(
         "login_attempt" to mapOf("method" to "email")
@@ -593,7 +593,7 @@ fun `login tracks analytics event on success`() = runTest {
     assertThat(fakeAnalytics.events).contains(
         "login_success" to emptyMap<String, Any>()
     )
-    
+
     // Verify logging happened
     assertThat(fakeLogger.messages).contains("Login successful")
 }
@@ -602,7 +602,7 @@ fun `login tracks analytics event on success`() = runTest {
 fun `login records crash on failure`() = runTest {
     val fakeCrashReporter = FakeCrashReporter()
     val fakeAuthRepository = FakeAuthRepository(shouldFail = true)
-    
+
     val viewModel = AuthViewModel(
         authRepository = fakeAuthRepository,
         savedStateHandle = SavedStateHandle(),
@@ -611,16 +611,16 @@ fun `login records crash on failure`() = runTest {
         analytics = FakeAnalytics(),
         validator = FakeFormValidator()
     )
-    
+
     viewModel.onLoginClicked("test@example.com", "password123")
-    
+
     advanceUntilIdle()
-    
+
     // Verify crash was reported via delegation
     assertThat(fakeCrashReporter.exceptions).hasSize(1)
     assertThat(fakeCrashReporter.exceptions[0].second).containsEntry("screen", "login")
     assertThat(fakeCrashReporter.exceptions[0].second).containsEntry("email_domain", "example.com")
-    
+
     // Verify user context was set
     assertThat(fakeCrashReporter.userId).isEqualTo("test@example.com")
     assertThat(fakeCrashReporter.properties).containsEntry("login_method", "email")
@@ -658,7 +658,7 @@ When migrating from inheritance-based patterns to delegation, audit base classes
                _failure.emit(throwable)
            }
        }
-       
+
        private val _failure = MutableSharedFlow<Throwable>()
        val failure: SharedFlow<Throwable> = _failure.asSharedFlow()
    }
@@ -709,10 +709,10 @@ When migrating from inheritance-based patterns to delegation, audit base classes
 // Before (BaseViewModel with dead code)
 abstract class BaseViewModel : ViewModel() {
     @Inject lateinit var resources: Resources  // Never used
-    
+
     private val _failure = MutableSharedFlow<Throwable>()
     val failure: SharedFlow<Throwable> = _failure.asSharedFlow()  // Never collected
-    
+
     protected fun handleFailure(throwable: Throwable) {  // Never called
         viewModelScope.launch {
             _failure.emit(throwable)

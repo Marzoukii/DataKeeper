@@ -64,7 +64,7 @@ class NotificationChannels @Inject constructor(
                 ).apply {
                     description = "General app notifications"
                 },
-                
+
                 NotificationChannel(
                     CHANNEL_DOWNLOADS,
                     "Downloads",
@@ -73,7 +73,7 @@ class NotificationChannels @Inject constructor(
                     description = "Download progress notifications"
                     setShowBadge(false)
                 },
-                
+
                 NotificationChannel(
                     CHANNEL_MESSAGES,
                     "Messages",
@@ -83,7 +83,7 @@ class NotificationChannels @Inject constructor(
                     enableVibration(true)
                     enableLights(true)
                 },
-                
+
                 NotificationChannel(
                     CHANNEL_FOREGROUND_SERVICE,
                     "Background Tasks",
@@ -110,7 +110,7 @@ class NotificationChannels @Inject constructor(
 @HiltAndroidApp
 class MyApplication : Application() {
     @Inject lateinit var notificationChannels: NotificationChannels
-    
+
     override fun onCreate() {
         super.onCreate()
         notificationChannels.createAllChannels()
@@ -144,7 +144,7 @@ class NotificationHelper @Inject constructor(
             val permissionGranted = context.checkSelfPermission(
                 Manifest.permission.POST_NOTIFICATIONS
             ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-            
+
             if (!permissionGranted) return
         }
 
@@ -177,7 +177,7 @@ fun showNotificationWithAction(
         val permissionGranted = context.checkSelfPermission(
             Manifest.permission.POST_NOTIFICATIONS
         ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-        
+
         if (!permissionGranted) return
     }
 
@@ -228,7 +228,7 @@ fun showBigTextNotification(
         val permissionGranted = context.checkSelfPermission(
             Manifest.permission.POST_NOTIFICATIONS
         ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-        
+
         if (!permissionGranted) return
     }
 
@@ -264,7 +264,7 @@ fun showBigPictureNotification(
         val permissionGranted = context.checkSelfPermission(
             Manifest.permission.POST_NOTIFICATIONS
         ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-        
+
         if (!permissionGranted) return
     }
 
@@ -302,7 +302,7 @@ fun showInboxStyleNotification(
         val permissionGranted = context.checkSelfPermission(
             Manifest.permission.POST_NOTIFICATIONS
         ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-        
+
         if (!permissionGranted) return
     }
 
@@ -310,7 +310,7 @@ fun showInboxStyleNotification(
     lines.forEach { line ->
         inboxStyle.addLine(line)
     }
-    
+
     summaryText?.let { inboxStyle.setSummaryText(it) }
 
     val notification = NotificationCompat.Builder(context, NotificationChannels.CHANNEL_MESSAGES)
@@ -341,7 +341,7 @@ fun showMessagingStyleNotification(
         val permissionGranted = context.checkSelfPermission(
             Manifest.permission.POST_NOTIFICATIONS
         ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-        
+
         if (!permissionGranted) return
     }
 
@@ -389,7 +389,7 @@ fun showNotificationWithActions(
         val permissionGranted = context.checkSelfPermission(
             Manifest.permission.POST_NOTIFICATIONS
         ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-        
+
         if (!permissionGranted) return
     }
 
@@ -423,7 +423,7 @@ private fun createBroadcastIntent(action: String, notificationId: Int): PendingI
         this.action = action
         putExtra(EXTRA_NOTIFICATION_ID, notificationId)
     }
-    
+
     return PendingIntent.getBroadcast(
         context,
         notificationId,
@@ -503,7 +503,7 @@ fun showProgressNotification(
         val permissionGranted = context.checkSelfPermission(
             Manifest.permission.POST_NOTIFICATIONS
         ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-        
+
         if (!permissionGranted) return
     }
 
@@ -527,7 +527,7 @@ fun showDownloadCompleteNotification(
         val permissionGranted = context.checkSelfPermission(
             Manifest.permission.POST_NOTIFICATIONS
         ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-        
+
         if (!permissionGranted) return
     }
 
@@ -557,7 +557,7 @@ fun showIndeterminateProgressNotification(
         val permissionGranted = context.checkSelfPermission(
             Manifest.permission.POST_NOTIFICATIONS
         ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-        
+
         if (!permissionGranted) return
     }
 
@@ -721,7 +721,7 @@ class SyncWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         setForeground(createForegroundInfo())
-        
+
         try {
             syncRepository.sync()
             Result.success()
@@ -768,12 +768,12 @@ For long-running operations:
 @AndroidEntryPoint
 class SyncForegroundService : Service() {
     @Inject lateinit var syncRepository: SyncRepository
-    
+
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val notification = createNotification()
-        
+
         // Start foreground BEFORE doing work
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(
@@ -899,25 +899,25 @@ interface NotificationManager {
         message: String,
         notificationId: Int = generateId()
     )
-    
+
     fun showNotificationWithAction(
         title: String,
         message: String,
         targetRoute: String,
         notificationId: Int = generateId()
     )
-    
+
     fun showProgressNotification(
         title: String,
         progress: Int,
         maxProgress: Int = 100,
         notificationId: Int
     )
-    
+
     fun dismissNotification(notificationId: Int)
-    
+
     fun dismissAllNotifications()
-    
+
     companion object {
         fun generateId(): Int = System.currentTimeMillis().toInt()
     }
@@ -932,7 +932,7 @@ interface NotificationManager {
 class AndroidNotificationManager @Inject constructor(
     @ApplicationContext private val context: Context
 ) : NotificationManager {
-    
+
     private val notificationManagerCompat = NotificationManagerCompat.from(context)
 
     override fun showNotification(
@@ -1170,7 +1170,7 @@ class FakeNotificationManager : NotificationManager {
         if (existing != null) {
             _notifications.remove(existing)
         }
-        
+
         _notifications.add(
             NotificationData(
                 id = notificationId,
@@ -1282,7 +1282,7 @@ object NotificationIds {
     // Fixed IDs for single-instance notifications
     const val SYNC_SERVICE = 1001
     const val DOWNLOAD_SERVICE = 1002
-    
+
     // Dynamic IDs for multiple notifications
     fun forMessage(messageId: String): Int = messageId.hashCode()
     fun forDownload(downloadId: String): Int = "download_$downloadId".hashCode()

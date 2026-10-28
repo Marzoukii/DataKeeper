@@ -53,7 +53,7 @@ class AuthViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<AuthUiState>(AuthUiState.LoginForm("", "", null))
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
-    
+
     fun onAction(action: AuthAction) {
         when (action) {
             is AuthAction.EmailChanged -> updateEmail(action.email)
@@ -61,7 +61,7 @@ class AuthViewModel @Inject constructor(
             AuthAction.LoginClicked -> login()
         }
     }
-    
+
     private fun login() {
         viewModelScope.launch {
             _uiState.update { AuthUiState.Loading }
@@ -79,7 +79,7 @@ fun AuthRoute(
     authNavigator: AuthNavigator
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    
+
     AuthScreen(
         uiState = uiState,
         onAction = viewModel::onAction
@@ -113,7 +113,7 @@ internal class AuthRepositoryImpl @Inject constructor(
         } catch (e: IOException) {
             Result.failure(AuthError.NetworkError("No internet connection", e))
         }
-    
+
     override fun observeAuthState(): Flow<AuthState> =
         localDataSource.observeAuthToken().map { token ->
             if (token != null) AuthState.Authenticated else AuthState.Unauthenticated
@@ -132,7 +132,7 @@ internal class AuthRepositoryImpl @Inject constructor(
 // WRONG: Holds context statically
 object BadAnalytics {
     private lateinit var context: Context
-    
+
     fun init(context: Context) {
         this.context = context.applicationContext
     }
@@ -237,11 +237,11 @@ class ApiClientBuilder @Inject constructor(
     private var baseUrl: String = ""
     private var timeout: Long = 30L
     private var retryOnConnectionFailure: Boolean = true
-    
+
     fun baseUrl(url: String) = apply { this.baseUrl = url }
     fun timeout(seconds: Long) = apply { this.timeout = seconds }
     fun disableRetry() = apply { this.retryOnConnectionFailure = false }
-    
+
     fun build(): OkHttpClient = OkHttpClient.Builder()
         .addInterceptor(authInterceptor)
         .addInterceptor(loggingInterceptor)
@@ -279,15 +279,15 @@ data class RegisterFormState(
 class RegisterViewModel @Inject constructor() : ViewModel() {
     private val _formState = MutableStateFlow(RegisterFormState())
     val formState: StateFlow<RegisterFormState> = _formState.asStateFlow()
-    
+
     fun onEmailChanged(email: String) {
         _formState.update { it.copy(email = email) } // Prototype pattern via copy()
     }
-    
+
     fun onPasswordChanged(password: String) {
         _formState.update { it.copy(password = password) }
     }
-    
+
     fun onAgreedToTermsChanged(agreed: Boolean) {
         _formState.update { it.copy(agreedToTerms = agreed) }
     }
@@ -325,7 +325,7 @@ class UserAdapter {
         email = network.emailAddress,
         name = network.fullName
     )
-    
+
     fun toNetwork(domain: User): NetworkUser = NetworkUser(
         userId = domain.id,
         emailAddress = domain.email,
@@ -456,7 +456,7 @@ class FirebaseCrashReporter @Inject constructor(
     override fun recordException(throwable: Throwable, context: Map<String, Any>) {
         crashlytics.recordException(throwable)
     }
-    
+
     override fun log(message: String) {
         crashlytics.log(message)
     }
@@ -481,7 +481,7 @@ class PrivacyAwareCrashReporter(
         val scrubbedContext = context.filterKeys { it !in SENSITIVE_KEYS }
         super.recordException(throwable, scrubbedContext)
     }
-    
+
     companion object {
         private val SENSITIVE_KEYS = setOf("password", "token", "apiKey")
     }
@@ -518,7 +518,7 @@ class CrashlyticsStateLoggerImpl @Inject constructor(
     override fun logUiState(key: String, value: Any) {
         crashlytics.setCustomKey(key, value.toString())
     }
-    
+
     override fun logAction(action: String) {
         crashlytics.log("Action: $action")
     }
@@ -530,7 +530,7 @@ class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     logger: CrashlyticsStateLogger
 ) : ViewModel(), CrashlyticsStateLogger by logger {
-    
+
     fun onLoginClicked() {
         logAction("Login clicked") // Delegated method
         logUiState("screen", "login") // Delegated method
@@ -569,7 +569,7 @@ class AuthRepositoryImpl @Inject constructor(
     private val remote: AuthRemoteDataSource,
     private val cache: AuthCacheDataSource
 ) : AuthRepository {
-    
+
     // Simple API hides complexity
     override suspend fun login(email: String, password: String): Result<AuthToken> =
         try {
@@ -580,7 +580,7 @@ class AuthRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Result.failure(e)
         }
-    
+
     override fun observeAuthState(): Flow<AuthState> =
         local.observeAuthToken().map { token ->
             if (token != null) {
@@ -614,7 +614,7 @@ object IconResources {
 @Composable
 fun NavigationItem(iconName: String, label: String) {
     val iconRes = remember(iconName) { IconResources.getIconRes(iconName) }
-    
+
     Icon(painter = painterResource(iconRes), contentDescription = label)
     Text(text = label)
 }
@@ -644,11 +644,11 @@ class LazyAnalyticsProxy @Inject constructor(
     private val analytics: FirebaseAnalytics by lazy {
         FirebaseAnalytics.getInstance(context)
     }
-    
+
     override fun logEvent(name: String, params: Map<String, Any>) {
         analytics.logEvent(name, bundleOf(*params.toList().toTypedArray()))
     }
-    
+
     override fun setUserId(userId: String) {
         analytics.setUserId(userId)
     }
@@ -659,12 +659,12 @@ class CachedAuthDataSource @Inject constructor(
     private val remoteDataSource: AuthRemoteDataSource,
     private val cache: MutableMap<String, User> = mutableMapOf()
 ) : AuthDataSource {
-    
+
     override suspend fun getUser(userId: String): User =
         cache.getOrPut(userId) {
             remoteDataSource.getUser(userId) // Only fetch if not cached
         }
-    
+
     fun invalidateCache() {
         cache.clear()
     }
@@ -692,9 +692,9 @@ class AuthRepositoryImpl @Inject constructor(
     private val localDataSource: AuthLocalDataSource
 ) : AuthRepository {
     private val _authState = MutableStateFlow<AuthState>(AuthState.Unauthenticated)
-    
+
     override fun observeAuthState(): Flow<AuthState> = _authState.asStateFlow()
-    
+
     suspend fun login(email: String, password: String) {
         _authState.value = AuthState.Loading
         // ... login logic
@@ -720,7 +720,7 @@ class AuthViewModel @Inject constructor(
 @Composable
 fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
     val authState by viewModel.authState.collectAsStateWithLifecycle()
-    
+
     when (authState) {
         is AuthState.Loading -> LoadingIndicator()
         is AuthState.Authenticated -> WelcomeScreen()
@@ -780,7 +780,7 @@ class AuthRepositoryImpl @Inject constructor(
     @Google private val googleStrategy: AuthStrategy,
     @Biometric private val biometricStrategy: AuthStrategy
 ) : AuthRepository {
-    
+
     override suspend fun login(type: AuthType, credentials: AuthCredentials): Result<AuthToken> {
         val strategy = when (type) {
             AuthType.EMAIL -> emailStrategy
@@ -815,7 +815,7 @@ class RetryInterceptor @Inject constructor() : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
         var response = chain.proceed(request)
-        
+
         var retryCount = 0
         while (!response.isSuccessful && retryCount < MAX_RETRIES) {
             response.close()
@@ -823,10 +823,10 @@ class RetryInterceptor @Inject constructor() : Interceptor {
             Thread.sleep(RETRY_DELAY_MS)
             response = chain.proceed(request)
         }
-        
+
         return response
     }
-    
+
     companion object {
         private const val MAX_RETRIES = 3
         private val RETRY_DELAY = 1.seconds
@@ -839,9 +839,9 @@ class LoggingInterceptor @Inject constructor(
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
         logger.d("Request: ${request.method} ${request.url}")
-        
+
         val response = chain.proceed(request)
-        
+
         logger.d("Response: ${response.code} ${request.url}")
         return response
     }
@@ -882,7 +882,7 @@ sealed interface AuthAction {
 class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
-    
+
     fun onAction(action: AuthAction) {
         when (action) {
             is AuthAction.EmailChanged -> handleEmailChanged(action.email)
@@ -893,13 +893,13 @@ class AuthViewModel @Inject constructor(
             AuthAction.GoogleLoginClicked -> handleGoogleLogin()
         }
     }
-    
+
     private fun handleLogin() {
         viewModelScope.launch {
             authRepository.login(email, password)
         }
     }
-    
+
     private fun handleGoogleLogin() {
         viewModelScope.launch {
             authRepository.loginWithGoogle()
@@ -913,7 +913,7 @@ fun LoginScreen(onAction: (AuthAction) -> Unit) {
     Button(onClick = { onAction(AuthAction.LoginClicked) }) {
         Text("Login")
     }
-    
+
     Button(onClick = { onAction(AuthAction.GoogleLoginClicked) }) {
         Text("Login with Google")
     }
@@ -933,16 +933,16 @@ class PaginatedUserIterator(
 ) {
     private var currentPage = 0
     private var hasMore = true
-    
+
     suspend fun hasNext(): Boolean = hasMore
-    
+
     suspend fun next(): List<User> {
         if (!hasMore) return emptyList()
-        
+
         val response = api.getUsers(page = currentPage, size = pageSize)
         currentPage++
         hasMore = response.users.size == pageSize
-        
+
         return response.users
     }
 }
@@ -960,7 +960,7 @@ class UserRepository @Inject constructor(
 // core/database - Cursor iterator
 class DatabaseCursor(private val cursor: Cursor) : Iterator<User> {
     override fun hasNext(): Boolean = !cursor.isAfterLast
-    
+
     override fun next(): User {
         val user = User(
             id = cursor.getString(cursor.getColumnIndexOrThrow("id")),
@@ -982,30 +982,30 @@ class DatabaseCursor(private val cursor: Cursor) : Iterator<User> {
 class AppNavigationMediator @Inject constructor(
     private val navigator: Navigator
 ) : AuthNavigator, ProfileNavigator, SettingsNavigator {
-    
+
     // AuthNavigator implementation
     override fun navigateToHome() {
         navigator.navigate(TopLevelRoute.Home)
     }
-    
+
     override fun navigateToProfile() {
         navigator.navigate(TopLevelRoute.Profile)
     }
-    
+
     // ProfileNavigator implementation
     override fun navigateToSettings() {
         navigator.navigate(TopLevelRoute.Settings)
     }
-    
+
     override fun navigateToAuth() {
         navigator.navigate(TopLevelRoute.Auth)
     }
-    
+
     // SettingsNavigator implementation
     override fun navigateBack() {
         navigator.goBack()
     }
-    
+
     override fun logout() {
         navigator.navigate(TopLevelRoute.Auth)
     }
@@ -1035,40 +1035,40 @@ data class AuthFormMemento(
 class AuthViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
-    
+
     private companion object {
         const val KEY_FORM_STATE = "auth_form_state"
     }
-    
+
     init {
         // Restore from memento
         restoreState()
     }
-    
+
     private val _email = MutableStateFlow("")
     val email: StateFlow<String> = _email.asStateFlow()
-    
+
     private val _password = MutableStateFlow("")
     val password: StateFlow<String> = _password.asStateFlow()
-    
+
     private val _rememberMe = MutableStateFlow(false)
     val rememberMe: StateFlow<Boolean> = _rememberMe.asStateFlow()
-    
+
     fun onEmailChanged(value: String) {
         _email.value = value
         saveState()
     }
-    
+
     fun onPasswordChanged(value: String) {
         _password.value = value
         saveState()
     }
-    
+
     fun onRememberMeChanged(value: Boolean) {
         _rememberMe.value = value
         saveState()
     }
-    
+
     private fun saveState() {
         val memento = AuthFormMemento(
             email = _email.value,
@@ -1077,7 +1077,7 @@ class AuthViewModel @Inject constructor(
         )
         savedStateHandle[KEY_FORM_STATE] = memento
     }
-    
+
     private fun restoreState() {
         savedStateHandle.get<AuthFormMemento>(KEY_FORM_STATE)?.let { memento ->
             _email.value = memento.email
@@ -1098,22 +1098,22 @@ class AuthViewModel @Inject constructor(
 @Immutable
 sealed interface AuthUiState {
     data object Loading : AuthUiState
-    
+
     data class LoginForm(
         val email: String = "",
         val password: String = "",
         val error: String? = null,
         val isLoading: Boolean = false
     ) : AuthUiState
-    
+
     data class TwoFactorRequired(
         val maskedPhone: String
     ) : AuthUiState
-    
+
     data class Success(
         val user: User
     ) : AuthUiState
-    
+
     data class Error(
         val message: String,
         val canRetry: Boolean = true
@@ -1127,13 +1127,13 @@ class AuthViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<AuthUiState>(AuthUiState.LoginForm())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
-    
+
     fun onLoginClicked() {
         val currentState = _uiState.value as? AuthUiState.LoginForm ?: return
-        
+
         // Transition: LoginForm → Loading
         _uiState.value = currentState.copy(isLoading = true, error = null)
-        
+
         viewModelScope.launch {
             authRepository.login(currentState.email, currentState.password).fold(
                 onSuccess = { result ->
@@ -1182,7 +1182,7 @@ abstract class BaseAuthUseCase {
         saveToken(token)
         return Result.success(token)
     }
-    
+
     protected abstract fun validate(credentials: Credentials)
     protected abstract suspend fun authenticate(credentials: Credentials): AuthToken
     protected abstract suspend fun saveToken(token: AuthToken)
@@ -1234,25 +1234,25 @@ interface AnalyticsVisitor {
 class FirebaseAnalyticsVisitor @Inject constructor(
     private val analytics: FirebaseAnalytics
 ) : AnalyticsVisitor {
-    
+
     override fun visit(state: AuthUiState.LoginForm) {
         analytics.logEvent("auth_login_form_shown", bundleOf(
             "has_error" to (state.error != null)
         ))
     }
-    
+
     override fun visit(state: AuthUiState.TwoFactorRequired) {
         analytics.logEvent("auth_2fa_required", bundleOf(
             "phone_masked" to state.maskedPhone
         ))
     }
-    
+
     override fun visit(state: AuthUiState.Success) {
         analytics.logEvent("auth_success", bundleOf(
             "user_id" to state.user.id
         ))
     }
-    
+
     override fun visit(state: AuthUiState.Error) {
         analytics.logEvent("auth_error", bundleOf(
             "error_message" to state.message,
@@ -1265,19 +1265,19 @@ class FirebaseAnalyticsVisitor @Inject constructor(
 @Immutable
 sealed interface AuthUiState {
     fun accept(visitor: AnalyticsVisitor)
-    
+
     data class LoginForm(...) : AuthUiState {
         override fun accept(visitor: AnalyticsVisitor) = visitor.visit(this)
     }
-    
+
     data class TwoFactorRequired(...) : AuthUiState {
         override fun accept(visitor: AnalyticsVisitor) = visitor.visit(this)
     }
-    
+
     data class Success(...) : AuthUiState {
         override fun accept(visitor: AnalyticsVisitor) = visitor.visit(this)
     }
-    
+
     data class Error(...) : AuthUiState {
         override fun accept(visitor: AnalyticsVisitor) = visitor.visit(this)
     }
@@ -1307,7 +1307,7 @@ interface AuthRepository {
 class AuthRepositoryImpl @Inject constructor(
     private val remoteDataSource: AuthRemoteDataSource
 ) : AuthRepository {
-    
+
     override suspend fun login(email: String, password: String): Result<AuthToken> =
         try {
             val token = remoteDataSource.login(email, password)
@@ -1327,7 +1327,7 @@ class AuthRepositoryImpl @Inject constructor(
 class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
-    
+
     fun onLoginClicked(email: String, password: String) {
         viewModelScope.launch {
             authRepository.login(email, password).fold(
@@ -1407,11 +1407,11 @@ val verified = user.copy(isVerified = true) // New instance, original unchanged
 class ProfileViewModel @Inject constructor() : ViewModel() {
     private val _user = MutableStateFlow(User("", "", ""))
     val user: StateFlow<User> = _user.asStateFlow()
-    
+
     fun updateName(newName: String) {
         _user.update { it.copy(name = newName) }
     }
-    
+
     fun markVerified() {
         _user.update { it.copy(isVerified = true) }
     }
@@ -1442,7 +1442,7 @@ fun User.toUiModel(): UserUiModel = UserUiModel(
 fun Instant.formatRelativeTime(): String {
     val now = Clock.System.now()
     val duration = now - this
-    
+
     return when {
         duration < 1.minutes -> "Just now"
         duration < 1.hours -> "${duration.inWholeMinutes}m ago"
@@ -1471,7 +1471,7 @@ fun UserCard(user: User) {
 // WRONG: Static context
 object BadLogger {
     private lateinit var context: Context
-    
+
     fun init(context: Context) {
         this.context = context // Memory leak!
     }

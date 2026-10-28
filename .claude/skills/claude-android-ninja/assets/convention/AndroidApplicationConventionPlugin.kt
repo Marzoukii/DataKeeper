@@ -19,19 +19,19 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
 
             extensions.configure<ApplicationExtension> {
                 configureKotlinAndroid(this)
-                
+
                 defaultConfig {
                     targetSdk = libs.findVersion("targetSdk").get().toString().toInt()
                     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
                 }
-                
+
                 testOptions {
                     animationsDisabled = true
                 }
-                
+
                 configureGradleManagedDevices(this)
             }
-            
+
             extensions.configure<ApplicationAndroidComponentsExtension> {
                 configurePrintApksTask(this)
             }

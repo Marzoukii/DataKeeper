@@ -122,7 +122,7 @@ import androidx.navigation3.runtime.NavKey
 sealed interface ProductsDestination : NavKey {
     @Serializable
     data class ProductsList(val categoryId: String) : ProductsDestination
-    
+
     @Serializable
     data class ProductDetail(val productId: String) : ProductsDestination
 }
@@ -149,7 +149,7 @@ fun ProductsRoute(
     viewModel: ProductsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    
+
     ProductsListScreen(
         state = uiState,
         onProductClick = { productId ->
@@ -173,7 +173,7 @@ fun AppNavigation() {
     val backStack = rememberNavBackStack(
         startDestination = ProductsDestination.ProductsList(categoryId = "all")
     )
-    
+
     // Implement navigator
     val productsNavigator = remember {
         object : ProductsNavigator {
@@ -185,7 +185,7 @@ fun AppNavigation() {
             }
         }
     }
-    
+
     // Define routes
     NavDisplay(
         backStack = backStack,
@@ -250,9 +250,9 @@ fun AppNavigation(
             TopLevelRoute.Settings
         )
     )
-    
+
     val navigator = remember(navigationState) { Navigator(navigationState) }
-    
+
     // Track screen views for analytics/crashlytics
     LaunchedEffect(navigationState.topLevelRoute) {
         val currentStack = navigationState.backStacks[navigationState.topLevelRoute]
@@ -264,7 +264,7 @@ fun AppNavigation(
             )
         }
     }
-    
+
     // Create navigator implementations
     val authNavigator = remember(navigator) {
         object : AuthNavigator {
@@ -275,14 +275,14 @@ fun AppNavigation(
             override fun navigateToMainApp() = navigator.navigate(TopLevelRoute.Profile)
         }
     }
-    
+
     // Define all app destinations
     val entryProvider = entryProvider {
         authGraph(authNavigator)
         profileGraph()
         settingsGraph()
     }
-    
+
     // NavigationSuiteScaffold auto-switches between bar/rail/drawer based on window size
     NavigationSuiteScaffold(
         navigationSuiteItems = {
@@ -2197,7 +2197,7 @@ The child entry's `viewModel<SharedCounterViewModel>()` call resolves to the sam
 fun ProductCard() {
     // ViewModelStore follows the NavEntry - every ProductCard shares one ViewModel.
     // Multiple ProductCards will share the exact same ViewModel instance.
-    val viewModel: ProductViewModel = hiltViewModel() 
+    val viewModel: ProductViewModel = hiltViewModel()
 }
 
 // CORRECT: Pass state and callbacks down from the route/screen level

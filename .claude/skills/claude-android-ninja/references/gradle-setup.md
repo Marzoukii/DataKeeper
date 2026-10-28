@@ -376,28 +376,28 @@ plugins {
 
 android {
     namespace = "com.example.app"
-    
+
     defaultConfig {
         applicationId = "com.example.app"
         versionCode = 1
         versionName = "1.0"
-        
+
         // Enable multi-dex for larger apps
         multiDexEnabled = true
     }
-    
+
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
             isDebuggable = true
         }
-        
+
         release {
             optimization {
                 enable = true
             }
         }
-        
+
         create("benchmark") {
             initWith(getByName("release"))
             signingConfig = signingConfigs.getByName("debug")
@@ -412,7 +412,7 @@ dependencies {
     implementation(project(":feature-onboarding"))
     implementation(project(":feature-profile"))
     implementation(project(":feature-settings"))
-    
+
     // Core modules
     implementation(project(":core:domain"))
     implementation(project(":core:data"))
@@ -421,19 +421,19 @@ dependencies {
     implementation(project(":core:database"))
     implementation(project(":core:datastore"))
     implementation(project(":core:common"))
-    
+
     // Navigation3 for adaptive UI
     implementation(libs.bundles.navigation3)
-    
+
     // Adaptive layouts (NavigationSuiteScaffold, ListDetailPaneScaffold, SupportingPaneScaffold)
     implementation(libs.bundles.adaptive)
-    
+
     // Splash screen
     implementation(libs.androidx.core.splashscreen)
-    
+
     // WorkManager for background tasks
     implementation(libs.androidx.work.runtime.ktx)
-    
+
     // Testing
     testImplementation(project(":core:testing"))
     testImplementation(libs.bundles.unit.test)
@@ -460,11 +460,11 @@ dependencies {
     // Core module dependencies
     implementation(project(":core:domain"))
     implementation(project(":core:ui"))
-    
+
     // Feature-specific dependencies
     implementation(libs.androidx.constraintlayout.compose)
     implementation(libs.coil.compose)
-    
+
     // Testing
     testImplementation(project(":core:testing"))
     testImplementation(libs.bundles.unit.test)
@@ -488,10 +488,10 @@ dependencies {
     implementation(libs.kotlinx.serialization)
     implementation(libs.kotlinx.collections.immutable)
     implementation(libs.kotlinx.datetime) // For Clock.System and Duration API
-    
+
     // DI
     implementation(libs.java.inject)
-    
+
     // Testing
     testImplementation(libs.bundles.unit.test)
 }
@@ -514,20 +514,20 @@ android {
 
 dependencies {
     implementation(project(":core:domain"))
-    
+
     // Data layer dependencies
     implementation(project(":core:database"))
     implementation(project(":core:network"))
     implementation(project(":core:datastore"))
-    
+
     // Data serialization
     implementation(libs.kotlinx.serialization)
     implementation(libs.retrofit2.kotlinx.serialization.converter)
-    
+
     // Paging if needed
     implementation(libs.androidx.paging.runtime)
     implementation(libs.androidx.paging.compose)
-    
+
     // Testing
     testImplementation(project(":core:testing"))
     testImplementation(libs.bundles.unit.test)
@@ -550,14 +550,14 @@ android {
 
 dependencies {
     implementation(project(":core:domain"))
-    
+
     // Compose
     implementation(libs.bundles.compose)
-    
+
     // Image loading
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
-    
+
     // Testing
     testImplementation(libs.bundles.unit.test)
     androidTestImplementation(libs.bundles.android.test)
@@ -581,13 +581,13 @@ android {
 
 dependencies {
     implementation(project(":core:domain"))
-    
+
     // Networking
     implementation(libs.retrofit2)
     implementation(libs.retrofit2.kotlinx.serialization.converter)
     implementation(libs.okhttp3.logging.interceptor)
     implementation(libs.kotlinx.serialization)
-    
+
     // Testing
     testImplementation(libs.bundles.unit.test)
 }
@@ -610,7 +610,7 @@ android {
 
 dependencies {
     implementation(project(":core:domain"))
-    
+
     // Room 3 runtime + sqlite-bundled + compiler via app.android.room convention
     // Testing
     testImplementation(libs.bundles.unit.test)
@@ -707,7 +707,7 @@ composeStabilityAnalyzer {
         outputDir.set(layout.projectDirectory.dir("stability"))
         includeTests.set(false)
         failOnStabilityChange.set(true) // Fail build on stability regressions
-        
+
         // Allowed: exclude internal packages from fail-on-change
         ignoredPackages.set(listOf("com.example.internal"))
         ignoredClasses.set(listOf("PreviewComposables"))
@@ -821,7 +821,7 @@ With `android.nonTransitiveRClass=true`, each module generates its own R class c
    ```kotlin
    // In :feature:products module
    com.example.feature.products.R
-   
+
    // In :core:ui module
    com.example.core.ui.R
    ```
@@ -830,10 +830,10 @@ With `android.nonTransitiveRClass=true`, each module generates its own R class c
    ```kotlin
    // File: feature/products/presentation/detail/ProductDetailView.kt
    // Package: com.example.feature.products.presentation.detail
-   
+
    // This may fail:
    stringResource(R.string.product_title) // WRONG: Unresolved reference
-   
+
    // Fix: Import the module's R class explicitly
    import com.example.feature.products.R
    stringResource(R.string.product_title) // CORRECT: Works
@@ -843,7 +843,7 @@ With `android.nonTransitiveRClass=true`, each module generates its own R class c
    ```kotlin
    // Accessing strings from core:ui in feature:products
    import com.example.core.ui.R as CoreUiR
-   
+
    @Composable
    fun ErrorMessage() {
        Text(stringResource(CoreUiR.string.error_unknown))
@@ -1142,7 +1142,7 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
             )
         licenseHeaderFile(rootProject.file("spotless/copyright.kt"))
     }
-    
+
     kotlinGradle {
         target("**/*.gradle.kts")
         ktlint(libs.versions.ktlint.get())
@@ -1173,7 +1173,7 @@ gradle.settingsEvaluated {
             directory = File(rootDir, ".gradle/build-cache")
             removeUnusedEntriesAfterDays = 7
         }
-        
+
         remote<HttpBuildCache> {
             isEnabled = false // Set to true for CI/CD shared cache
             url = uri("https://example.com/cache/")

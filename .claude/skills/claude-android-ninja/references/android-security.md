@@ -1340,7 +1340,7 @@ class SecurityViewModel @Inject constructor(
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         // Prevent screenshots and screen recording
         if (!BuildConfig.DEBUG) {
             window.setFlags(

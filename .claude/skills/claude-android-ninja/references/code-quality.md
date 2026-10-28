@@ -52,7 +52,7 @@ Key features:
 
 ### Build Logic Registration
 
-The Detekt plugin is already registered in the build script available at `assets/convention/build.gradle.kts`. 
+The Detekt plugin is already registered in the build script available at `assets/convention/build.gradle.kts`.
 
 When you copy the build script to your project's `build-logic/convention/build.gradle.kts`, the Detekt plugin registration is included:
 
@@ -151,27 +151,27 @@ jobs:
   detekt:
     name: Detekt Check
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
-      
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
-      
+
       - name: Run Detekt
         run: ./gradlew detekt
-      
+
       - name: Upload SARIF to GitHub Security
         if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: build/reports/detekt/detekt.sarif
-      
+
       - name: Upload HTML Reports
         if: always()
         uses: actions/upload-artifact@v4

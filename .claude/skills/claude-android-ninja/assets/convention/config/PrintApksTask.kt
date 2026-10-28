@@ -18,7 +18,7 @@ internal fun Project.configurePrintApksTask(
         tasks.register("print${variant.name.capitalize()}Apks") {
             group = "help"
             description = "Prints all APK paths for ${variant.name} variant"
-            
+
             doLast {
                 println("APKs for ${variant.name}:")
                 variant.artifacts.getAll(com.android.build.api.artifact.SingleArtifact.APK)

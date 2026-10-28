@@ -116,7 +116,7 @@ composeCompiler {
     if (enableMetrics) {
         metricsDestination = layout.buildDirectory.dir("compose-metrics")
     }
-    
+
     // Only generate reports when explicitly requested
     val enableReports = project.providers
         .gradleProperty("enableComposeCompilerReports")

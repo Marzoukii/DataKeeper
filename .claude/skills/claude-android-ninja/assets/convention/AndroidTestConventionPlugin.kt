@@ -18,11 +18,11 @@ class AndroidTestConventionPlugin : Plugin<Project> {
 
             extensions.configure<TestExtension> {
                 configureKotlinAndroid(this)
-                
+
                 defaultConfig {
                     targetSdk = libs.findVersion("targetSdk").get().toString().toInt()
                 }
-                
+
                 configureGradleManagedDevices(this)
             }
         }

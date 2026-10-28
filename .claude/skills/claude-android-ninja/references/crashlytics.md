@@ -176,16 +176,16 @@ class MyApplication : Application() {
             // options.tracePropagationTargets = listOf("api.example.com", "https://auth.example.com")
             // options.propagateTraceparent = true
             // options.traceOptionsRequests = false
-            
+
             // Profiling configuration:
             // profilesSampleRate: % of transactions to profile (requires tracesSampleRate > 0)
             // Use this for production profiling of sampled transactions
             options.profilesSampleRate = 1.0
-            
+
             // Use profileSessionSampleRate to profile a percent of sessions (not per-transaction)
             // Only use ONE of profilesSampleRate OR profileSessionSampleRate, not both
             // options.profileSessionSampleRate = 0.2
-            
+
             // options.profileLifecycle = SentryOptions.ProfileLifecycle.TRACE
             // options.startProfilerOnAppStart = true
             options.enableAutoSessionTracking = true
@@ -362,7 +362,7 @@ class AuthViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     crashReporter: CrashReporter, // No private - delegated only
     logger: CrashlyticsStateLogger // No private - delegated only
-) : ViewModel(), 
+) : ViewModel(),
     CrashReporter by crashReporter,
     CrashlyticsStateLogger by logger {
 
@@ -370,7 +370,7 @@ class AuthViewModel @Inject constructor(
         logUiState("auth_role", role)
         logAction("Auth role selected: $role")
     }
-    
+
     fun onLoginFailed(error: Throwable) {
         recordException(
             error,
@@ -406,7 +406,7 @@ abstract class CrashReporterModule {
     abstract fun bindCrashReporter(
         impl: FirebaseCrashReporter
     ): CrashReporter
-    
+
     @Provides
     @Singleton
     fun provideFirebaseCrashlytics(): FirebaseCrashlytics =
@@ -569,7 +569,7 @@ Add a debug-only method to test crash reporting:
 class DebugViewModel @Inject constructor(
     crashReporter: CrashReporter // No private - delegated only
 ) : ViewModel(), CrashReporter by crashReporter {
-    
+
     // Only available in debug builds
     fun testCrash() {
         if (BuildConfig.DEBUG) {
@@ -578,7 +578,7 @@ class DebugViewModel @Inject constructor(
                 RuntimeException("Test crash from debug menu"),
                 mapOf("test" to "true", "source" to "debug_menu")
             )
-            
+
             // Test fatal crash (uncomment to test)
             // throw RuntimeException("Test fatal crash")
         }
@@ -603,7 +603,7 @@ To avoid polluting production data with debug crashes:
 <application>
   <meta-data
     android:name="firebase_crashlytics_collection_enabled"
-    android:value="false" 
+    android:value="false"
   />
 </application>
 ```
@@ -636,7 +636,7 @@ Sentry automatically scrubs common PII fields:
 SentryAndroid.init(this) { options ->
     // Disable automatic PII scrubbing if you need custom control
     options.sendDefaultPii = false
-    
+
     // Add custom data scrubbing
     options.setBeforeSend { event, hint ->
         // Scrub email addresses from exception messages
@@ -644,11 +644,11 @@ SentryAndroid.init(this) { options ->
             Regex("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"),
             "[REDACTED_EMAIL]"
         )
-        
+
         // Strip tags that can carry PII
         event.removeTag("user_email")
         event.removeExtra("raw_user_data")
-        
+
         event
     }
 }
@@ -662,10 +662,10 @@ Implement scrubbing in your `CrashReporter` wrapper:
 class PrivacyAwareCrashReporter @Inject constructor(
     crashReporter: CrashReporter // No private - delegated only
 ) : CrashReporter by crashReporter {
-    
+
     private val emailRegex = Regex("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}")
     private val sensitiveKeys = setOf("password", "token", "secret", "key", "auth")
-    
+
     override fun recordException(
         throwable: Throwable,
         context: Map<String, String>
@@ -676,11 +676,11 @@ class PrivacyAwareCrashReporter @Inject constructor(
         }.mapValues { (_, value) ->
             value.replace(emailRegex, "[REDACTED_EMAIL]")
         }
-        
+
         // Use super to call the delegated implementation
         super.recordException(throwable, scrubbedContext)
     }
-    
+
     override fun log(message: String) {
         val scrubbedMessage = message.replace(emailRegex, "[REDACTED_EMAIL]")
         super.log(scrubbedMessage)
@@ -698,13 +698,13 @@ abstract class CrashReporterModule {
     abstract fun bindCrashReporter(
         impl: PrivacyAwareCrashReporter
     ): CrashReporter
-    
+
     @Provides
     @Singleton
     fun providePrivacyAwareCrashReporter(
         @Named("raw") rawReporter: CrashReporter
     ): PrivacyAwareCrashReporter = PrivacyAwareCrashReporter(rawReporter)
-    
+
     @Provides
     @Singleton
     @Named("raw")

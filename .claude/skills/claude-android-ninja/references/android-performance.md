@@ -368,10 +368,10 @@ fun UserListRoute(
     viewModel: UserListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    
+
     // Report fully drawn when data is loaded and UI is ready
     ReportDrawnWhen { uiState is UserListUiState.Success }
-    
+
     UserListScreen(uiState = uiState)
 }
 ```
@@ -392,9 +392,9 @@ fun StaticScreen() {
 @Composable
 fun DataScreen(viewModel: DataViewModel) {
     val isDataLoaded by viewModel.isDataLoaded.collectAsStateWithLifecycle()
-    
+
     ReportDrawnWhen { isDataLoaded }
-    
+
     if (isDataLoaded) {
         DataContent()
     } else {
@@ -411,7 +411,7 @@ fun AsyncScreen() {
         // Suspend until critical data is ready
         awaitCriticalData()
     }
-    
+
     ScreenContent()
 }
 ```
@@ -421,8 +421,8 @@ fun AsyncScreen() {
 - **Call once per screen**: Multiple `ReportDrawnWhen` calls become no-ops after the first reports
 - **Handle error states**: Report even on errors to avoid blocking metrics
 ```kotlin
-ReportDrawnWhen { 
-    uiState is UserListUiState.Success || uiState is UserListUiState.Error 
+ReportDrawnWhen {
+    uiState is UserListUiState.Success || uiState is UserListUiState.Error
 }
 ```
 - **Don't wait for everything**: Report when the primary content is visible, not when all images/ads load

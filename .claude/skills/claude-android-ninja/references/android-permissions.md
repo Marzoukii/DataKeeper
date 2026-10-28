@@ -187,7 +187,7 @@ fun CameraScreen(
 ) {
     val context = LocalContext.current
     var showRationale by remember { mutableStateOf(false) }
-    
+
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -197,7 +197,7 @@ fun CameraScreen(
             showRationale = true
         }
     }
-    
+
     Column(modifier = modifier.fillMaxSize()) {
         if (showRationale) {
             PermissionRationaleCard(
@@ -207,7 +207,7 @@ fun CameraScreen(
                 onOpenSettings = { openAppSettings(context) }
             )
         }
-        
+
         Button(
             onClick = {
                 when (PackageManager.PERMISSION_GRANTED) {
@@ -237,9 +237,9 @@ fun MediaPickerScreen(
 ) {
     val context = LocalContext.current
     var showRationale by remember { mutableStateOf(false) }
-    
+
     val permissions = buildMediaPermissions()
-    
+
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissionsMap ->
@@ -250,7 +250,7 @@ fun MediaPickerScreen(
             else -> showRationale = true
         }
     }
-    
+
     Button(
         onClick = {
             val hasPermission = permissions.any { permission ->
@@ -259,7 +259,7 @@ fun MediaPickerScreen(
                     permission
                 ) == PackageManager.PERMISSION_GRANTED
             }
-            
+
             if (hasPermission) {
                 // Open media picker
             } else {
@@ -284,13 +284,13 @@ fun NotificationSettingsScreen(
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    
+
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         viewModel.onNotificationPermissionResult(isGranted)
     }
-    
+
     Column(modifier = modifier.fillMaxSize()) {
         SwitchRow(
             title = "Enable Notifications",
@@ -335,7 +335,7 @@ fun PhotoPickerScreen(
         ) { uri ->
             uri?.let { onPhotoSelected(it) }
         }
-        
+
         Button(
             onClick = {
                 launcher.launch(
@@ -354,7 +354,7 @@ fun PhotoPickerScreen(
         ) { uri ->
             uri?.let { onPhotoSelected(it) }
         }
-        
+
         Button(
             onClick = { launcher.launch("image/*") }
         ) {
@@ -379,7 +379,7 @@ fun MultiPhotoPickerScreen(
                 onPhotosSelected(uris)
             }
         }
-        
+
         Button(
             onClick = {
                 launcher.launch(
@@ -400,7 +400,7 @@ fun MultiPhotoPickerScreen(
                 onPhotosSelected(uris)
             }
         }
-        
+
         Button(
             onClick = { launcher.launch(arrayOf("image/*")) }
         ) {
@@ -435,13 +435,13 @@ fun ScheduleEmailScreen(
     val context = LocalContext.current
     val alarmManager = remember { context.getSystemService<AlarmManager>()!! }
     var showRationale by remember { mutableStateOf(false) }
-    
+
     val settingsLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) {
         // Check permission on return
     }
-    
+
     LaunchedEffect(Unit) {
         // Check permission on resume
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -450,13 +450,13 @@ fun ScheduleEmailScreen(
             }
         }
     }
-    
+
     if (showRationale) {
         AlertDialog(
             onDismissRequest = { showRationale = false },
             title = { Text("Exact Alarm Permission Required") },
-            text = { 
-                Text("To send your email at the exact time you choose, we need permission to schedule exact alarms. Tap 'Grant' to open settings.") 
+            text = {
+                Text("To send your email at the exact time you choose, we need permission to schedule exact alarms. Tap 'Grant' to open settings.")
             },
             confirmButton = {
                 TextButton(
@@ -479,7 +479,7 @@ fun ScheduleEmailScreen(
             }
         )
     }
-    
+
     Button(
         onClick = {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -507,19 +507,19 @@ fun FileManagerScreen(
 ) {
     val context = LocalContext.current
     var showRationale by remember { mutableStateOf(false) }
-    
+
     val settingsLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) {
         // Check permission on return
     }
-    
+
     if (showRationale) {
         AlertDialog(
             onDismissRequest = { showRationale = false },
             title = { Text("All Files Access Required") },
-            text = { 
-                Text("To manage all your files, we need access to all storage. Tap 'Grant' to open settings and enable 'All files access'.") 
+            text = {
+                Text("To manage all your files, we need access to all storage. Tap 'Grant' to open settings and enable 'All files access'.")
             },
             confirmButton = {
                 TextButton(
@@ -627,11 +627,11 @@ class CameraViewModel @Inject constructor(
     private var denialCount: Int
         get() = savedStateHandle["camera_denial_count"] ?: 0
         set(value) { savedStateHandle["camera_denial_count"] = value }
-    
+
     fun onPermissionDenied() {
         denialCount++
     }
-    
+
     fun shouldShowSettings(): Boolean = denialCount >= 2
 }
 ```
@@ -665,12 +665,12 @@ fun checkMediaPermission(context: Context): MediaAccessLevel = when {
                 context,
                 Manifest.permission.READ_MEDIA_IMAGES
             ) == PackageManager.PERMISSION_GRANTED -> MediaAccessLevel.Full
-            
+
             ContextCompat.checkSelfPermission(
                 context,
                 Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
             ) == PackageManager.PERMISSION_GRANTED -> MediaAccessLevel.Partial
-            
+
             else -> MediaAccessLevel.None
         }
     }
@@ -888,7 +888,7 @@ fun testCameraFeature() {
     composeTestRule.setContent {
         CameraScreen(onPhotoCaptured = {})
     }
-    
+
     composeTestRule.onNodeWithText("Take Photo").performClick()
 }
 ```
@@ -901,9 +901,9 @@ fun testPermissionDenialShowsRationale() {
     composeTestRule.setContent {
         CameraScreen(onPhotoCaptured = {})
     }
-    
+
     composeTestRule.onNodeWithText("Take Photo").performClick()
-    
+
     // Simulate denial
     composeTestRule.onNodeWithText("Camera Access Required").assertIsDisplayed()
 }

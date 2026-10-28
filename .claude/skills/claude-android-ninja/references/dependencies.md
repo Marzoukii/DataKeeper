@@ -181,7 +181,7 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.material3) // Version from BOM
-    
+
     // Firebase BOM
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.crashlytics) // Version from BOM
@@ -243,7 +243,7 @@ BOMs (Bill of Materials) manage versions of related libraries, ensuring compatib
 // Compose BOM - manages all androidx.compose.* versions
 implementation(platform(libs.androidx.compose.bom))
 
-// Firebase BOM - manages all firebase.* versions  
+// Firebase BOM - manages all firebase.* versions
 implementation(platform(libs.firebase.bom))
 ```
 
@@ -285,7 +285,7 @@ These need their own catalog version ref even though they look like Compose arti
 
 ### Test Bundles
 
-Use `libs.bundles.unit-test` and `libs.bundles.android-test` for consistent test dependencies across modules. 
+Use `libs.bundles.unit-test` and `libs.bundles.android-test` for consistent test dependencies across modules.
 These are defined in `assets/libs.versions.toml.template`.
 
 ## Build Performance Considerations
@@ -301,7 +301,7 @@ These are defined in `assets/libs.versions.toml.template`.
 dependencies {
     // Coroutines types are in public API (suspend, Flow)
     api(libs.kotlinx.coroutines.core)
-    
+
     // Inject is only used internally
     implementation(libs.java.inject)
 }

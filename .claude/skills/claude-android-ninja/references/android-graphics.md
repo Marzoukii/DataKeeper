@@ -218,7 +218,7 @@ fun createBadgeIcon(count: Int, backgroundColor: Color): ImageVector {
             curveTo(22f, 6.48f, 17.52f, 2f, 12f, 2f)
             close()
         }
-        
+
         // You could add text rendering here for the count
         // (though for actual text, use Text composable overlays)
     }.build()
@@ -227,7 +227,7 @@ fun createBadgeIcon(count: Int, backgroundColor: Color): ImageVector {
 @Composable
 fun NotificationBadge(count: Int) {
     val badgeColor = if (count > 99) Color.Red else MaterialTheme.colorScheme.primary
-    
+
     Image(
         imageVector = createBadgeIcon(count, badgeColor),
         contentDescription = "$count notifications"
@@ -261,7 +261,7 @@ object CustomIcons {
             }
         }.build()
     }
-    
+
     val Relay: ImageVector by lazy {
         ImageVector.Builder(
             name = "Relay",
@@ -301,7 +301,7 @@ fun ThemedIcon(
 ) {
     val primary = MaterialTheme.colorScheme.primary
     val surface = MaterialTheme.colorScheme.surface
-    
+
     val themedIcon = remember(primary, surface) {
         ImageVector.Builder(
             name = "ThemedIcon",
@@ -319,7 +319,7 @@ fun ThemedIcon(
                 curveTo(22f, 6.48f, 17.52f, 2f, 12f, 2f)
                 close()
             }
-            
+
             // Foreground
             path(fill = SolidColor(primary)) {
                 moveTo(12f, 6f)
@@ -330,7 +330,7 @@ fun ThemedIcon(
             }
         }.build()
     }
-    
+
     Image(
         imageVector = themedIcon,
         contentDescription = contentDescription,
@@ -359,7 +359,7 @@ val LayeredIcon: ImageVector = ImageVector.Builder(
         lineTo(0f, 24f)
         close()
     }
-    
+
     // Layer 2: Shadow
     path(
         fill = SolidColor(Color.Black),
@@ -372,7 +372,7 @@ val LayeredIcon: ImageVector = ImageVector.Builder(
         curveTo(10.76f, 8f, 13f, 10.24f, 13f, 13f)
         close()
     }
-    
+
     // Layer 3: Main shape
     path(fill = SolidColor(Color.Blue)) {
         moveTo(12f, 12f)
@@ -382,7 +382,7 @@ val LayeredIcon: ImageVector = ImageVector.Builder(
         curveTo(9.76f, 7f, 12f, 9.24f, 12f, 12f)
         close()
     }
-    
+
     // Layer 4: Highlight
     path(
         fill = SolidColor(Color.White),
@@ -395,7 +395,7 @@ val LayeredIcon: ImageVector = ImageVector.Builder(
         curveTo(8.1f, 8f, 9f, 8.9f, 9f, 10f)
         close()
     }
-    
+
     // Layer 5: Outline (top)
     path(
         fill = null,
@@ -430,13 +430,13 @@ fun GradientText(text: String) {
     val gradient = Brush.linearGradient(
         colors = listOf(Color.Blue, Color.Cyan, Color.Green)
     )
-    
+
     Text(
         text = text,
         style = MaterialTheme.typography.headlineLarge,
         modifier = Modifier.drawWithContent {
             drawContent() // Draw the text first
-            
+
             // Draw gradient overlay
             drawRect(
                 brush = gradient,
@@ -483,7 +483,7 @@ fun ComplexBackground() {
                     center = Offset(size.width / 2, size.height / 2),
                     radius = size.maxDimension / 2
                 )
-                
+
                 onDrawBehind {
                     drawRect(gradient)
                 }
@@ -502,10 +502,10 @@ fun CustomChart(data: List<Float>) {
     Canvas(modifier = Modifier.fillMaxSize()) {
         val barWidth = size.width / data.size
         val maxValue = data.maxOrNull() ?: 1f
-        
+
         data.forEachIndexed { index, value ->
             val barHeight = (value / maxValue) * size.height
-            
+
             drawRect(
                 color = Color.Blue,
                 topLeft = Offset(
@@ -553,7 +553,7 @@ Canvas(modifier = Modifier.size(200.dp)) {
             size = Size(100f, 100f)
         )
     }
-    
+
     // Scale
     scale(1.5f, pivot = center) {
         drawCircle(
@@ -562,7 +562,7 @@ Canvas(modifier = Modifier.size(200.dp)) {
             center = center
         )
     }
-    
+
     // Translate
     translate(left = 50f, top = 50f) {
         drawLine(
@@ -587,25 +587,25 @@ fun StarShape() {
             val outerRadius = size.minDimension / 2
             val innerRadius = outerRadius * 0.4f
             val points = 5
-            
+
             for (i in 0 until points * 2) {
                 val radius = if (i % 2 == 0) outerRadius else innerRadius
                 val angle = (i * Math.PI / points).toFloat()
                 val x = centerX + radius * cos(angle)
                 val y = centerY + radius * sin(angle)
-                
+
                 if (i == 0) moveTo(x, y)
                 else lineTo(x, y)
             }
             close()
         }
-        
+
         drawPath(
             path = path,
             color = Color(0xFFFFD700), // Gold
             style = Fill
         )
-        
+
         drawPath(
             path = path,
             color = Color.Black,
@@ -641,7 +641,7 @@ Canvas(modifier = Modifier.size(200.dp)) {
         radius = 80f,
         center = Offset(60f, 100f)
     )
-    
+
     drawCircle(
         color = Color.Blue,
         radius = 80f,
@@ -653,7 +653,7 @@ Canvas(modifier = Modifier.size(200.dp)) {
 
 **Common Blend Modes:**
 - `BlendMode.Screen` - Additive blending for glow effects
-- `BlendMode.Multiply` - Darkening/shadow effects  
+- `BlendMode.Multiply` - Darkening/shadow effects
 - `BlendMode.SrcAtop` - Mask content to layer below
 - `BlendMode.Plus` - Additive color (brightening)
 - `BlendMode.Overlay` - Combination of multiply and screen
@@ -674,7 +674,7 @@ fun GlowEffect(
     Canvas(modifier = modifier.fillMaxSize()) {
         val center = Offset(size.width / 2f, size.height / 2f)
         val radius = size.minDimension / 2f
-        
+
         // Outer glow
         drawCircle(
             brush = Brush.radialGradient(
@@ -690,7 +690,7 @@ fun GlowEffect(
             center = center,
             blendMode = BlendMode.Screen // Additive blending for glow
         )
-        
+
         // Inner highlight
         drawCircle(
             brush = Brush.radialGradient(
@@ -729,12 +729,12 @@ fun PulsingGlow(
         ),
         label = "pulse"
     )
-    
+
     Canvas(modifier = modifier.fillMaxSize()) {
         val center = Offset(size.width / 2f, size.height / 2f)
         val baseRadius = size.minDimension / 2f
         val animatedRadius = baseRadius * (1f + 0.2f * pulseIntensity)
-        
+
         drawCircle(
             brush = Brush.radialGradient(
                 colors = listOf(
@@ -768,7 +768,7 @@ fun MultiColorGlow(
         val center = Offset(size.width / 2f, size.height / 2f)
         val radius = size.minDimension / 2f
         val spread = radius * 0.3f
-        
+
         colors.forEachIndexed { index, color ->
             // Position glows in a circle using trigonometry
             val angle = 2f * Math.PI.toFloat() * index / colors.size
@@ -776,7 +776,7 @@ fun MultiColorGlow(
                 center.x + cos(angle) * radius * 0.2f,
                 center.y + sin(angle) * radius * 0.2f
             )
-            
+
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
@@ -792,7 +792,7 @@ fun MultiColorGlow(
                 blendMode = BlendMode.Screen
             )
         }
-        
+
         // Overall white glow overlay
         drawCircle(
             brush = Brush.radialGradient(
@@ -858,7 +858,7 @@ fun extractMultipleColorsFromRegions(
     numberOfRegions: Int
 ): List<Color> {
     val colors = mutableListOf<Color>()
-    
+
     // Define regions based on grid layout
     val regions = when (numberOfRegions) {
         4 -> listOf(
@@ -877,7 +877,7 @@ fun extractMultipleColorsFromRegions(
         )
         else -> listOf(android.graphics.Rect(0, 0, bitmap.width, bitmap.height))
     }
-    
+
     regions.forEach { region ->
         val subBitmap = Bitmap.createBitmap(
             bitmap,
@@ -889,7 +889,7 @@ fun extractMultipleColorsFromRegions(
         colors.add(extractVibrantColor(subBitmap))
         subBitmap.recycle()
     }
-    
+
     return colors.distinct()
 }
 ```
@@ -902,7 +902,7 @@ Get composable size for drawing calculations:
 @Composable
 fun DynamicSizeCanvas() {
     var containerSize by remember { mutableStateOf<Size?>(null) }
-    
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -918,7 +918,7 @@ fun DynamicSizeCanvas() {
                 // Use size for calculations
                 val center = Offset(size.width / 2f, size.height / 2f)
                 val radius = minOf(size.width, size.height) / 2f
-                
+
                 drawCircle(
                     color = Color.Blue,
                     radius = radius,
@@ -1076,17 +1076,17 @@ suspend fun loadImageAndExtractColor(
 fun ImageWithExtractedGlow(imageUrl: String) {
     val context = LocalContext.current
     var glowColor by remember(imageUrl) { mutableStateOf<Color?>(null) }
-    
+
     LaunchedEffect(imageUrl) {
         glowColor = loadImageAndExtractColor(context, imageUrl)
     }
-    
+
     Box {
         // Glow effect using extracted color
         glowColor?.let { color ->
             PulsingGlow(glowColor = color, modifier = Modifier.matchParentSize())
         }
-        
+
         // Image on top
         AsyncImage(
             model = imageUrl,
@@ -1128,7 +1128,7 @@ Cache dynamically generated ImageVectors:
 ```kotlin
 object IconCache {
     private val cache = mutableMapOf<String, ImageVector>()
-    
+
     fun getOrCreate(key: String, builder: () -> ImageVector): ImageVector {
         return cache.getOrPut(key, builder)
     }
@@ -1141,7 +1141,7 @@ fun CachedIcon(userId: String) {
             generateUserIcon(userId)
         }
     }
-    
+
     Image(imageVector = icon, contentDescription = "User avatar")
 }
 ```
@@ -1157,7 +1157,7 @@ fun AnimatedIcon(isActive: Boolean) {
     val icon = remember(isActive) {
         createAnimatedIcon(isActive)
     }
-    
+
     Image(imageVector = icon, contentDescription = null)
 }
 
@@ -1167,7 +1167,7 @@ fun DerivedIcon(data: List<Int>) {
     val icon = remember {
         derivedStateOf { createIcon(data.sum()) }
     }.value
-    
+
     Image(imageVector = icon, contentDescription = null)
 }
 ```
@@ -1182,7 +1182,7 @@ object AppIcons {
     val Home: ImageVector by lazy { createHomeIcon() }
     val Settings: ImageVector by lazy { createSettingsIcon() }
     val Profile: ImageVector by lazy { createProfileIcon() }
-    
+
     // WRONG: Avoid Eager initialization
     // val All = listOf(createHomeIcon(), createSettingsIcon(), ...) // Creates all immediately
 }

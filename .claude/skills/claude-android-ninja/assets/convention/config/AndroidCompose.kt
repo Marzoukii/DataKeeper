@@ -29,9 +29,9 @@ internal fun Project.configureAndroidCompose(
     }
 
     extensions.configure<ComposeCompilerGradlePluginExtension> {
-        fun Provider<String>.onlyIfTrue() = 
+        fun Provider<String>.onlyIfTrue() =
             flatMap { provider { it.takeIf(String::toBoolean) } }
-        
+
         fun Provider<*>.relativeToRootProject(dir: String) = map {
             @Suppress("UnstableApiUsage")
             isolated.rootProject.projectDirectory

@@ -20,21 +20,21 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
 
             extensions.configure<LibraryExtension> {
                 configureKotlinAndroid(this)
-                
+
                 defaultConfig {
                     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-                    
+
                     // Version catalog entries for targetSdk
                     testOptions.targetSdk = libs.findVersion("targetSdk").get().toString().toInt()
                     lint.targetSdk = libs.findVersion("targetSdk").get().toString().toInt()
                 }
-                
+
                 testOptions {
                     animationsDisabled = true
                 }
-                
+
                 configureGradleManagedDevices(this)
-                
+
                 // Resource prefix based on module path
                 // :core:data → core_data_
                 resourcePrefix = path.split("""\W""".toRegex())
@@ -43,12 +43,12 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                     .joinToString(separator = "_")
                     .lowercase() + "_"
             }
-            
+
             extensions.configure<LibraryAndroidComponentsExtension> {
                 configurePrintApksTask(this)
                 disableUnnecessaryAndroidTests(target)
             }
-            
+
             dependencies {
                 add("androidTestImplementation", libs.findLibrary("kotlin.test").get())
                 add("testImplementation", libs.findLibrary("kotlin.test").get())

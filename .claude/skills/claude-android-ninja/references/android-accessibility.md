@@ -120,13 +120,13 @@ fun NotificationToggle(
     onToggleNotifications: (Boolean) -> Unit
 ) {
     var enabled by remember { mutableStateOf(isEnabled) }
-    
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .toggleable(
                 value = enabled,
-                onValueChange = { 
+                onValueChange = {
                     enabled = it
                     onToggleNotifications(it)
                 },
@@ -233,7 +233,7 @@ fun EmailListItem(
         leadingContent = {
             Icon(
                 painterResource(
-                    if (email.isRead) R.drawable.ic_mail_open 
+                    if (email.isRead) R.drawable.ic_mail_open
                     else R.drawable.ic_mail
                 ),
                 contentDescription = if (email.isRead) "Read" else "Unread"
@@ -448,7 +448,7 @@ fun deleteButton_meetsMinimumTouchTarget() {
     composeTestRule.setContent {
         DeleteButton(onDelete = {})
     }
-    
+
     composeTestRule
         .onNodeWithContentDescription("Delete")
         .assertWidthIsAtLeast(48.dp)
@@ -489,7 +489,7 @@ fun ProfileHeader(
                 .clip(CircleShape)
                 .semantics { traversalIndex = 0f }  // Visit first
         )
-        
+
         // Name and bio (traversal order: 2)
         Column(
             modifier = Modifier
@@ -500,7 +500,7 @@ fun ProfileHeader(
             Text(name, style = MaterialTheme.typography.titleLarge)
             Text(bio, style = MaterialTheme.typography.bodyMedium)
         }
-        
+
         // Edit button (traversal order: 3)
         IconButton(
             onClick = onEditProfile,
@@ -563,12 +563,12 @@ fun ArticleScreen(article: Article) {
                 modifier = Modifier.semantics { heading() }
             )
         }
-        
+
         item {
             // Metadata (not a heading)
             Text("${article.author} · ${article.date}")
         }
-        
+
         items(article.sections) { section ->
             Column {
                 // H2: Section titles
@@ -596,7 +596,7 @@ Announce dynamic content changes to screen readers.
 @Composable
 fun ToastMessage(message: String?, onDismiss: () -> Unit) {
     val context = LocalContext.current
-    
+
     LaunchedEffect(message) {
         message?.let {
             // Announce to screen reader immediately
@@ -607,12 +607,12 @@ fun ToastMessage(message: String?, onDismiss: () -> Unit) {
             context.findActivity()?.let { activity ->
                 activity.window.decorView.sendAccessibilityEvent(announcement)
             }
-            
+
             delay(3.seconds)
             onDismiss()
         }
     }
-    
+
     if (message != null) {
         Snackbar(
             modifier = Modifier.semantics {
@@ -631,7 +631,7 @@ class ItemsViewModel @Inject constructor(
 ) : ViewModel() {
     private val _toastMessage = MutableSharedFlow<String>(replay = 0)
     val toastMessage: SharedFlow<String> = _toastMessage.asSharedFlow()
-    
+
     fun deleteItem(itemId: String) {
         viewModelScope.launch {
             repository.deleteItem(itemId)
@@ -662,7 +662,7 @@ fun MainScreen(
             if (showTopBar) {
                 Column {
                     topBarContent()
-                    
+
                     // Skip to main content button (hidden visually)
                     TextButton(
                         onClick = { /* Focus on content */ },
@@ -740,7 +740,7 @@ fun DynamicContrastText(
     } else {
         Color.White  // Light text on dark background
     }
-    
+
     Text(
         text = text,
         color = textColor,
@@ -779,7 +779,7 @@ fun AccessibleStatusBadge(status: Status) {
         Status.Error -> Triple(R.drawable.ic_error, Color.Red, "Error")
         Status.Warning -> Triple(R.drawable.ic_warning, Color.Yellow, "Warning")
     }
-    
+
     Row(
         modifier = Modifier.semantics(mergeDescendants = true) {
             contentDescription = "$text status"
@@ -830,7 +830,7 @@ fun AccessibleTextField(
                     }
                 }
         )
-        
+
         if (error != null) {
             Row(
                 modifier = Modifier.padding(start = 16.dp, top = 4.dp),
@@ -893,7 +893,7 @@ fun HighContrastAwareButton(
             false
         }
     }
-    
+
     Button(
         onClick = onClick,
         colors = ButtonDefaults.buttonColors(
@@ -925,7 +925,7 @@ fun LoginForm(
     onLogin: () -> Unit
 ) {
     val focusManager = LocalFocusManager.current
-    
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -946,7 +946,7 @@ fun LoginForm(
             ),
             modifier = Modifier.fillMaxWidth()
         )
-        
+
         OutlinedTextField(
             value = password,
             onValueChange = onPasswordChange,
@@ -957,14 +957,14 @@ fun LoginForm(
                 imeAction = ImeAction.Done
             ),
             keyboardActions = KeyboardActions(
-                onDone = { 
+                onDone = {
                     focusManager.clearFocus()
                     onLogin()
                 }
             ),
             modifier = Modifier.fillMaxWidth()
         )
-        
+
         Button(
             onClick = {
                 focusManager.clearFocus()
@@ -984,7 +984,7 @@ fun LoginForm(
 @Composable
 fun SearchScreen() {
     val focusRequester = remember { FocusRequester() }
-    
+
     Column {
         OutlinedTextField(
             value = "",
@@ -994,7 +994,7 @@ fun SearchScreen() {
                 .fillMaxWidth()
                 .focusRequester(focusRequester)
         )
-        
+
         // Auto-focus search field when screen appears
         LaunchedEffect(Unit) {
             delay(100.milliseconds)  // Small delay for layout
@@ -1154,7 +1154,7 @@ fun AccessibleBottomNavigation(
                 }
             }
         )
-        
+
         NavigationBarItem(
             selected = selectedRoute == "search",
             onClick = { onNavigate("search") },
@@ -1173,7 +1173,7 @@ fun AccessibleBottomNavigation(
                 }
             }
         )
-        
+
         NavigationBarItem(
             selected = selectedRoute == "profile",
             onClick = { onNavigate("profile") },
@@ -1205,7 +1205,7 @@ fun AccessibleRegistrationForm(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val focusManager = LocalFocusManager.current
-    
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -1218,15 +1218,15 @@ fun AccessibleRegistrationForm(
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.semantics { heading() }
         )
-        
+
         // Name field
         OutlinedTextField(
             value = uiState.name,
             onValueChange = { viewModel.onNameChange(it) },
             label = { Text("Full Name *") },
             isError = uiState.nameError != null,
-            supportingText = uiState.nameError?.let { 
-                { 
+            supportingText = uiState.nameError?.let {
+                {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -1239,7 +1239,7 @@ fun AccessibleRegistrationForm(
                         )
                         Text(it)
                     }
-                } 
+                }
             },
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Next
@@ -1255,7 +1255,7 @@ fun AccessibleRegistrationForm(
                     }
                 }
         )
-        
+
         // Email field
         OutlinedTextField(
             value = uiState.email,
@@ -1293,7 +1293,7 @@ fun AccessibleRegistrationForm(
                     }
                 }
         )
-        
+
         // Password field with strength indicator
         OutlinedTextField(
             value = uiState.password,
@@ -1341,7 +1341,7 @@ fun AccessibleRegistrationForm(
                     }
                 }
         )
-        
+
         // Submit button
         Button(
             onClick = {
@@ -1382,7 +1382,7 @@ fun loginButton_hasAccessibleTouchTarget() {
     composeTestRule.setContent {
         LoginScreen()
     }
-    
+
     composeTestRule
         .onNodeWithText("Login")
         .assertWidthIsAtLeast(48.dp)
@@ -1394,7 +1394,7 @@ fun deleteIcon_hasContentDescription() {
     composeTestRule.setContent {
         ItemCard(item = testItem, onDelete = {})
     }
-    
+
     composeTestRule
         .onNodeWithContentDescription("Delete ${testItem.name}")
         .assertExists()
@@ -1409,7 +1409,7 @@ fun formError_isAnnounced() {
             error = "Invalid email address"
         )
     }
-    
+
     composeTestRule
         .onNodeWithText("Email")
         .assert(
@@ -1423,7 +1423,7 @@ fun formError_isAnnounced() {
 @Test
 fun toggleButton_announcesState() {
     var isEnabled by mutableStateOf(false)
-    
+
     composeTestRule.setContent {
         ToggleButton(
             isEnabled = isEnabled,
@@ -1431,7 +1431,7 @@ fun toggleButton_announcesState() {
             label = "Notifications"
         )
     }
-    
+
     // Initial state
     composeTestRule
         .onNodeWithText("Notifications")
@@ -1441,12 +1441,12 @@ fun toggleButton_announcesState() {
                 "Disabled"
             )
         )
-    
+
     // After toggle
     composeTestRule
         .onNodeWithText("Notifications")
         .performClick()
-    
+
     composeTestRule
         .onNodeWithText("Notifications")
         .assert(
@@ -1533,7 +1533,7 @@ android {
             "TextContrastCheck",
             "ClickableViewAccessibility"
         )
-        
+
         // Treat accessibility issues as errors in CI
         abortOnError = System.getenv("CI") == "true"
     }

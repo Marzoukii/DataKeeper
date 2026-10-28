@@ -34,7 +34,7 @@ private fun Lint.configureLint() {
     xmlReport = true
     sarifReport = true
     checkDependencies = true
-    
+
     // Disable noisy dependency warnings
     disable += "GradleDependency"
 }

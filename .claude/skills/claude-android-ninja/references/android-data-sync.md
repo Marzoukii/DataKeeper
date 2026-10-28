@@ -91,10 +91,10 @@ class TaskRepositoryImpl @Inject constructor(
             lastModified = Clock.System.now()
         )
         taskDao.insert(entity)
-        
+
         // Schedule background sync
         syncCoordinator.scheduleSyncNow()
-        
+
         task
     }
 
@@ -104,9 +104,9 @@ class TaskRepositoryImpl @Inject constructor(
             lastModified = Clock.System.now()
         )
         taskDao.update(entity)
-        
+
         syncCoordinator.scheduleSyncNow()
-        
+
         task
     }
 
@@ -161,12 +161,12 @@ class TaskRepositoryImpl @Inject constructor(
 
     private suspend fun syncUpdate(task: TaskEntity): SyncItemResult = try {
         val response = taskApi.updateTask(task.serverId!!, task.toApiModel())
-        
+
         if (response.version <= task.serverVersion) {
             // Server has newer version - conflict!
             return resolveConflict(task, response)
         }
-        
+
         taskDao.update(
             task.copy(
                 syncStatus = SyncStatus.SYNCED,
@@ -261,23 +261,23 @@ Room 3 (`androidx.room3`): keep using **`suspend`** and **`Flow`** on DAOs; conf
 data class TaskEntity(
     @PrimaryKey
     val id: String,
-    
+
     @ColumnInfo(name = "server_id")
     val serverId: String? = null,
-    
+
     val title: String,
     val description: String?,
     val status: TaskStatus,
-    
+
     @ColumnInfo(name = "sync_status")
     val syncStatus: SyncStatus,
-    
+
     @ColumnInfo(name = "last_modified")
     val lastModified: Instant,
-    
+
     @ColumnInfo(name = "server_version")
     val serverVersion: Int = 0,
-    
+
     @ColumnInfo(name = "is_deleted")
     val isDeleted: Boolean = false
 )
@@ -438,7 +438,7 @@ class ConnectivityNetworkMonitor @Inject constructor(
     private fun checkConnection(): Boolean {
         val network = connectivityManager?.activeNetwork ?: return false
         val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
-        
+
         return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
                capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
     }
@@ -486,11 +486,11 @@ override suspend fun syncFromServer(): SyncResult = runCatching {
             serverVersion = apiTask.version
         )
     }
-    
+
     // Clear and replace (or use upsert for incremental)
     taskDao.deleteAll()
     taskDao.insertAll(entities)
-    
+
     SyncResult.Success(entities.size)
 }.getOrElse { e ->
     SyncResult.Error(e.message ?: "Sync failed")
@@ -505,13 +505,13 @@ Merge local and remote changes with conflict resolution.
 override suspend fun syncBidirectional(): SyncResult = coroutineScope {
     // Step 1: Push local changes to server
     val pushResult = syncPendingChanges()
-    
+
     // Step 2: Pull remote changes
     val pullResult = async { pullRemoteChanges() }
-    
+
     // Step 3: Merge results
     val pull = pullResult.await()
-    
+
     when {
         pushResult is SyncResult.Success && pull is SyncResult.Success -> {
             SyncResult.Success(pushResult.itemsSynced + pull.itemsSynced)
@@ -528,10 +528,10 @@ override suspend fun syncBidirectional(): SyncResult = coroutineScope {
 private suspend fun pullRemoteChanges(): SyncResult = runCatching {
     val lastSyncTime = preferencesDataSource.getLastSyncTime()
     val remoteTasks = taskApi.getTasksSince(lastSyncTime)
-    
+
     remoteTasks.forEach { apiTask ->
         val localTask = taskDao.getByServerId(apiTask.id)
-        
+
         when {
             localTask == null -> {
                 // New remote task - insert
@@ -553,7 +553,7 @@ private suspend fun pullRemoteChanges(): SyncResult = runCatching {
             }
         }
     }
-    
+
     preferencesDataSource.setLastSyncTime(Clock.System.now())
     SyncResult.Success(remoteTasks.size)
 }.getOrElse { e ->
@@ -632,7 +632,7 @@ class TaskRealtimeSync @Inject constructor(
 
     private suspend fun handleUpdated(task: ApiTask) {
         val existing = taskDao.getByServerId(task.id) ?: return
-        
+
         // Only apply if server version is newer
         if (task.version > existing.serverVersion) {
             taskDao.update(existing.copy(
@@ -677,7 +677,7 @@ private suspend fun resolveConflict(
         syncStatus = SyncStatus.SYNCED,
         lastModified = remote.updatedAt
     ))
-    
+
     return SyncItemResult.ConflictResolved(
         local.id,
         "Server version applied"
@@ -699,12 +699,12 @@ private suspend fun resolveConflict(
             local.toApiModel(),
             expectedVersion = remote.version
         )
-        
+
         taskDao.update(local.copy(
             serverVersion = updated.version,
             syncStatus = SyncStatus.SYNCED
         ))
-        
+
         SyncItemResult.ConflictResolved(
             local.id,
             "Client version applied"
@@ -723,7 +723,7 @@ private suspend fun resolveConflict(
     remote: ApiTask
 ): SyncItemResult {
     val useLocal = local.lastModified > remote.updatedAt
-    
+
     return if (useLocal) {
         // Push local to server
         try {
@@ -768,12 +768,12 @@ private suspend fun resolveConflict(
             createdAt = Clock.System.now()
         )
     )
-    
+
     // Mark entity as conflicted
     taskDao.update(local.copy(
         syncStatus = SyncStatus.CONFLICT
     ))
-    
+
     return SyncItemResult.Conflict(
         local.id,
         "Manual resolution required"
@@ -788,19 +788,19 @@ fun ConflictResolutionScreen(
 ) {
     Column(modifier = Modifier.padding(16.dp)) {
         Text("Conflict detected for: ${conflict.entityName}")
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         ConflictVersionCard(
             title = "Your changes",
             data = conflict.localVersion
         )
-        
+
         ConflictVersionCard(
             title = "Server version",
             data = conflict.remoteVersion
         )
-        
+
         Row(modifier = Modifier.fillMaxWidth()) {
             Button(
                 onClick = { onResolve(Resolution.UseLocal) },
@@ -863,7 +863,7 @@ override fun observeTasks(): Flow<List<Task>> = flow {
 
 private suspend fun refreshTasks() {
     if (!networkMonitor.isConnected()) return
-    
+
     try {
         val remoteTasks = taskApi.getTasks()
         taskDao.upsertAll(remoteTasks.map { it.toEntity() })
@@ -880,21 +880,21 @@ private suspend fun refreshTasks() {
 // Invalidate when specific events occur
 override suspend fun createTask(task: Task): Result<Task> = runCatching {
     taskDao.insert(task.toEntity())
-    
+
     // CORRECT: invalidate list cache after insert
     cacheManager.invalidateCache("tasks")
-    
+
     syncCoordinator.scheduleSyncNow()
     task
 }
 
 override suspend fun deleteTask(id: String): Result<Unit> = runCatching {
     taskDao.markAsDeleted(id, Clock.System.now())
-    
+
     // Invalidate both list and detail caches
     cacheManager.invalidateCache("tasks")
     cacheManager.invalidateCache("task_$id")
-    
+
     syncCoordinator.scheduleSyncNow()
 }
 ```
@@ -951,7 +951,7 @@ class ExponentialBackoffRetry @Inject constructor() : RetryStrategy {
 
         while (true) {
             attempts++
-            
+
             try {
                 return block()
             } catch (e: Exception) {
@@ -976,7 +976,7 @@ override suspend fun createTask(task: Task): Result<Task> = runCatching {
     // Save locally first (optimistic)
     val entity = task.toEntity().copy(syncStatus = SyncStatus.PENDING_CREATE)
     taskDao.insert(entity)
-    
+
     // Try to sync immediately with retry
     if (networkMonitor.isConnected()) {
         retryStrategy.retry {
@@ -988,7 +988,7 @@ override suspend fun createTask(task: Task): Result<Task> = runCatching {
             ))
         }
     }
-    
+
     task
 }.recoverCatching { e ->
     // If immediate sync fails, WorkManager will retry later
@@ -1016,7 +1016,7 @@ class ConfigurableRetry @Inject constructor(
 
         while (true) {
             attempts++
-            
+
             try {
                 return block()
             } catch (e: Exception) {
@@ -1054,7 +1054,7 @@ class JitteredRetry @Inject constructor() : RetryStrategy {
 
         while (true) {
             attempts++
-            
+
             try {
                 return block()
             } catch (e: Exception) {
@@ -1064,7 +1064,7 @@ class JitteredRetry @Inject constructor() : RetryStrategy {
                 // Add jitter: randomize between 0 and baseDelay
                 val jitter = random.nextDouble(0.0, baseDelay.inWholeMilliseconds.toDouble())
                 delay(jitter.toLong().milliseconds)
-                
+
                 baseDelay = (baseDelay * 2).coerceAtMost(maxDelay)
             }
         }
@@ -1208,7 +1208,7 @@ class MyApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        
+
         // Schedule periodic background sync
         syncCoordinator.schedulePeriodicSync()
     }
@@ -1226,17 +1226,17 @@ fun scheduleSmartSync() {
         .setRequiredNetworkType(NetworkType.CONNECTED) // Any network
         // .setRequiredNetworkType(NetworkType.UNMETERED) // WiFi only
         // .setRequiredNetworkType(NetworkType.NOT_ROAMING) // No roaming
-        
+
         // Battery constraints
         .setRequiresBatteryNotLow(true) // Battery above critical level
         // .setRequiresCharging(true) // Device charging (API 23+)
-        
+
         // Storage constraint
         .setRequiresStorageNotLow(true) // Sufficient storage space
-        
+
         // Device state (API 23+)
         // .setRequiresDeviceIdle(true) // Device idle (for heavy operations)
-        
+
         .build()
 
     val syncRequest = OneTimeWorkRequestBuilder<SyncWorker>()
@@ -1357,7 +1357,7 @@ class DownloadWorker @AssistedInject constructor(
     override suspend fun doWork(): Result {
         return try {
             val data = dataApi.downloadData()
-            
+
             // Output data for next worker
             val outputData = Data.Builder()
                 .putInt("downloaded_count", data.size)
@@ -1428,7 +1428,7 @@ class LargeDataSyncWorker @AssistedInject constructor(
         tasks.forEachIndexed { index, task ->
             try {
                 taskRepository.syncTask(task)
-                
+
                 // Update progress
                 val progress = ((index + 1) * 100) / totalTasks
                 setProgress(
@@ -1479,7 +1479,7 @@ val syncProgress: StateFlow<SyncProgress> = workManager
         val progress = workInfo?.progress?.getInt("progress", 0) ?: 0
         val synced = workInfo?.progress?.getInt("synced", 0) ?: 0
         val total = workInfo?.progress?.getInt("total", 0) ?: 0
-        
+
         SyncProgress(
             percentage = progress,
             itemsSynced = synced,
@@ -1571,15 +1571,15 @@ class SyncWorkerTest {
     @Before
     fun setup() {
         context = ApplicationProvider.getApplicationContext()
-        
+
         // Initialize WorkManager for tests
         val config = Configuration.Builder()
             .setMinimumLoggingLevel(Log.DEBUG)
             .setExecutor(SynchronousExecutor())
             .build()
-        
+
         WorkManagerTestInitHelper.initializeTestWorkManager(context, config)
-        
+
         workManager = WorkManager.getInstance(context)
         testDriver = WorkManagerTestInitHelper.getTestDriver(context)!!
     }
@@ -1636,7 +1636,7 @@ class SyncWorkerTest {
 
         // Collect progress updates
         val progressValues = mutableListOf<Int>()
-        
+
         workManager.getWorkInfoByIdFlow(request.id)
             .take(5)
             .collect { workInfo ->
@@ -1716,13 +1716,13 @@ fun workChain_failureStopsChain() = runTest {
 // core/testing/FakeSyncCoordinator.kt
 class FakeSyncCoordinator : SyncCoordinator {
     private val _workInfoFlow = MutableStateFlow<WorkInfo?>(null)
-    
+
     var syncScheduled = false
         private set
-    
+
     var periodicSyncScheduled = false
         private set
-    
+
     var syncCancelled = false
         private set
 
@@ -1929,7 +1929,7 @@ class TaskRepositoryImpl @Inject constructor(
 
         remoteTasks.forEach { apiTask ->
             val local = taskDao.getByServerId(apiTask.id)
-            
+
             when {
                 local == null -> taskDao.insert(apiTask.toEntity())
                 local.syncStatus == SyncStatus.SYNCED -> {
@@ -1967,11 +1967,11 @@ class TaskRepositoryImpl @Inject constructor(
     private suspend fun syncUpdate(task: TaskEntity): SyncItemResult = try {
         retryStrategy.retry {
             val response = taskApi.updateTask(task.serverId!!, task.toApiModel())
-            
+
             if (response.version <= task.serverVersion) {
                 return@retry resolveConflict(task, response)
             }
-            
+
             taskDao.update(task.copy(
                 syncStatus = SyncStatus.SYNCED,
                 serverVersion = response.version
@@ -2196,7 +2196,7 @@ class FakeTaskRepository : TaskRepository {
 
     override suspend fun syncBidirectional(): SyncResult {
         delay(syncDelay)
-        
+
         return if (shouldFailSync) {
             SyncResult.Error("Sync failed")
         } else {
@@ -2246,7 +2246,7 @@ class FakeNetworkMonitor : NetworkMonitor {
 fun `syncBidirectional returns NoNetwork when offline`() = runTest {
     val fakeNetworkMonitor = FakeNetworkMonitor()
     fakeNetworkMonitor.setConnected(false)
-    
+
     val repository = TaskRepositoryImpl(
         taskDao = fakeTaskDao,
         taskApi = fakeTaskApi,
@@ -2332,7 +2332,7 @@ fun `syncState reflects WorkInfo state`() = runTest {
     val workInfoFlow = MutableStateFlow<WorkInfo?>(null)
     val fakeSyncCoordinator = FakeSyncCoordinator()
     fakeSyncCoordinator.setWorkInfoFlow(workInfoFlow)
-    
+
     val viewModel = TasksViewModel(
         taskRepository = fakeTaskRepository,
         syncCoordinator = fakeSyncCoordinator

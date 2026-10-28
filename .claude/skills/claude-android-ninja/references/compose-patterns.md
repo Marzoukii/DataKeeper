@@ -40,7 +40,7 @@ fun AuthRoute(
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    
+
     // Collect one-time navigation events
     val lifecycleOwner = LocalLifecycleOwner.current
     LaunchedEffect(viewModel.navigationEvents, lifecycleOwner) {
@@ -53,7 +53,7 @@ fun AuthRoute(
             }
         }
     }
-    
+
     LoginScreen(
         uiState = uiState,
         onAction = viewModel::onAction,
@@ -196,7 +196,7 @@ Model **refreshing** as a flag on the content state (e.g. `isRefreshing` on a da
 // feature-auth/presentation/viewmodel/AuthUiState.kt
 sealed interface AuthUiState {
     data object Loading : AuthUiState
-    
+
     data class LoginForm(
         val email: String = "",
         val password: String = "",
@@ -204,7 +204,7 @@ sealed interface AuthUiState {
         val emailError: String? = null,
         val passwordError: String? = null
     ) : AuthUiState
-    
+
     data class RegisterForm(
         val email: String = "",
         val password: String = "",
@@ -213,16 +213,16 @@ sealed interface AuthUiState {
         val isLoading: Boolean = false,
         val errors: Map<String, String> = emptyMap()
     ) : AuthUiState
-    
+
     data class ForgotPasswordForm(
         val email: String = "",
         val isLoading: Boolean = false,
         val emailError: String? = null,
         val isEmailSent: Boolean = false
     ) : AuthUiState
-    
+
     data class Success(val user: User) : AuthUiState
-    
+
     data class Error(
         val message: String,
         val canRetry: Boolean = true
@@ -241,16 +241,16 @@ sealed class AuthAction {
     data object LoginClicked : AuthAction()
     data object ShowRegisterForm : AuthAction()
     data object ShowForgotPasswordForm : AuthAction()
-    
+
     // Register form actions
     data class NameChanged(val name: String) : AuthAction()
     data class ConfirmPasswordChanged(val confirmPassword: String) : AuthAction()
     data object RegisterSubmit : AuthAction()
     data object ShowLoginForm : AuthAction()
-    
+
     // Forgot password actions
     data object ResetPasswordClicked : AuthAction()
-    
+
     // Error handling
     data object Retry : AuthAction()
     data object ClearError : AuthAction()
@@ -297,7 +297,7 @@ class AuthViewModel @Inject constructor(
     // UI State
     private val _uiState = MutableStateFlow<AuthUiState>(AuthUiState.LoginForm())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
-    
+
     // CORRECT: Channel for one-shot navigation commands; see coroutines-patterns.md
     private val _navigationEvents = Channel<AuthNavigationEvent>(Channel.BUFFERED)
     val navigationEvents: Flow<AuthNavigationEvent> = _navigationEvents.receiveAsFlow()
@@ -309,10 +309,10 @@ class AuthViewModel @Inject constructor(
     //     onBufferOverflow = BufferOverflow.DROP_OLDEST
     // )
     // val navigationEvents: SharedFlow<AuthNavigationEvent> = _navigationEvents.asSharedFlow()
-    
+
     // Process-death survival: persist form state
     private val email = savedStateHandle.getStateFlow("email", "")
-    
+
     init {
         // Restore email if saved
         if (email.value.isNotEmpty()) {
@@ -323,7 +323,7 @@ class AuthViewModel @Inject constructor(
             }
         }
     }
-    
+
     fun onAction(action: AuthAction) {
         when (action) {
             is AuthAction.EmailChanged -> {
@@ -355,28 +355,28 @@ class AuthViewModel @Inject constructor(
             AuthAction.ClearError -> _uiState.value = AuthUiState.LoginForm()
         }
     }
-    
+
     private fun performLogin() {
         val currentState = _uiState.value as? AuthUiState.LoginForm ?: return
-        
+
         viewModelScope.launch {
             _uiState.update { AuthUiState.Loading }
-            
+
             loginUseCase(currentState.email, currentState.password).fold(
-                onSuccess = { user -> 
+                onSuccess = { user ->
                     // Emit navigation event - AuthRoute will call authNavigator.navigateToMainApp()
                     _navigationEvents.send(AuthNavigationEvent.LoginSuccess) // Channel
                     // _navigationEvents.emit(AuthNavigationEvent.LoginSuccess) // SharedFlow
                 },
                 onFailure = { error ->
-                    _uiState.update { 
+                    _uiState.update {
                         AuthUiState.Error(error.message ?: "Login failed", canRetry = true)
                     }
                 }
             )
         }
     }
-    
+
     // Other helper methods omitted for brevity (updateLoginForm, updateRegisterForm, etc.)
 }
 ```
@@ -468,7 +468,7 @@ fun AuthRoute(
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    
+
     // Collect one-time navigation events using repeatOnLifecycle
     val lifecycleOwner = LocalLifecycleOwner.current
     LaunchedEffect(viewModel.navigationEvents, lifecycleOwner) {
@@ -481,7 +481,7 @@ fun AuthRoute(
             }
         }
     }
-    
+
     LoginScreen(
         uiState = uiState,
         onAction = viewModel::onAction,
@@ -539,13 +539,13 @@ fun AuthScreen(
                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                 }
             }
-            
+
             launch {
                 viewModel.analyticsEvents.collect { event ->
                     // Log analytics event
                 }
             }
-            
+
             launch {
                 viewModel.dialogEvents.collect { dialog ->
                     // Show dialog based on event
@@ -1074,17 +1074,17 @@ fun ImageDetailScreen(
     modifier: Modifier = Modifier
 ) {
     var isZoomed by remember { mutableStateOf(false) }
-    
+
     // Intercept back press when zoomed - exits zoom mode instead of screen
     BackHandler(enabled = isZoomed) {
         isZoomed = false
     }
-    
+
     Column(modifier = modifier) {
         IconButton(onClick = onBackClick) {
             Icon(painterResource(R.drawable.ic_back), "Back")
         }
-        
+
         ZoomableImage(
             isZoomed = isZoomed,
             onZoomChange = { isZoomed = it }
@@ -1105,11 +1105,11 @@ fun FormScreen(
 ) {
     val hasUnsavedChanges by viewModel.hasUnsavedChanges.collectAsStateWithLifecycle()
     var showExitDialog by remember { mutableStateOf(false) }
-    
+
     BackHandler(enabled = hasUnsavedChanges) {
         showExitDialog = true
     }
-    
+
     if (showExitDialog) {
         AlertDialog(
             onDismissRequest = { showExitDialog = false },
@@ -1130,7 +1130,7 @@ fun FormScreen(
             }
         )
     }
-    
+
     FormContent(viewModel = viewModel)
 }
 ```
@@ -1144,7 +1144,7 @@ fun OnboardingScreen(
     onCancel: () -> Unit
 ) {
     var currentStep by remember { mutableStateOf(0) }
-    
+
     // Navigate to previous step on back press, exit on first step
     BackHandler {
         if (currentStep > 0) {
@@ -1153,7 +1153,7 @@ fun OnboardingScreen(
             onCancel()
         }
     }
-    
+
     when (currentStep) {
         0 -> WelcomeStep(onNext = { currentStep++ })
         1 -> PermissionsStep(onNext = { currentStep++ }, onBack = { currentStep-- })
@@ -1170,12 +1170,12 @@ fun ScreenWithSheet(
     onNavigateBack: () -> Unit
 ) {
     var showBottomSheet by remember { mutableStateOf(false) }
-    
+
     // Close bottom sheet on back press instead of exiting screen
     BackHandler(enabled = showBottomSheet) {
         showBottomSheet = false
     }
-    
+
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(onClick = { showBottomSheet = true }) {
@@ -1184,7 +1184,7 @@ fun ScreenWithSheet(
         }
     ) { padding ->
         ContentList(modifier = Modifier.padding(padding))
-        
+
         if (showBottomSheet) {
             ModalBottomSheet(onDismissRequest = { showBottomSheet = false }) {
                 FilterContent()
@@ -1275,7 +1275,7 @@ fun AuthActivityList(
 ) {
     val isWideScreen = windowAdaptiveInfo.windowSizeClass
         .isWidthAtLeastBreakpoint(WIDTH_DP_MEDIUM_LOWER_BOUND)
-    
+
     LazyColumn(
         modifier = modifier,
         contentPadding = PaddingValues(horizontal = if (isWideScreen) 32.dp else 16.dp, vertical = 16.dp),
@@ -1291,7 +1291,7 @@ fun AuthActivityList(
                 modifier = Modifier.fillMaxWidth()
             )
         }
-        
+
         if (isLoadingMore) {
             item {
                 Box(
@@ -1302,7 +1302,7 @@ fun AuthActivityList(
                 }
             }
         }
-        
+
         // Load more trigger: only when not already loading and reached end
         if (!isLoadingMore && events.isNotEmpty()) {
             item {
@@ -1367,7 +1367,7 @@ fun ErrorContent(
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center
             )
-            
+
             if (canRetry) {
                 Button(onClick = onRetry) {
                     Text("Retry")
@@ -2041,21 +2041,21 @@ data class UserList(
 class AuthFormState {
     var email by mutableStateOf("")
         private set
-    
+
     var password by mutableStateOf("")
         private set
-    
+
     var isLoading by mutableStateOf(false)
         private set
-    
+
     fun updateEmail(value: String) {
         email = value
     }
-    
+
     fun updatePassword(value: String) {
         password = value
     }
-    
+
     fun setLoading(loading: Boolean) {
         isLoading = loading
     }
@@ -2068,7 +2068,7 @@ class SearchRepository @Inject constructor(
 ) {
     private val _results = MutableStateFlow<List<SearchResult>>(emptyList())
     val results: StateFlow<List<SearchResult>> = _results.asStateFlow()
-    
+
     suspend fun search(query: String) {
         _results.value = api.search(query)
     }
@@ -2172,10 +2172,10 @@ fun AuthActivityListOptimized(
             key = { authEventKey(it) } // Essential for stable keys
         ) { event ->
             // Use remember for expensive computations
-            val title = remember(event) { 
-                formatAuthEventTitle(event) 
+            val title = remember(event) {
+                formatAuthEventTitle(event)
             }
-            
+
             AuthEventCard(
                 event = event,
                 title = title,
@@ -2195,7 +2195,7 @@ fun SearchableAuthActivity(
     modifier: Modifier = Modifier
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    
+
     // Hoist expensive filtering
     val filteredEvents by remember(events, searchQuery) {
         derivedStateOf {
@@ -2208,13 +2208,13 @@ fun SearchableAuthActivity(
             }
         }
     }
-    
+
     Column(modifier = modifier) {
         SearchBar(
             query = searchQuery,
             onQueryChange = { searchQuery = it }
         )
-        
+
         AuthActivityList(
             events = filteredEvents,
             onItemClick = { /* ... */ },
@@ -2240,9 +2240,9 @@ private class VerticalScrollerStateImpl(
     scrollRange: Int = 0
 ) : VerticalScrollerState {
     private var _scrollPosition by mutableIntStateOf(scrollPosition)
-    
+
     override var scrollRange by mutableIntStateOf(scrollRange)
-    
+
     override var scrollPosition: Int
         get() = _scrollPosition
         set(value) {
@@ -2260,7 +2260,7 @@ fun VerticalScroller(
 ) {
     val scrollPosition = state.scrollPosition
     val scrollRange = state.scrollRange
-    
+
     // Use state...
 }
 ```
@@ -2304,7 +2304,7 @@ fun AuthEventCard(
 ) {
     // Keeps reference to latest onClick without recreating lambda
     val currentOnClick by rememberUpdatedState(onClick)
-    
+
     Card(
         onClick = { currentOnClick(event) },
         modifier = modifier
@@ -2327,7 +2327,7 @@ fun AuthEventCard(
     val onClickMemoized = remember(event, onClick) {
         { onClick(event) }
     }
-    
+
     Card(
         onClick = onClickMemoized,
         modifier = modifier

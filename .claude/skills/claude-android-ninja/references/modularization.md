@@ -139,7 +139,7 @@ feature-auth/
 │   │   ├── presentation/              # Presentation Layer
 │   │   │   ├── AuthScreen.kt          # Main composable
 │   │   │   ├── AuthRoute.kt           # Feature route composable
-│   │   │   ├── viewmodel/             
+│   │   │   ├── viewmodel/
 │   │   │   │   ├── AuthViewModel.kt   # State holder
 │   │   │   │   ├── AuthUiState.kt     # UI state models
 │   │   │   │   └── AuthActions.kt     # User actions
@@ -218,14 +218,14 @@ graph TB
     subgraph "App Module"
         App[app<br/>Navigation & DI]
     end
-    
+
     subgraph "Feature Modules"
         Auth[feature-auth]
         Onboarding[feature-onboarding]
         Profile[feature-profile]
         Settings[feature-settings]
     end
-    
+
     subgraph "Core Modules"
         UI[core/ui]
         Domain[core/domain]
@@ -234,40 +234,40 @@ graph TB
         Database[core/database]
         Common[core/common]
     end
-    
+
     App --> Auth
     App --> Onboarding
     App --> Profile
     App --> Settings
-    
+
     App --> UI
     App --> Domain
     App --> Data
     App --> Network
     App --> Database
     App --> Common
-    
+
     Auth -.-> Domain
     Auth -.-> UI
-    
+
     Onboarding -.-> Domain
     Onboarding -.-> UI
-    
+
     Profile -.-> Domain
     Profile -.-> UI
-    
+
     Settings -.-> Domain
     Settings -.-> UI
-    
+
     Data --> Domain
     Data --> Network
     Data --> Database
-    
+
     Network --> Domain
     Database --> Domain
-    
+
     UI -.-> Domain
-    
+
     style Auth fill:#e1f5fe
     style Onboarding fill:#e1f5fe
     style Profile fill:#e1f5fe
@@ -311,13 +311,13 @@ import kotlinx.serialization.Serializable
 sealed interface AuthDestination : NavKey {
     @Serializable
     data object Login : AuthDestination
-    
+
     @Serializable
     data object Register : AuthDestination
-    
+
     @Serializable
     data object ForgotPassword : AuthDestination
-    
+
     @Serializable
     data class Profile(val userId: String) : AuthDestination
 }
@@ -351,7 +351,7 @@ fun EntryProviderScope<NavKey>.authGraph(
             }
         )
     }
-    
+
     entry<AuthDestination.Register> {
         RegisterScreen(
             onRegisterSuccess = { user ->
@@ -362,7 +362,7 @@ fun EntryProviderScope<NavKey>.authGraph(
             }
         )
     }
-    
+
     entry<AuthDestination.ForgotPassword> {
         ForgotPasswordScreen(
             onResetSuccess = {
@@ -373,7 +373,7 @@ fun EntryProviderScope<NavKey>.authGraph(
             }
         )
     }
-    
+
     entry<AuthDestination.Profile> { key ->
         ProfileScreen(
             userId = key.userId,
