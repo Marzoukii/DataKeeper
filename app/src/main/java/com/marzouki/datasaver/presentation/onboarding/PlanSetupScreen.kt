@@ -29,6 +29,7 @@ import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.InputChipDefaults
@@ -91,6 +92,7 @@ fun PlanSetupScreen(modifier: Modifier = Modifier, viewModel: PlanSetupViewModel
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun PlanSetupContent(state: PlanSetupState, onIntent: (PlanSetupIntent) -> Unit, modifier: Modifier = Modifier) {
+    val scrollState = rememberScrollState()
     Surface(modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(
             Modifier
@@ -101,7 +103,7 @@ private fun PlanSetupContent(state: PlanSetupState, onIntent: (PlanSetupIntent) 
             Column(
                 Modifier
                     .weight(1f)
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(scrollState)
                     .padding(top = 16.dp, bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
@@ -244,7 +246,12 @@ private fun PlanSetupContent(state: PlanSetupState, onIntent: (PlanSetupIntent) 
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
-            Spacer(Modifier.height(12.dp))
+            // Sans ce trait, la suite du formulaire semble tranchée net par le bouton ;
+            // il disparaît une fois le formulaire défilé jusqu'en bas.
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = if (scrollState.canScrollForward) 1f else 0f),
+            )
+            Spacer(Modifier.height(16.dp))
             Button(
                 onClick = { onIntent(PlanSetupIntent.Submit) },
                 enabled = !state.isSaving,
