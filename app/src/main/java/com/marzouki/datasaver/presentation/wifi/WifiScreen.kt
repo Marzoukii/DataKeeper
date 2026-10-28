@@ -222,13 +222,6 @@ private fun NetworksSection(state: WifiState, onIntent: (WifiIntent) -> Unit) {
             }
         }
     }
-
-    Text(
-        stringResource(R.string.wifi_footer),
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(horizontal = Spacing.titleExtra, vertical = 8.dp),
-    )
 }
 
 /** Zone scannée et heure du scan, relue toutes les 30 s pour que « il y a 1 min » avance. */

@@ -7,8 +7,6 @@ import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,11 +20,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -37,7 +33,6 @@ import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.Payments
 import androidx.compose.material.icons.rounded.SimCard
 import androidx.compose.material.icons.rounded.Sync
-import androidx.compose.material.icons.rounded.Wifi
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
@@ -61,7 +56,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.pluralStringResource
@@ -127,7 +121,6 @@ private const val BYTES_PER_GB = 1_000_000_000f
 @Composable
 fun QuotaScreen(
     snackbarHostState: SnackbarHostState,
-    onOpenDownloads: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: QuotaViewModel = hiltViewModel(),
 ) {
@@ -154,14 +147,13 @@ fun QuotaScreen(
             is QuotaEffect.ShowMessage -> snackbarHostState.showSnackbar(resources.getString(effect.messageRes))
         }
     }
-    QuotaContent(state, viewModel::onIntent, onOpenDownloads, modifier)
+    QuotaContent(state, viewModel::onIntent, modifier)
 }
 
 @Composable
 private fun QuotaContent(
     state: QuotaState,
     onIntent: (QuotaIntent) -> Unit,
-    onOpenDownloads: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showOtherDialog by rememberSaveable { mutableStateOf(false) }
@@ -209,7 +201,6 @@ private fun QuotaContent(
                 },
             )
         }
-        item { TipBox(onClick = onOpenDownloads) }
         item { Spacer(Modifier.height(8.dp)) }
     }
 
@@ -815,36 +806,6 @@ private fun BalanceDialog(
 }
 
 @Composable
-private fun TipBox(onClick: () -> Unit) {
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(MaterialTheme.colorScheme.primaryContainer)
-            .clickable(onClick = onClick)
-            .padding(16.dp),
-        verticalAlignment = Alignment.Top,
-    ) {
-        Icon(
-            Icons.Rounded.Wifi,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-            modifier = Modifier.size(22.dp),
-        )
-        Spacer(Modifier.width(12.dp))
-        Text(
-            buildAnnotatedString {
-                withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) { append(stringResource(R.string.quota_tip_label)) }
-                append(' ')
-                append(stringResource(R.string.quota_tip_body))
-            },
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onPrimaryContainer,
-        )
-    }
-}
-
-@Composable
 private fun OtherQuotaDialog(state: QuotaState, onIntent: (QuotaIntent) -> Unit, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -892,7 +853,6 @@ private fun QuotaContentPreview() {
                 dailyMobileBytes = PreviewData.cycleDailyMobile,
             ),
             onIntent = {},
-            onOpenDownloads = {},
         )
     }
 }
@@ -915,7 +875,6 @@ private fun QuotaContentBalancePreview() {
                 dailyMobileBytes = alignDailyToUsed(PreviewData.cycleDailyMobile, status.usedBytes, period.dayIndexOf(period.endMillis)),
             ),
             onIntent = {},
-            onOpenDownloads = {},
         )
     }
 }
@@ -933,7 +892,6 @@ private fun QuotaContentExceededPreview() {
                 dailyMobileBytes = PreviewData.cycleDailyMobile.map { it * 54 / 32 },
             ),
             onIntent = {},
-            onOpenDownloads = {},
         )
     }
 }
@@ -942,7 +900,7 @@ private fun QuotaContentExceededPreview() {
 @Composable
 private fun QuotaContentNoQuotaPreview() {
     PreviewSurface(padded = false) {
-        QuotaContent(state = QuotaState(period = PreviewData.period), onIntent = {}, onOpenDownloads = {})
+        QuotaContent(state = QuotaState(period = PreviewData.period), onIntent = {})
     }
 }
 

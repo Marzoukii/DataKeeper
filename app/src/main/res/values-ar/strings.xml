@@ -208,8 +208,6 @@
     <string name="quota_balance_saved">حُفظ الرصيد: يبدأ العدّ من هنا</string>
     <string name="quota_balance_removed">مُسح الرصيد: العدّ من بداية الدورة</string>
     <string name="unit_dinar">د.ت</string>
-    <string name="quota_tip_label">نصيحة:</string>
-    <string name="quota_tip_body">برمج فيديوهاتك وبودكاستاتك في «بدون اتصال» لتنزيلها عند أول Wifi.</string>
     <string name="budget_title">ميزانية اليوم</string>
     <string name="budget_today_of">اليوم: %1$s</string>
     <string name="budget_left">لا يزال لديك %1$s لليوم دون المساس بالأيام التالية.</string>
@@ -415,7 +413,6 @@
     <string name="wifi_untested">لم تُجرَّب بعد</string>
     <string name="wifi_connect">اتصال</string>
     <string name="wifi_connected">متّصل</string>
-    <string name="wifi_footer">شبكة الـWifi ذات البوابة تطلب المرور بصفحة دخول، غالبًا مع إعلانات، قبل السماح بالتنزيلات.</string>
     <string name="wifi_empty_title">لا توجد شبكة مفتوحة هنا</string>
     <string name="wifi_empty_body">تنقّل أو حدّث بعد قليل.</string>
     <string name="wifi_empty_filter">لا توجد شبكة لهذا التصنيف.</string>
@@ -439,7 +436,7 @@
     <string name="tethering_since_unknown">مفعّلة قبل %1$s</string>
     <string name="tethering_inactive">نقطة الاتصال متوقفة</string>
     <string name="tethering_inactive_body">شغّل مشاركة الاتصال في أندرويد لمتابعة استهلاك أجهزتك.</string>
-    <string name="tethering_used_label">ما استهلكته أجهزتك</string>
+    <string name="tethering_used_label">المستهلك أثناء المشاركة (تقدير)</string>
     <string name="tethering_rate">≈ %1$s / س · تقدير</string>
     <string name="tethering_rate_pending">يظهر المعدّل بعد دقيقتين من المشاركة.</string>
     <string name="tethering_eta">بالمعدّل الحالي، يتبقى حوالي %1$s قبل %2$s.</string>
@@ -449,7 +446,6 @@
     <string name="tethering_devices_section">الأجهزة المتصلة</string>
     <string name="tethering_devices_title">عرض الأجهزة في أندرويد</string>
     <string name="tethering_devices_body">يفتح إعدادات نقطة الاتصال</string>
-    <string name="tethering_info">لا يعطي أندرويد استهلاك كل جهاز. المجموع تقدير (الـdonnées mobiles أثناء المشاركة) ويشمل أيضًا تطبيقاتك الأخرى.</string>
     <string name="usage_tethering_title">مشاركة الاتصال مفعّلة</string>
     <string name="usage_tethering_body">استهلكت أجهزتك %1$s</string>
     <string name="notification_tethering_title">مشاركة الاتصال: استُهلك %1$s</string>
