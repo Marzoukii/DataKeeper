@@ -121,12 +121,6 @@ private fun SettingsContent(
                 )
             }
         }
-        Text(
-            stringResource(R.string.settings_theme_system_hint),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = Spacing.titleExtra),
-        )
 
         SectionLabel(R.string.language_title)
         DataKeeperCard(contentPadding = 0.dp, modifier = Modifier.selectableGroup()) {
