@@ -1,5 +1,7 @@
 package com.marzouki.datasaver.di
 
+import com.marzouki.datasaver.data.analytics.FirebaseAnalyticsTracker
+import com.marzouki.datasaver.data.analytics.FirebaseCrashReporter
 import com.marzouki.datasaver.data.connectivity.ConnectivityRepositoryImpl
 import com.marzouki.datasaver.data.download.WorkManagerDownloadRepository
 import com.marzouki.datasaver.data.language.LanguageRepositoryImpl
@@ -13,7 +15,9 @@ import com.marzouki.datasaver.data.tethering.WorkManagerTetheringMonitorSchedule
 import com.marzouki.datasaver.data.theme.ThemeRepositoryImpl
 import com.marzouki.datasaver.data.usage.UsageRepositoryImpl
 import com.marzouki.datasaver.data.wifi.WifiRepositoryImpl
+import com.marzouki.datasaver.domain.repository.AnalyticsTracker
 import com.marzouki.datasaver.domain.repository.ConnectivityRepository
+import com.marzouki.datasaver.domain.repository.CrashReporter
 import com.marzouki.datasaver.domain.repository.DownloadRepository
 import com.marzouki.datasaver.domain.repository.LanguageRepository
 import com.marzouki.datasaver.domain.repository.OperatorRepository
@@ -80,4 +84,10 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindQuotaAlertNotifier(impl: NotificationQuotaAlertNotifier): QuotaAlertNotifier
+
+    @Binds
+    abstract fun bindCrashReporter(impl: FirebaseCrashReporter): CrashReporter
+
+    @Binds
+    abstract fun bindAnalyticsTracker(impl: FirebaseAnalyticsTracker): AnalyticsTracker
 }

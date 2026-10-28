@@ -8,6 +8,7 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.marzouki.datasaver.domain.enums.PlanStatus
+import com.marzouki.datasaver.domain.repository.CrashReporter
 import com.marzouki.datasaver.domain.repository.QuotaMonitorScheduler
 import com.marzouki.datasaver.domain.usecase.CheckQuotaAndAlertUseCase
 import com.marzouki.datasaver.domain.usecase.ClearStaleBalanceUseCase
@@ -20,6 +21,7 @@ import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.first
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import kotlin.coroutines.cancellation.CancellationException
 
 /** Vérifie périodiquement la consommation mobile et alerte à 80 % du quota. */
 @HiltWorker
@@ -31,6 +33,7 @@ class QuotaCheckWorker @AssistedInject constructor(
     private val remindBalanceRecalibration: RemindBalanceRecalibrationUseCase,
     private val remindPlanRenewal: RemindPlanRenewalUseCase,
     private val observePlanStatus: ObservePlanStatusUseCase,
+    private val crashReporter: CrashReporter,
 ): CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result =
@@ -49,7 +52,14 @@ class QuotaCheckWorker @AssistedInject constructor(
             }
             // Profite du passage horaire pour garder widgets et tuiles à jour.
             refreshHomeSurfaces(applicationContext)
-        }.fold(onSuccess = { Result.success() }, onFailure = { Result.failure() })
+        }.fold(
+            onSuccess = { Result.success() },
+            onFailure = {
+                // Un travail arrêté par le système n'est pas une erreur à corriger.
+                if (it !is CancellationException) crashReporter.recordException(it)
+                Result.failure()
+            },
+        )
 }
 
 class WorkManagerQuotaMonitorScheduler @Inject constructor(
