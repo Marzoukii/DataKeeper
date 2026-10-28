@@ -6,7 +6,7 @@ import com.marzouki.datasaver.presentation.quota.PlanCycleInput
 import com.marzouki.datasaver.presentation.quota.QuotaViewModel
 
 /** Tailles proposées en un appui ; les autres se tapent après « Autre ». */
-val PLAN_PRESETS_GB = listOf(5, 10, 20, 25, 50)
+val PLAN_PRESETS_GB = listOf(5, 10, 20, 25, 30)
 
 /**
  * Configuration du forfait, avant le premier tableau de bord : forfait (ex. 25 Go), data restante
