@@ -199,8 +199,6 @@
     <string name="quota_balance_saved">Solde enregistré : le décompte repart de là</string>
     <string name="quota_balance_removed">Solde effacé : décompte depuis le début du cycle</string>
     <string name="unit_dinar">DT</string>
-    <string name="quota_tip_label">Astuce :</string>
-    <string name="quota_tip_body">planifie tes vidéos et podcasts dans « Hors ligne » pour les télécharger au prochain Wi‑Fi.</string>
     <string name="budget_title">Budget du jour</string>
     <string name="budget_today_of">Aujourd’hui : %1$s</string>
     <string name="budget_left">Encore %1$s pour aujourd’hui sans entamer les jours suivants.</string>
@@ -399,7 +397,6 @@
     <string name="wifi_untested">Pas encore essayé</string>
     <string name="wifi_connect">Connecter</string>
     <string name="wifi_connected">Connecté</string>
-    <string name="wifi_footer">Un Wi‑Fi avec portail demande de passer par une page de connexion, souvent avec pub, avant de laisser passer les téléchargements.</string>
     <string name="wifi_empty_title">Aucun réseau ouvert ici</string>
     <string name="wifi_empty_body">Déplace-toi ou actualise dans un moment.</string>
     <string name="wifi_empty_filter">Aucun réseau pour ce filtre.</string>
@@ -423,7 +420,7 @@
     <string name="tethering_since_unknown">allumé avant %1$s</string>
     <string name="tethering_inactive">Point d’accès éteint</string>
     <string name="tethering_inactive_body">Allume le partage de connexion dans Android pour suivre la conso de tes appareils.</string>
-    <string name="tethering_used_label">Consommé par tes appareils</string>
+    <string name="tethering_used_label">Consommé pendant le partage (estimation)</string>
     <string name="tethering_rate">≈ %1$s / h · estimation</string>
     <string name="tethering_rate_pending">Le rythme s’affiche après 2 min de partage.</string>
     <string name="tethering_eta">Au rythme actuel, il reste environ %1$s avant %2$s.</string>
@@ -433,7 +430,6 @@
     <string name="tethering_devices_section">Appareils connectés</string>
     <string name="tethering_devices_title">Voir les appareils dans Android</string>
     <string name="tethering_devices_body">Ouvre les réglages du point d’accès</string>
-    <string name="tethering_info">Android ne donne pas la conso par appareil. Le total est une estimation (trafic mobile pendant le partage) et inclut aussi tes autres applis.</string>
     <string name="usage_tethering_title">Partage de connexion actif</string>
     <string name="usage_tethering_body">%1$s consommés par tes appareils</string>
     <string name="notification_tethering_title">Partage de connexion : %1$s consommés</string>

@@ -33,7 +33,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.rounded.Devices
 import androidx.compose.material.icons.rounded.WifiTethering
 import androidx.compose.material.icons.rounded.WifiTetheringOff
@@ -206,7 +205,6 @@ private fun TetheringContent(
                 )
             }
         }
-        InfoCard()
     }
 
     if (showThresholdDialog) {
@@ -383,22 +381,6 @@ private fun AlertCard(alert: TetheringAlert, onToggle: (Boolean) -> Unit, onChan
             }
             Spacer(Modifier.width(12.dp))
             Switch(checked = alert.enabled, onCheckedChange = onToggle)
-        }
-    }
-}
-
-@Composable
-private fun InfoCard() {
-    DataKeeperCard(containerColor = MaterialTheme.colorScheme.primaryContainer, contentPadding = 12.dp) {
-        Row {
-            Icon(
-                Icons.Outlined.Info,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.size(18.dp),
-            )
-            Spacer(Modifier.width(10.dp))
-            Text(stringResource(R.string.tethering_info), style = MaterialTheme.typography.bodySmall)
         }
     }
 }

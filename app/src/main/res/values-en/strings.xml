@@ -196,8 +196,6 @@
     <string name="quota_balance_saved">Balance saved: the count restarts from there</string>
     <string name="quota_balance_removed">Balance cleared: counting from the start of the cycle</string>
     <string name="unit_dinar">DT</string>
-    <string name="quota_tip_label">Tip:</string>
-    <string name="quota_tip_body">schedule your videos and podcasts in “Offline” to download them on your next Wi‑Fi.</string>
     <string name="budget_title">Today’s budget</string>
     <string name="budget_today_of">Today: %1$s</string>
     <string name="budget_left">%1$s more for today without eating into the next days.</string>
@@ -389,7 +387,6 @@
     <string name="wifi_untested">Not tried yet</string>
     <string name="wifi_connect">Connect</string>
     <string name="wifi_connected">Connected</string>
-    <string name="wifi_footer">A Wi‑Fi with a portal makes you go through a login page, often with ads, before downloads can go through.</string>
     <string name="wifi_empty_title">No open network here</string>
     <string name="wifi_empty_body">Move around or refresh in a moment.</string>
     <string name="wifi_empty_filter">No network for this filter.</string>
@@ -413,7 +410,7 @@
     <string name="tethering_since_unknown">on before %1$s</string>
     <string name="tethering_inactive">Hotspot off</string>
     <string name="tethering_inactive_body">Turn on the hotspot in Android to track your devices’ data.</string>
-    <string name="tethering_used_label">Used by your devices</string>
+    <string name="tethering_used_label">Used while sharing (estimate)</string>
     <string name="tethering_rate">≈ %1$s / h · estimate</string>
     <string name="tethering_rate_pending">The rate shows after 2 min of sharing.</string>
     <string name="tethering_eta">At this rate, about %1$s left before %2$s.</string>
@@ -423,7 +420,6 @@
     <string name="tethering_devices_section">Connected devices</string>
     <string name="tethering_devices_title">See devices in Android</string>
     <string name="tethering_devices_body">Opens the hotspot settings</string>
-    <string name="tethering_info">Android doesn’t give per-device usage. The total is an estimate (mobile traffic while sharing) and also includes your other apps.</string>
     <string name="usage_tethering_title">Hotspot on</string>
     <string name="usage_tethering_body">%1$s used by your devices</string>
     <string name="notification_tethering_title">Hotspot: %1$s used</string>
