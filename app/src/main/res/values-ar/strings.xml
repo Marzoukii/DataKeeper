@@ -344,7 +344,6 @@
     <string name="settings_theme_light">فاتحة</string>
     <string name="settings_theme_dark">داكنة</string>
     <string name="settings_theme_system_hint">«النظام» يتبع إعداد الوضع الفاتح/الداكن في هاتفك.</string>
-    <string name="settings_rtl_notice">بالعربية، تنتقل الواجهة كلها تلقائيًا إلى الكتابة من اليمين إلى اليسار.</string>
     <string name="settings_about">حول التطبيق</string>
     <string name="settings_version">الإصدار</string>
 

@@ -317,7 +317,6 @@
     <string name="settings_theme_light">Light</string>
     <string name="settings_theme_dark">Dark</string>
     <string name="settings_theme_system_hint">“System” follows your phone’s light/dark setting.</string>
-    <string name="settings_rtl_notice">In Arabic, the whole interface switches to right-to-left (RTL) automatically.</string>
     <string name="settings_about">About</string>
     <string name="settings_version">Version</string>
 
