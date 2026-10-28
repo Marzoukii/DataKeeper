@@ -17,7 +17,7 @@ class PlanSetupFormTest {
 
     @Test
     fun `taille hors des puces ou Autre choisi, champ libre`() {
-        assertTrue(PlanSetupState(planInput = "30").showsCustomPlan)
+        assertTrue(PlanSetupState(planInput = "50").showsCustomPlan)
         assertTrue(PlanSetupState(planInput = "2,5").showsCustomPlan)
         // « Autre » puis 25 tapé : le champ reste, la puce 25 Go ne s'allume pas.
         assertTrue(PlanSetupState(planInput = "25", customPlan = true).showsCustomPlan)
