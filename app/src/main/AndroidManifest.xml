@@ -31,6 +31,11 @@
         </intent>
     </queries>
 
+    <!-- Pas de publicité : retire les permissions d'identifiant publicitaire ajoutées par Firebase Analytics. -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_ADSERVICES_ATTRIBUTION" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_ADSERVICES_AD_ID" tools:node="remove" />
+
     <application
         android:name=".DataKeeperApplication"
         android:allowBackup="false"
@@ -134,6 +139,15 @@
                 android:value="androidx.startup"
                 tools:node="remove" />
         </provider>
+
+        <!-- Pas de publicité : Firebase Analytics ne collecte ni l'identifiant publicitaire
+             ni de signaux de personnalisation des annonces. -->
+        <meta-data
+            android:name="google_analytics_adid_collection_enabled"
+            android:value="false" />
+        <meta-data
+            android:name="google_analytics_default_allow_ad_personalization_signals"
+            android:value="false" />
     </application>
 
 </manifest>
