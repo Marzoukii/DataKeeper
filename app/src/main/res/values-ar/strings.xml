@@ -23,9 +23,9 @@
 
     <!-- الوصول إلى بيانات الاستخدام -->
     <string name="onboarding_logo_description">شعار DataKeeper</string>
-    <string name="onboarding_illustration_description">رسم بياني للاستهلاك: أربعة أعمدة واي فاي وعمود صغير للبيانات الخلوية</string>
+    <string name="onboarding_illustration_description">رسم بياني للاستهلاك: أربعة أعمدة Wifi وعمود صغير للـdonnées mobiles</string>
     <string name="onboarding_title">لنرَ أين تذهب بياناتك</string>
-    <string name="onboarding_body">لمقارنة الواي فاي ببيانات الهاتف، يحتاج DataKeeper إلى إذن الوصول إلى بيانات الاستخدام في أندرويد.</string>
+    <string name="onboarding_body">لمقارنة الـWifi بالـdonnées mobiles، يحتاج DataKeeper إلى إذن الوصول إلى بيانات الاستخدام في أندرويد.</string>
     <string name="onboarding_point_volumes">نقرأ الكميات فقط (ميغا، جيغا)، ولا نطّلع أبدًا على محتوى تطبيقاتك.</string>
     <string name="onboarding_point_local">كل شيء يبقى على هاتفك، ولا يُرسل أي شيء عبر الإنترنت.</string>
     <string name="onboarding_point_revoke">يمكنك سحب الإذن في أي وقت.</string>
@@ -44,7 +44,7 @@
     <string name="setup_title">باقتي</string>
     <string name="setup_title_operator">باقتي %1$s</string>
     <string name="setup_body">أدخل باقتك مرة واحدة: سيتبع العدّاد والتوقعات والتنبيهات باقتك الحقيقية بدلًا من أول الشهر.</string>
-    <string name="setup_body_operator_changed">شريحة جديدة للبيانات الخلوية: الباقة السابقة لم تعد صالحة. أدخل باقة هذه الشريحة.</string>
+    <string name="setup_body_operator_changed">شريحة جديدة للـdonnées mobiles: الباقة السابقة لم تعد صالحة. أدخل باقة هذه الشريحة.</string>
     <string name="setup_plan_label">حجم الباقة</string>
     <string name="setup_plan_input">حجم آخر</string>
     <string name="setup_plan_custom_chip">آخر</string>
@@ -58,7 +58,7 @@
     <string name="setup_price_label">سعر الباقة (اختياري)</string>
     <string name="setup_price_input_label">السعر المدفوع لهذه الباقة</string>
     <string name="setup_price_placeholder">مثل 28</string>
-    <string name="setup_price_hint">يُستعمل لحساب ما يوفّره لك الواي فاي.</string>
+    <string name="setup_price_hint">يُستعمل لحساب ما يوفّره لك الـWifi.</string>
     <string name="setup_price_per_gb">أي %1$s للجيغا</string>
     <string name="setup_price_error">السعر منخفض جدًا أو مرتفع جدًا لهذه الباقة</string>
     <string name="setup_submit">عرض لوحة المتابعة</string>
@@ -103,7 +103,7 @@
     <string name="plan_cycle_pass_subtitle">صالحة %1$s منذ %2$s · تنتهي يوم %3$s</string>
 
     <string name="usage_access_title">مطلوب إذن الوصول إلى بيانات الاستخدام</string>
-    <string name="usage_access_body">بدون هذا الإذن، لا يستطيع DataKeeper مقارنة الواي فاي ببيانات الهاتف. لا يغادر أي شيء هاتفك.</string>
+    <string name="usage_access_body">بدون هذا الإذن، لا يستطيع DataKeeper مقارنة الـWifi بالـdonnées mobiles. لا يغادر أي شيء هاتفك.</string>
     <string name="usage_access_button">فتح الإعدادات</string>
 
     <!-- الاستهلاك -->
@@ -111,18 +111,18 @@
     <string name="usage_overline" tools:ignore="PluralsCandidate">%1$s · اليوم %2$d من %3$d</string>
     <string name="usage_title">استهلاكي</string>
     <string name="usage_settings">الإعدادات</string>
-    <string name="usage_split_title">الواي فاي مقابل البيانات الخلوية</string>
+    <string name="usage_split_title">الـWifi مقابل الـdonnées mobiles</string>
     <string name="usage_total">المجموع %1$s</string>
-    <string name="usage_wifi">واي فاي</string>
-    <string name="usage_mobile">خلوي</string>
+    <string name="usage_wifi">Wifi</string>
+    <string name="usage_mobile">Mobile</string>
     <string name="usage_wifi_all_networks">كل الشبكات</string>
     <string name="usage_show_network">اعرف إن كنت على 4G أو 5G</string>
     <string name="usage_share_of_total">%1$d%% من المجموع</string>
     <string name="usage_mobile_from_balance_operator">حسب رصيدك لدى %1$s</string>
     <string name="usage_mobile_from_balance">حسب رصيدك لدى المشغّل</string>
     <string name="usage_last_7_days">آخر 7 أيام</string>
-    <string name="usage_day_description">%1$s: %2$s عبر الواي فاي، %3$s عبر الخلوي</string>
-    <string name="usage_top_apps_title">التطبيقات الأكثر استهلاكًا للبيانات الخلوية</string>
+    <string name="usage_day_description">%1$s: %2$s عبر الـWifi، %3$s عبر الـdonnées mobiles</string>
+    <string name="usage_top_apps_title">التطبيقات الأكثر استهلاكًا للـdonnées mobiles</string>
     <string name="usage_app_system">نظام أندرويد</string>
     <string name="usage_app_tethering">مشاركة الإنترنت</string>
     <string name="usage_app_removed">تطبيقات محذوفة</string>
@@ -131,48 +131,48 @@
     <string name="usage_empty_body">لم تُقَس أي حركة بيانات منذ بداية الدورة. عُد بعد قليل.</string>
     <string name="usage_analyzing_title">جارٍ تحليل الاستهلاك…</string>
     <string name="usage_analyzing_days">سيمتلئ الرسم البياني بمجرد أن يقيس أندرويد حركة البيانات في الأيام الأخيرة.</string>
-    <string name="usage_analyzing_apps">لم يستعمل أي تطبيق البيانات الخلوية في هذه الدورة بعد.</string>
+    <string name="usage_analyzing_apps">لم يستعمل أي تطبيق الـdonnées mobiles في هذه الدورة بعد.</string>
     <string name="usage_day_hint">اضغط على يوم لرؤية تفاصيله.</string>
     <string name="usage_day_total">%1$s في المجموع</string>
     <string name="usage_day_share">%1$s · %2$d%%</string>
     <string name="usage_heavy_app_title">%1$s يلتهم باقتك</string>
-    <string name="usage_heavy_app_body">استعمل %1$s %2$s من البيانات الخلوية، أي %3$d%% من باقتك. افتحه عبر الواي فاي بدلًا من ذلك.</string>
+    <string name="usage_heavy_app_body">استعمل %1$s %2$s من الـdonnées mobiles، أي %3$d%% من باقتك. افتحه عبر الـWifi بدلًا من ذلك.</string>
     <string name="usage_load_failed">تعذّرت قراءة إحصاءات الشبكة.</string>
-    <string name="usage_savings_title">وفّرته بفضل الواي فاي</string>
+    <string name="usage_savings_title">وفّرته بفضل الـWifi</string>
     <string name="usage_savings_detail">%1$s × %2$s</string>
     <string name="usage_savings_detail_operator">%1$s × %2$s · %3$s</string>
     <string name="usage_savings_no_price">أدخل سعر الجيغا لحسابه</string>
-    <string name="usage_plan_label">باقتي الخلوية</string>
+    <string name="usage_plan_label">باقتي للـdonnées mobiles</string>
     <string name="usage_plan_label_operator">باقة %1$s</string>
     <string name="usage_plan_none">أدخل الباقة التي اشتركت فيها لدى مشغّلك</string>
     <string name="usage_plan_expires">تنتهي يوم %1$s</string>
     <string name="usage_plan_bar_description">تبقّى %1$d%% من الباقة</string>
 
     <!-- بطاقة الحصة في لوحة المتابعة -->
-    <string name="quota_summary_title">الحصة الخلوية: %1$s</string>
+    <string name="quota_summary_title">حصة الـdonnées mobiles: %1$s</string>
     <string name="quota_summary_remaining">تبقّى %1$s لمدة %2$s.</string>
     <string name="quota_summary_alert">تنبيه عند %1$d%%.</string>
-    <string name="quota_summary_exceeded">تجاوزت الحصة بـ%1$s. استعمل الواي فاي حتى %2$s.</string>
-    <string name="quota_summary_none_title">حدّد حصتك الخلوية</string>
+    <string name="quota_summary_exceeded">تجاوزت الحصة بـ%1$s. استعمل الـWifi حتى %2$s.</string>
+    <string name="quota_summary_none_title">حدّد حصتك من الـdonnées mobiles</string>
     <string name="quota_summary_none_body">اختر باقتك لتُنبَّه قبل أن تتجاوزها.</string>
-    <string name="quota_open">فتح الحصة الخلوية</string>
-    <string name="quota_ring_description">استُعمل %1$d%% من الحصة الخلوية</string>
+    <string name="quota_open">فتح حصة الـdonnées mobiles</string>
+    <string name="quota_ring_description">استُعمل %1$d%% من حصة الـdonnées mobiles</string>
     <string name="percent">%1$d%%</string>
 
-    <!-- الحصة الخلوية -->
+    <!-- حصة الـdonnées mobiles -->
     <string name="quota_overline">إعادة الضبط يوم %1$s</string>
-    <string name="quota_title">الحصة الخلوية</string>
+    <string name="quota_title">حصة الـdonnées mobiles</string>
     <string name="quota_of_total">من %1$s · %2$d%%</string>
     <string name="quota_remaining_chip">تبقّى %1$s</string>
     <string name="quota_per_day_chip">≈ %1$s / يوم</string>
     <string name="quota_exceeded_chip">تجاوز بـ%1$s</string>
     <string name="quota_none">لا توجد حصة محدّدة</string>
     <string name="quota_no_value">—</string>
-    <string name="quota_plan_title">باقتي الخلوية</string>
+    <string name="quota_plan_title">باقتي للـdonnées mobiles</string>
     <string name="quota_slider_description">الحصة الشهرية بالجيغابايت</string>
     <string name="quota_preset">%1$d جيغا</string>
     <string name="quota_preset_other">أخرى</string>
-    <string name="quota_input_label">حصة البيانات الخلوية</string>
+    <string name="quota_input_label">حصة الـdonnées mobiles</string>
     <string name="quota_input_error">أدخل قيمة موجبة، مثل 5 أو 2,5</string>
     <string name="quota_remove">حذف الحصة</string>
     <string name="quota_alert_title">تنبيه عند %1$d%%</string>
@@ -181,14 +181,14 @@
     <string name="quota_cycle_title">بداية الدورة</string>
     <string name="quota_cycle_subtitle">يوم %1$s من كل شهر · الدورة الحالية منذ %2$s</string>
     <string name="quota_cycle_choose">اختيار يوم بداية الدورة</string>
-    <string name="quota_price_title">سعر الجيغا الخلوي</string>
+    <string name="quota_price_title">سعر الجيغا في الـdonnées mobiles</string>
     <string name="quota_plan_price_title">سعر الباقة</string>
     <string name="quota_plan_price_subtitle">%1$s مقابل %2$s · أي %3$s للجيغا</string>
     <string name="quota_plan_price_hint">ما تدفعه لباقتك ذات %1$s. يُستنتج منه سعر الجيغا لحساب ما وفّرته.</string>
     <string name="quota_plan_price_subtitle_none">أدخل سعر باقتك ذات %1$s لحساب ما وفّرته</string>
     <string name="quota_plan_price_saved">حُفظ سعر الباقة</string>
     <string name="quota_price_subtitle">%1$s للجيغا · يُستعمل لحساب ما وفّرته</string>
-    <string name="quota_price_subtitle_none">لحساب ما يوفّره لك الواي فاي</string>
+    <string name="quota_price_subtitle_none">لحساب ما يوفّره لك الـWifi</string>
     <string name="quota_price_choose">إدخال سعر الجيغا</string>
     <string name="quota_price_hint">استعمل سعر شحن أو سعر جيغا خارج الباقة.</string>
     <string name="quota_price_input_label">سعر الجيغا</string>
@@ -200,7 +200,7 @@
     <string name="quota_balance_subtitle">تبقّى %1$s · ضُبط يوم %2$s</string>
     <string name="quota_balance_subtitle_none">أدخل ما تبقّى لك لعدّ دقيق</string>
     <string name="quota_balance_choose">إدخال الرصيد المتبقّي</string>
-    <string name="quota_balance_no_plan">اختر أولًا باقة في «باقتي الخلوية»، ثم أدخل ما تبقّى لك.</string>
+    <string name="quota_balance_no_plan">اختر أولًا باقة في «باقتي للـdonnées mobiles»، ثم أدخل ما تبقّى لك.</string>
     <string name="quota_balance_hint">البيانات المتبقّية التي أعلنها المشغّل، مثل 17 جيغا.</string>
     <string name="quota_balance_input_label">البيانات المتبقّية</string>
     <string name="quota_balance_input_error">أدخل قيمة بين 0 و%1$s</string>
@@ -209,11 +209,11 @@
     <string name="quota_balance_removed">مُسح الرصيد: العدّ من بداية الدورة</string>
     <string name="unit_dinar">د.ت</string>
     <string name="quota_tip_label">نصيحة:</string>
-    <string name="quota_tip_body">برمج فيديوهاتك وبودكاستاتك في «بدون اتصال» لتنزيلها عند أول واي فاي.</string>
+    <string name="quota_tip_body">برمج فيديوهاتك وبودكاستاتك في «بدون اتصال» لتنزيلها عند أول Wifi.</string>
     <string name="budget_title">ميزانية اليوم</string>
     <string name="budget_today_of">اليوم: %1$s</string>
     <string name="budget_left">لا يزال لديك %1$s لليوم دون المساس بالأيام التالية.</string>
-    <string name="budget_over">تجاوزت الميزانية بـ%1$s: استعمل الواي فاي لبقية اليوم.</string>
+    <string name="budget_over">تجاوزت الميزانية بـ%1$s: استعمل الـWifi لبقية اليوم.</string>
     <string name="forecast_title">توقّع نهاية الدورة</string>
     <string name="forecast_badge_comfortable">هامش واسع</string>
     <string name="forecast_badge_tight">بالكاد</string>
@@ -222,54 +222,54 @@
     <string name="forecast_body_comfortable">بهذا النسق، ستنتهي عند %1$s يوم %2$s. يبقى لك هامش جيد.</string>
     <string name="forecast_body_tight">بهذا النسق، ستنتهي عند %1$s يوم %2$s. ابقَ تحت %3$s يوميًا لتحافظ على هامش.</string>
     <string name="forecast_body_over">بهذا النسق، ستنتهي عند %1$s يوم %2$s، أي أكثر من باقتك. ابقَ تحت %3$s يوميًا كي لا تتجاوزها.</string>
-    <string name="forecast_body_exceeded">تجاوزت الباقة بالفعل: بهذا النسق، ستنتهي عند %1$s يوم %2$s. استعمل الواي فاي قدر الإمكان.</string>
+    <string name="forecast_body_exceeded">تجاوزت الباقة بالفعل: بهذا النسق، ستنتهي عند %1$s يوم %2$s. استعمل الـWifi قدر الإمكان.</string>
     <string name="forecast_chart_limit">باقة %1$s</string>
     <string name="forecast_chart_today">اليوم</string>
-    <string name="forecast_chart_description">منحنى البيانات الخلوية: استُعمل %1$s اليوم، ومتوقّع %2$s يوم %3$s، والباقة %4$s.</string>
+    <string name="forecast_chart_description">منحنى الـdonnées mobiles: استُعمل %1$s اليوم، ومتوقّع %2$s يوم %3$s، والباقة %4$s.</string>
     <string name="quota_saved">حُفظت الحصة</string>
     <string name="quota_removed">حُذفت الحصة</string>
 
     <!-- بدون اتصال -->
-    <string name="downloads_overline">تُنزَّل عبر الواي فاي فقط</string>
+    <string name="downloads_overline">تُنزَّل عبر الـWifi فقط</string>
     <string name="downloads_title">بدون اتصال</string>
-    <string name="downloads_wifi_connected">متصل بالواي فاي</string>
-    <string name="downloads_wifi_waiting">في انتظار الواي فاي</string>
+    <string name="downloads_wifi_connected">متصل بالـWifi</string>
+    <string name="downloads_wifi_waiting">في انتظار الـWifi</string>
     <string name="downloads_queue_summary">%1$d قيد التنزيل · %2$d في الانتظار · %3$s</string>
     <string name="downloads_queue_empty">لا شيء في قائمة الانتظار</string>
-    <string name="downloads_mobile_used">0 ميغا من البيانات الخلوية مستعملة</string>
-    <string name="downloads_wifi_waiting_body">ستُستأنف التنزيلات بمجرد اتصالك بالواي فاي.</string>
+    <string name="downloads_mobile_used">0 ميغا من الـdonnées mobiles مستعملة</string>
+    <string name="downloads_wifi_waiting_body">ستُستأنف التنزيلات بمجرد اتصالك بالـWifi.</string>
     <string name="downloads_savings">وفّرت %1$s</string>
     <string name="downloads_tab_pending">للتنزيل (%1$d)</string>
     <string name="downloads_tab_available">متاحة (%1$d)</string>
-    <string name="downloads_empty_pending">لا شيء للتنزيل. أضف رابطًا لتحصل عليه عند أول واي فاي.</string>
+    <string name="downloads_empty_pending">لا شيء للتنزيل. أضف رابطًا لتحصل عليه عند أول Wifi.</string>
     <string name="downloads_empty_available">لا يوجد ملف متاح بدون اتصال حاليًا.</string>
     <string name="downloads_add_link">إضافة رابط</string>
-    <string name="downloads_sheet_explanation">لن يُنزَّل الملف إلا عبر شبكة واي فاي، ثم يبقى متاحًا بدون اتصال.</string>
+    <string name="downloads_sheet_explanation">لن يُنزَّل الملف إلا عبر شبكة Wifi، ثم يبقى متاحًا بدون اتصال.</string>
     <string name="downloads_url_label">رابط الملف</string>
     <string name="downloads_url_error">أدخل رابط http(s) صالحًا</string>
     <string name="downloads_file_name_label">الاسم (اختياري)</string>
     <string name="downloads_schedule_label">متى؟</string>
-    <string name="downloads_submit_next_wifi">تنزيل عند الواي فاي القادم</string>
-    <string name="downloads_submit">برمجة عبر الواي فاي</string>
-    <string name="downloads_scheduled">سيُنزَّل «%1$s» عبر الواي فاي</string>
+    <string name="downloads_submit_next_wifi">تنزيل عند الـWifi القادم</string>
+    <string name="downloads_submit">برمجة عبر الـWifi</string>
+    <string name="downloads_scheduled">سيُنزَّل «%1$s» عبر الـWifi</string>
     <string name="downloads_clear_finished">مسح التنزيلات المكتملة</string>
     <string name="downloads_file_type">ملف %1$s</string>
     <string name="tips_title">نصائح لتوفير بياناتك</string>
     <string name="tip_autoplay_title">أوقف التشغيل التلقائي للفيديوهات</string>
     <string name="tip_autoplay_body">إنستغرام وفيسبوك: الإعدادات › استخدام البيانات › موفّر البيانات.</string>
-    <string name="tip_video_quality_title">خفّض جودة الفيديو على الشبكة الخلوية</string>
+    <string name="tip_video_quality_title">خفّض جودة الفيديو على الـdonnées mobiles</string>
     <string name="tip_video_quality_body">يوتيوب: الإعدادات › تفضيلات جودة الفيديو › على شبكات الجوّال: موفّر البيانات.</string>
-    <string name="tip_media_download_title">وسائط واتساب عبر الواي فاي فقط</string>
+    <string name="tip_media_download_title">وسائط واتساب عبر الـWifi فقط</string>
     <string name="tip_media_download_body">واتساب: الإعدادات › التخزين والبيانات › التنزيل التلقائي للوسائط.</string>
-    <string name="tip_updates_title">التحديثات عبر الواي فاي فقط</string>
-    <string name="tip_updates_body">متجر Play: الإعدادات › إعدادات الشبكة › التحديث التلقائي للتطبيقات › عبر الواي فاي فقط.</string>
+    <string name="tip_updates_title">التحديثات عبر الـWifi فقط</string>
+    <string name="tip_updates_body">متجر Play: الإعدادات › إعدادات الشبكة › التحديث التلقائي للتطبيقات › عبر الـWifi فقط.</string>
     <string name="tip_data_saver_title">فعّل موفّر البيانات في أندرويد</string>
     <string name="tip_data_saver_body">الإعدادات › الاتصالات › استخدام البيانات: يحدّ من بيانات التطبيقات في الخلفية.</string>
     <string name="schedule_asap">في أقرب وقت</string>
     <string name="schedule_one_hour">بعد ساعة</string>
     <string name="schedule_tonight">هذه الليلة (2 صباحًا)</string>
-    <string name="download_state_waiting">في انتظار الواي فاي</string>
-    <string name="download_state_scheduled">مبرمج على %1$s (عبر الواي فاي)</string>
+    <string name="download_state_waiting">في انتظار الـWifi</string>
+    <string name="download_state_scheduled">مبرمج على %1$s (عبر الـWifi)</string>
     <string name="download_state_running">جارٍ التنزيل…</string>
     <string name="download_state_running_progress">جارٍ التنزيل… %1$d%%</string>
     <string name="download_state_done">متاح بدون اتصال</string>
@@ -277,11 +277,11 @@
     <string name="download_state_cancelled">أُلغي</string>
 
     <!-- الأدوات والمربّعات -->
-    <string name="widget_quota_label">الحصة الخلوية</string>
-    <string name="widget_quota_picker_description">البيانات الخلوية والأيام المتبقّية</string>
-    <string name="widget_savings_label">توفير الواي فاي</string>
-    <string name="widget_savings_picker_description">البيانات المستعملة عبر الواي فاي هذا الشهر</string>
-    <string name="widget_quota_bar_label">الحصة الخلوية (شريط)</string>
+    <string name="widget_quota_label">حصة الـdonnées mobiles</string>
+    <string name="widget_quota_picker_description">الـdonnées mobiles والأيام المتبقّية</string>
+    <string name="widget_savings_label">توفير الـWifi</string>
+    <string name="widget_savings_picker_description">البيانات المستعملة عبر الـWifi هذا الشهر</string>
+    <string name="widget_quota_bar_label">حصة الـdonnées mobiles (شريط)</string>
     <string name="widget_quota_bar_picker_description">الحصة المستهلكة وتقدير نهاية الشهر</string>
     <string name="widget_remaining">متبقّية</string>
     <string name="widget_exceeded">تجاوز</string>
@@ -294,13 +294,13 @@
         <item quantity="other">تبقّى %d يوم</item>
     </plurals>
     <string name="widget_quota_description">تبقّى %1$s من %2$s، استُعمل %3$d%%</string>
-    <string name="widget_quota_exceeded_description">تجاوزت الحصة الخلوية بـ%1$s</string>
+    <string name="widget_quota_exceeded_description">تجاوزت حصة الـdonnées mobiles بـ%1$s</string>
     <string name="widget_no_access">افتح DataKeeper للسماح بالوصول</string>
     <string name="widget_no_quota">حدّد حصتك</string>
     <string name="widget_new_sim">شريحة جديدة: أدخل باقتك</string>
     <string name="widget_saved_this_month">وفّرت هذا الشهر</string>
-    <string name="widget_wifi_share">%1$d%% عبر الواي فاي</string>
-    <string name="widget_used_of_mobile">%1$s خلوية</string>
+    <string name="widget_wifi_share">%1$d%% عبر الـWifi</string>
+    <string name="widget_used_of_mobile">%1$s mobiles</string>
     <string name="widget_projection">نهاية الشهر المقدّرة: %1$s</string>
     <string name="tile_no_access">الوصول مطلوب</string>
     <string name="tile_new_sim">شريحة جديدة</string>
@@ -314,9 +314,9 @@
         <item quantity="other">%d في الانتظار</item>
     </plurals>
 
-    <string name="notification_channel_quota">تنبيهات الحصة الخلوية</string>
-    <string name="notification_quota_title">استهلكت %1$d%% من حصتك الخلوية</string>
-    <string name="notification_quota_text">استُعمل %1$s من %2$s هذا الشهر. استعمل الواي فاي لتوفير بياناتك.</string>
+    <string name="notification_channel_quota">تنبيهات حصة الـdonnées mobiles</string>
+    <string name="notification_quota_title">استهلكت %1$d%% من حصتك من الـdonnées mobiles</string>
+    <string name="notification_quota_text">استُعمل %1$s من %2$s هذا الشهر. استعمل الـWifi لتوفير بياناتك.</string>
     <string name="notification_recalibrate_title">اضبط رصيد باقتك</string>
     <plurals name="notification_recalibrate_text">
         <item quantity="zero">سُجّل رصيدك (تبقّى %2$s) اليوم. تحقّق لدى مشغّلك واضبطه.</item>
@@ -334,7 +334,7 @@
         <item quantity="many">تنتهي باقتك بعد %d يومًا</item>
         <item quantity="other">تنتهي باقتك بعد %d يوم</item>
     </plurals>
-    <string name="notification_renewal_text">تنتهي الباقة يوم %1$s. لا تنسَ شحنها حتى لا تبقى بدون بيانات خلوية.</string>
+    <string name="notification_renewal_text">تنتهي الباقة يوم %1$s. لا تنسَ شحنها حتى لا تبقى بدون données mobiles.</string>
 
     <!-- الإعدادات -->
     <string name="settings_title">الإعدادات</string>
@@ -373,30 +373,30 @@
     <string name="speed_test_ping">استجابة</string>
     <string name="speed_test_ping_ms">استجابة · م.ث</string>
     <string name="speed_test_server">الخادم %1$s</string>
-    <string name="speed_test_wifi_title">متصل بالواي فاي</string>
-    <string name="speed_test_wifi_body">لا يستعمل الاختبار باقتك الخلوية</string>
-    <string name="speed_test_mobile_title">على البيانات الخلوية</string>
+    <string name="speed_test_wifi_title">متصل بالـWifi</string>
+    <string name="speed_test_wifi_body">لا يستعمل الاختبار باقتك للـdonnées mobiles</string>
+    <string name="speed_test_mobile_title">على الـdonnées mobiles</string>
     <string name="speed_test_mobile_body">يستهلك الاختبار حتى %1$s من باقتك</string>
     <string name="speed_test_last">آخر اختبار</string>
     <string name="speed_test_none">ابدأ اختبارًا لقياس سرعتك الحالية.</string>
     <string name="speed_test_history">السجلّ</string>
     <string name="speed_test_network">الشبكة</string>
     <string name="speed_test_server_label">الخادم</string>
-    <string name="speed_test_network_wifi">واي فاي</string>
-    <string name="speed_test_network_mobile">بيانات خلوية</string>
-    <string name="speed_test_badge_wifi">واي فاي</string>
-    <string name="speed_test_badge_mobile">خلوي</string>
+    <string name="speed_test_network_wifi">Wifi</string>
+    <string name="speed_test_network_mobile">Données mobiles</string>
+    <string name="speed_test_badge_wifi">Wifi</string>
+    <string name="speed_test_badge_mobile">Mob.</string>
     <string name="speed_test_rating_excellent">ممتاز · فيديو HD ومكالمات فيديو سلسة</string>
     <string name="speed_test_rating_good">جيد · فيديو HD ومكالمات فيديو ممكنة</string>
     <string name="speed_test_rating_fair">مقبول · تصفّح وفيديو SD</string>
     <string name="speed_test_rating_slow">بطيء · رسائل وتصفّح خفيف</string>
-    <string name="speed_test_mobile_dialog_title">الاختبار على البيانات الخلوية؟</string>
-    <string name="speed_test_mobile_dialog_body">قد يستهلك الاختبار حتى %1$s من باقتك. اتصل بالواي فاي لإجرائه مجانًا.</string>
+    <string name="speed_test_mobile_dialog_title">الاختبار على الـdonnées mobiles؟</string>
+    <string name="speed_test_mobile_dialog_body">قد يستهلك الاختبار حتى %1$s من باقتك. اتصل بالـWifi لإجرائه مجانًا.</string>
     <string name="speed_test_mobile_dialog_confirm">البدء على أي حال</string>
     <string name="speed_test_failed">توقّف الاختبار: تحقّق من اتصالك وأعد المحاولة.</string>
 
-    <!-- واي فاي مجاني -->
-    <string name="wifi_title">واي فاي مجاني</string>
+    <!-- Wifi مجاني -->
+    <string name="wifi_title">Wifi مجاني</string>
     <string name="wifi_subtitle">شبكات مفتوحة بالقرب منك</string>
     <string name="wifi_area_title">من حولك</string>
     <string name="wifi_area_updated">حُدِّث %1$s</string>
@@ -416,19 +416,19 @@
     <string name="wifi_untested">لم تُجرَّب بعد</string>
     <string name="wifi_connect">اتصال</string>
     <string name="wifi_connected">متّصل</string>
-    <string name="wifi_footer">شبكة الواي فاي ذات البوابة تطلب المرور بصفحة دخول، غالبًا مع إعلانات، قبل السماح بالتنزيلات.</string>
+    <string name="wifi_footer">شبكة الـWifi ذات البوابة تطلب المرور بصفحة دخول، غالبًا مع إعلانات، قبل السماح بالتنزيلات.</string>
     <string name="wifi_empty_title">لا توجد شبكة مفتوحة هنا</string>
     <string name="wifi_empty_body">تنقّل أو حدّث بعد قليل.</string>
     <string name="wifi_empty_filter">لا توجد شبكة لهذا التصنيف.</string>
     <string name="wifi_permission_title">اسمح بالوصول إلى الموقع</string>
-    <string name="wifi_permission_body">يشترط أندرويد إذن الموقع لعرض شبكات الواي فاي من حولك. لا يحفظه DataKeeper ولا يرسله إلى أي مكان.</string>
+    <string name="wifi_permission_body">يشترط أندرويد إذن الموقع لعرض شبكات الـWifi من حولك. لا يحفظه DataKeeper ولا يرسله إلى أي مكان.</string>
     <string name="wifi_permission_button">السماح</string>
     <string name="wifi_permission_settings">فتح إعدادات التطبيق</string>
-    <string name="wifi_off_title">الواي فاي متوقف</string>
+    <string name="wifi_off_title">الـWifi متوقف</string>
     <string name="wifi_off_body">شغّله لرؤية الشبكات المفتوحة من حولك.</string>
-    <string name="wifi_off_button">تشغيل الواي فاي</string>
+    <string name="wifi_off_button">تشغيل الـWifi</string>
     <string name="wifi_location_off_title">تحديد الموقع متوقف</string>
-    <string name="wifi_location_off_body">لا يعرض أندرويد شبكات الواي فاي القريبة إلا إذا كان تحديد الموقع مفعّلًا.</string>
+    <string name="wifi_location_off_body">لا يعرض أندرويد شبكات الـWifi القريبة إلا إذا كان تحديد الموقع مفعّلًا.</string>
     <string name="wifi_location_off_button">تفعيل تحديد الموقع</string>
 
     <!-- مشاركة الاتصال -->
@@ -450,7 +450,7 @@
     <string name="tethering_devices_section">الأجهزة المتصلة</string>
     <string name="tethering_devices_title">عرض الأجهزة في أندرويد</string>
     <string name="tethering_devices_body">يفتح إعدادات نقطة الاتصال</string>
-    <string name="tethering_info">لا يعطي أندرويد استهلاك كل جهاز. المجموع تقدير (بيانات الهاتف أثناء المشاركة) ويشمل أيضًا تطبيقاتك الأخرى.</string>
+    <string name="tethering_info">لا يعطي أندرويد استهلاك كل جهاز. المجموع تقدير (الـdonnées mobiles أثناء المشاركة) ويشمل أيضًا تطبيقاتك الأخرى.</string>
     <string name="usage_tethering_title">مشاركة الاتصال مفعّلة</string>
     <string name="usage_tethering_body">استهلكت أجهزتك %1$s</string>
     <string name="notification_tethering_title">مشاركة الاتصال: استُهلك %1$s</string>
