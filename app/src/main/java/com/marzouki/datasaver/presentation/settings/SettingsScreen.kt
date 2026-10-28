@@ -26,7 +26,6 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Contrast
 import androidx.compose.material.icons.rounded.DarkMode
-import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.LightMode
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -142,7 +141,6 @@ private fun SettingsContent(
                 )
             }
         }
-        RtlNotice()
 
         SectionLabel(R.string.settings_about)
         DataKeeperCard(contentPadding = 0.dp) {
@@ -270,22 +268,6 @@ private fun SelectionMark(selected: Boolean) {
     ) {
         if (selected) {
             Icon(Icons.Rounded.Check, contentDescription = null, tint = colors.onPrimary, modifier = Modifier.size(16.dp))
-        }
-    }
-}
-
-@Composable
-private fun RtlNotice() {
-    DataKeeperCard(containerColor = MaterialTheme.colorScheme.primaryContainer, contentPadding = 12.dp) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                Icons.Rounded.Language,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.size(18.dp),
-            )
-            Spacer(Modifier.width(10.dp))
-            Text(stringResource(R.string.settings_rtl_notice), style = MaterialTheme.typography.bodySmall)
         }
     }
 }
