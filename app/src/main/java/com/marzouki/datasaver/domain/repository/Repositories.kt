@@ -189,3 +189,13 @@ interface QuotaAlertNotifier {
     /** Prévient que les appareils connectés au partage ont consommé [usedBytes], au-delà de [thresholdBytes]. */
     fun notifyTetheringThreshold(usedBytes: Long, thresholdBytes: Long)
 }
+
+/** Remonte les erreurs rattrapées qui méritent d'être corrigées, sans donnée personnelle. */
+interface CrashReporter {
+    fun recordException(throwable: Throwable)
+}
+
+/** Mesure d'audience anonyme : écrans consultés. */
+interface AnalyticsTracker {
+    fun logScreenView(screenName: String)
+}
