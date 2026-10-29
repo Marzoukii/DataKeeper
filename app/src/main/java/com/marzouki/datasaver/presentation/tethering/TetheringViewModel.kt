@@ -1,8 +1,7 @@
 package com.marzouki.datasaver.presentation.tethering
 
 import androidx.lifecycle.viewModelScope
-import com.marzouki.datasaver.domain.model.TetheringSample
-import com.marzouki.datasaver.domain.model.bytesPerSecond
+import com.marzouki.datasaver.domain.repository.Clock
 import com.marzouki.datasaver.domain.usecase.GetTetheringUsageUseCase
 import com.marzouki.datasaver.domain.usecase.HasPhoneStatePermissionUseCase
 import com.marzouki.datasaver.domain.usecase.ObserveDataNetworkGenerationUseCase
@@ -36,17 +35,13 @@ class TetheringViewModel @Inject constructor(
     private val hasPhoneStatePermission: HasPhoneStatePermissionUseCase,
     private val getTetheringUsage: GetTetheringUsageUseCase,
     private val setAlert: SetTetheringAlertUseCase,
+    private val clock: Clock,
 ) : MviViewModel<TetheringState, TetheringIntent, TetheringEffect>(TetheringState()) {
-
-    /** Relevés des dernières minutes, du plus ancien au plus récent. */
-    private val samples = ArrayDeque<TetheringSample>()
 
     override fun observe(): List<Flow<*>> = listOfNotNull(
         observeHotspotActive()
-            .onEach { active ->
-                setState { copy(active = active) }
-                if (!active) samples.clear()
-            }
+            // Partage éteint : les relevés de la session passée ne comptent plus.
+            .onEach { active -> setState { copy(active = active, samples = if (active) samples else emptyList()) } }
             .flatMapLatest { active -> if (active) every(SAMPLE_MILLIS) else flowOf(Unit) }
             .onEach { sample() },
         observeAlert().onEach { alert -> setState { copy(alert = alert) } },
@@ -78,28 +73,9 @@ class TetheringViewModel @Inject constructor(
     private fun sample() {
         val active = currentState.active ?: return
         viewModelScope.launch {
-            val now = System.currentTimeMillis()
+            val now = clock.nowMillis()
             val usage = getTetheringUsage(active, now)
-            if (usage == null) {
-                samples.clear()
-                setState { copy(usage = null, recentBytesPerHour = null) }
-                return@launch
-            }
-            // Nouvelle session ou compteur reparti de zéro : les anciens relevés ne comptent plus.
-            if (samples.lastOrNull()?.let { it.usedBytes > usage.usedBytes } == true) samples.clear()
-            samples.addLast(TetheringSample(now, usage.usedBytes))
-            while (samples.first().atMillis < now - RECENT_WINDOW_MILLIS) samples.removeFirst()
-
-            val recent = samples.toList()
-            val recentSpan = recent.last().atMillis - recent.first().atMillis
-            setState {
-                copy(
-                    usage = usage,
-                    recentBytesPerHour = recent.bytesPerSecond()
-                        ?.takeIf { recentSpan >= MIN_RECENT_SPAN_MILLIS }
-                        ?.let { it * 3_600 },
-                )
-            }
+            setState { withSample(usage, now) }
         }
     }
 
@@ -112,7 +88,5 @@ class TetheringViewModel @Inject constructor(
 
     private companion object {
         const val SAMPLE_MILLIS = 2_000L
-        const val RECENT_WINDOW_MILLIS = 5 * 60_000L
-        const val MIN_RECENT_SPAN_MILLIS = 60_000L
     }
 }

@@ -9,6 +9,7 @@ import com.marzouki.datasaver.domain.model.SpeedTestEvent
 import com.marzouki.datasaver.domain.model.SpeedTestProgress
 import com.marzouki.datasaver.domain.model.SpeedTestResult
 import com.marzouki.datasaver.domain.model.SpeedTestServer
+import com.marzouki.datasaver.domain.repository.Clock
 import com.marzouki.datasaver.domain.repository.SpeedTestRepository
 import com.marzouki.datasaver.domain.usecase.RunSpeedTestUseCase
 import com.marzouki.datasaver.ui.components.formatMbps
@@ -71,7 +72,7 @@ class SpeedTestTest {
     @Test
     fun `en données mobiles le test est plafonné et enregistré avec le réseau`() = runTest {
         val repository = FakeSpeedTestRepository()
-        val events = RunSpeedTestUseCase(repository)(onWifi = false, "Ooredoo", NetworkGeneration.G4) { 5_000L }.toList()
+        val events = RunSpeedTestUseCase(repository, Clock { 5_000L })(onWifi = false, "Ooredoo", NetworkGeneration.G4).toList()
 
         assertEquals(RunSpeedTestUseCase.MOBILE_MAX_BYTES_PER_PHASE, repository.requestedMaxBytes)
         val finished = events.last() as SpeedTestEvent.Finished
@@ -82,7 +83,7 @@ class SpeedTestTest {
     @Test
     fun `en Wi-Fi le test n'est pas plafonné ni rattaché à l'opérateur`() = runTest {
         val repository = FakeSpeedTestRepository()
-        val events = RunSpeedTestUseCase(repository)(onWifi = true, "Ooredoo", NetworkGeneration.G4) { 5_000L }.toList()
+        val events = RunSpeedTestUseCase(repository, Clock { 5_000L })(onWifi = true, "Ooredoo", NetworkGeneration.G4).toList()
 
         assertEquals(null, repository.requestedMaxBytes)
         val result = (events.last() as SpeedTestEvent.Finished).result

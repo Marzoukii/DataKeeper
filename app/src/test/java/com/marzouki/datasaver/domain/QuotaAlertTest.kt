@@ -15,6 +15,7 @@ import com.marzouki.datasaver.domain.model.PricePerGb
 import com.marzouki.datasaver.domain.model.QuotaStatus
 import com.marzouki.datasaver.domain.model.SavedPlan
 import com.marzouki.datasaver.domain.model.heavyAppFor
+import com.marzouki.datasaver.domain.repository.Clock
 import com.marzouki.datasaver.domain.repository.OperatorRepository
 import com.marzouki.datasaver.domain.repository.QuotaAlertNotifier
 import com.marzouki.datasaver.domain.repository.QuotaMonitorScheduler
@@ -53,6 +54,9 @@ class QuotaAlertTest {
     private val gb = 1_000_000_000L
     private val period = MonthPeriod(startMillis = 0, endMillis = 1, key = "2026-10")
 
+    /** Pour les tests qui passent le cycle ou l'instant eux-mêmes : l'horloge n'y est pas lue. */
+    private val clock = Clock { 0L }
+
     private class FakeQuotaRepository(quota: DataQuota?) : QuotaRepository {
         override val quota = MutableStateFlow(quota)
         override val lastAlertedMonth = MutableStateFlow<String?>(null)
@@ -87,7 +91,7 @@ class QuotaAlertTest {
     fun `does not notify when alert is disabled`() = runTest {
         val notifier = FakeNotifier()
         val quota = DataQuota(10 * gb, alertEnabled = false)
-        assertFalse(CheckQuotaAndAlertUseCase(FakeQuotaRepository(quota), FakeUsageRepository(9 * gb), notifier)(period))
+        assertFalse(CheckQuotaAndAlertUseCase(FakeQuotaRepository(quota), FakeUsageRepository(9 * gb), notifier, clock)(period))
         assertTrue(notifier.notified.isEmpty())
     }
 
@@ -126,7 +130,7 @@ class QuotaAlertTest {
     fun `notifies only once per month`() = runTest {
         val notifier = FakeNotifier()
         val useCase = CheckQuotaAndAlertUseCase(
-            FakeQuotaRepository(DataQuota(10 * gb)), FakeUsageRepository(9 * gb), notifier,
+            FakeQuotaRepository(DataQuota(10 * gb)), FakeUsageRepository(9 * gb), notifier, clock,
         )
 
         assertTrue(useCase(period))
@@ -138,8 +142,8 @@ class QuotaAlertTest {
     @Test
     fun `does not notify below threshold or without quota`() = runTest {
         val notifier = FakeNotifier()
-        assertFalse(CheckQuotaAndAlertUseCase(FakeQuotaRepository(DataQuota(10 * gb)), FakeUsageRepository(gb), notifier)(period))
-        assertFalse(CheckQuotaAndAlertUseCase(FakeQuotaRepository(null), FakeUsageRepository(99 * gb), notifier)(period))
+        assertFalse(CheckQuotaAndAlertUseCase(FakeQuotaRepository(DataQuota(10 * gb)), FakeUsageRepository(gb), notifier, clock)(period))
+        assertFalse(CheckQuotaAndAlertUseCase(FakeQuotaRepository(null), FakeUsageRepository(99 * gb), notifier, clock)(period))
         assertTrue(notifier.notified.isEmpty())
     }
 
@@ -169,7 +173,7 @@ class QuotaAlertTest {
     @Test
     fun `operator balance is kept when the plan still holds it and capped to the plan`() = runTest {
         val repository = FakeQuotaRepository(DataQuota(25 * gb))
-        SetOperatorBalanceUseCase(repository)(30 * gb, nowMillis = 42)
+        SetOperatorBalanceUseCase(repository, clock)(30 * gb, nowMillis = 42)
         assertEquals(OperatorBalance(25 * gb, 42), repository.quota.value?.balance)
 
         val scheduler = object : QuotaMonitorScheduler {
@@ -192,13 +196,14 @@ class QuotaAlertTest {
 
     @Test
     fun `clears a balance relevé lors d'un cycle précédent, garde celui du cycle courant`() = runTest {
+        val today = Clock { oct21 }
         // Solde relevé à l'époque 0, bien avant le début du cycle courant.
         val stale = FakeQuotaRepository(DataQuota(10 * gb, balance = OperatorBalance(5 * gb, atMillis = 0L)))
-        assertTrue(ClearStaleBalanceUseCase(stale, GetCurrentPeriodUseCase(stale))())
+        assertTrue(ClearStaleBalanceUseCase(stale, GetCurrentPeriodUseCase(stale, today))())
         assertNull(stale.quota.value?.balance)
 
-        val fresh = FakeQuotaRepository(DataQuota(10 * gb, balance = OperatorBalance(5 * gb, atMillis = System.currentTimeMillis())))
-        assertFalse(ClearStaleBalanceUseCase(fresh, GetCurrentPeriodUseCase(fresh))())
+        val fresh = FakeQuotaRepository(DataQuota(10 * gb, balance = OperatorBalance(5 * gb, atMillis = oct21)))
+        assertFalse(ClearStaleBalanceUseCase(fresh, GetCurrentPeriodUseCase(fresh, today))())
         assertNotNull(fresh.quota.value?.balance)
     }
 
@@ -208,7 +213,7 @@ class QuotaAlertTest {
         val now = 100 * day
         val notifier = FakeNotifier()
         val repo = FakeQuotaRepository(DataQuota(10 * gb, balance = OperatorBalance(5 * gb, atMillis = now - 8 * day)))
-        val useCase = RemindBalanceRecalibrationUseCase(repo, notifier)
+        val useCase = RemindBalanceRecalibrationUseCase(repo, notifier, clock)
 
         assertTrue(useCase(nowMillis = now))
         assertEquals(1, notifier.recalibrations.size)
@@ -222,8 +227,8 @@ class QuotaAlertTest {
         val day = 24L * 60 * 60 * 1000
         val notifier = FakeNotifier()
         val fresh = FakeQuotaRepository(DataQuota(10 * gb, balance = OperatorBalance(5 * gb, atMillis = 100 * day)))
-        assertFalse(RemindBalanceRecalibrationUseCase(fresh, notifier)(nowMillis = 100 * day + day))
-        assertFalse(RemindBalanceRecalibrationUseCase(FakeQuotaRepository(DataQuota(10 * gb)), notifier)(nowMillis = 100 * day))
+        assertFalse(RemindBalanceRecalibrationUseCase(fresh, notifier, clock)(nowMillis = 100 * day + day))
+        assertFalse(RemindBalanceRecalibrationUseCase(FakeQuotaRepository(DataQuota(10 * gb)), notifier, clock)(nowMillis = 100 * day))
         assertTrue(notifier.recalibrations.isEmpty())
     }
 
@@ -232,7 +237,7 @@ class QuotaAlertTest {
         val day = 24L * 60 * 60 * 1000
         val notifier = FakeNotifier()
         val repo = FakeQuotaRepository(DataQuota(25 * gb))
-        val useCase = RemindPlanRenewalUseCase(repo, GetCurrentPeriodUseCase(repo), notifier)
+        val useCase = RemindPlanRenewalUseCase(repo, GetCurrentPeriodUseCase(repo, clock), notifier)
         val renewal = 30 * day
         fun cycleAt(now: Long, key: String = "2026-10") = MonthPeriod(0, endMillis = now, key = key, nextStartMillis = renewal)
 
@@ -243,7 +248,7 @@ class QuotaAlertTest {
         // Nouveau cycle : nouveau rappel possible.
         assertTrue(useCase(cycleAt(renewal - day, key = "2026-11")))
         // Sans forfait, rien à recharger.
-        assertFalse(RemindPlanRenewalUseCase(FakeQuotaRepository(null), GetCurrentPeriodUseCase(repo), notifier)(cycleAt(renewal - day)))
+        assertFalse(RemindPlanRenewalUseCase(FakeQuotaRepository(null), GetCurrentPeriodUseCase(repo, clock), notifier)(cycleAt(renewal - day)))
     }
 
     @Test
@@ -279,9 +284,10 @@ class QuotaAlertTest {
         operators,
         SetQuotaUseCase(repository, noopScheduler),
         SetPlanCycleUseCase(repository, SetCycleStartDayUseCase(repository)),
-        SetOperatorBalanceUseCase(repository),
+        SetOperatorBalanceUseCase(repository, clock),
         SetPlanPriceUseCase(repository),
         RememberPlanUseCase(repository),
+        clock,
     )
 
     /** 21 octobre 2026 à minuit, jour d'achat des forfaits de ces tests. */

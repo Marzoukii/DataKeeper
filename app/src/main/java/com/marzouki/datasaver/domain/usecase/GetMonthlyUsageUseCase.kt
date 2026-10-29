@@ -6,6 +6,6 @@ import com.marzouki.datasaver.domain.repository.UsageRepository
 import javax.inject.Inject
 
 class GetMonthlyUsageUseCase @Inject constructor(private val repository: UsageRepository) {
-    suspend operator fun invoke(period: MonthPeriod = MonthPeriod.current()): Result<DataUsage> =
+    suspend operator fun invoke(period: MonthPeriod): Result<DataUsage> =
         runCatching { repository.getUsage(period) }
 }

@@ -28,6 +28,8 @@ data class UsageState(
     val networkGeneration: NetworkGeneration? = null,
     /** Data mobile décomptée du forfait, recalée sur le solde opérateur s'il a été relevé. */
     val quotaUsedBytes: Long? = null,
+    /** Partage de connexion allumé : sa conso est alors relue toutes les quelques secondes. */
+    val hotspotActive: Boolean = false,
     /** Partage de connexion en cours et sa conso ; null quand il est éteint. */
     val tethering: TetheringUsage? = null,
 ) {

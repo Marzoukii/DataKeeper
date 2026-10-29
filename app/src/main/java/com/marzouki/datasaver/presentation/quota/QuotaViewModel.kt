@@ -3,6 +3,7 @@ package com.marzouki.datasaver.presentation.quota
 import androidx.lifecycle.viewModelScope
 import com.marzouki.datasaver.R
 import com.marzouki.datasaver.domain.model.alignDailyToUsed
+import com.marzouki.datasaver.domain.repository.Clock
 import com.marzouki.datasaver.domain.usecase.GetCurrentPeriodUseCase
 import com.marzouki.datasaver.domain.usecase.GetDailyUsageUseCase
 import com.marzouki.datasaver.domain.usecase.GetMonthlyUsageUseCase
@@ -49,7 +50,8 @@ class QuotaViewModel @Inject constructor(
     private val getQuotaUsedBytes: GetQuotaUsedBytesUseCase,
     private val setOperatorBalance: SetOperatorBalanceUseCase,
     private val observeDataOperator: ObserveDataOperatorUseCase,
-): MviViewModel<QuotaState, QuotaIntent, QuotaEffect>(QuotaState()) {
+    private val clock: Clock,
+): MviViewModel<QuotaState, QuotaIntent, QuotaEffect>(QuotaState(nowMillis = clock.nowMillis())) {
 
     private var refreshJob: Job? = null
 
@@ -121,8 +123,9 @@ class QuotaViewModel @Inject constructor(
         // Une relecture plus récente remplace la précédente : l'ancienne n'écrit jamais un état périmé après coup.
         refreshJob?.cancel()
         refreshJob = viewModelScope.launch {
-            val period = getCurrentPeriod()
-            setState { copy(period = period) }
+            val now = clock.nowMillis()
+            val period = getCurrentPeriod(now)
+            setState { copy(nowMillis = now, period = period) }
             if (!hasUsageAccess()) {
                 setState { copy(hasUsageAccess = false, usedMobileBytes = null, dailyMobileBytes = null, measuredDailyMobileBytes = null) }
                 return@launch
