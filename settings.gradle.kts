@@ -24,4 +24,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "DataKeeper"
 include(":app")
+include(":domain")
  
