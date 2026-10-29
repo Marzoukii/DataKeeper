@@ -7,6 +7,7 @@ import com.marzouki.datasaver.domain.model.MonthPeriod
 import com.marzouki.datasaver.domain.model.PlanValidity
 import com.marzouki.datasaver.domain.model.PricePerGb
 import com.marzouki.datasaver.domain.model.SavedPlan
+import com.marzouki.datasaver.domain.repository.Clock
 import com.marzouki.datasaver.domain.repository.OperatorRepository
 import com.marzouki.datasaver.domain.repository.QuotaRepository
 import com.marzouki.datasaver.domain.usecase.ForgetSavedPlanUseCase
@@ -65,14 +66,16 @@ class PlanCycleTest {
         val setCycle = SetPlanCycleUseCase(repository, SetCycleStartDayUseCase(repository))
         val now = day(Calendar.OCTOBER, 23)
 
+        val getCurrentPeriod = GetCurrentPeriodUseCase(repository, Clock { now })
+
         setCycle(day(Calendar.OCTOBER, 21), validityDays = 30)
-        assertEquals(day(Calendar.NOVEMBER, 20), GetCurrentPeriodUseCase(repository)(now).nextStartMillis)
+        assertEquals(day(Calendar.NOVEMBER, 20), getCurrentPeriod().nextStartMillis)
 
         // Abonnement : chaque mois le jour d'achat, et le pass est oublié.
         setCycle(day(Calendar.OCTOBER, 21), validityDays = null)
         assertNull(repository.planValidity.value)
         assertEquals(21, repository.cycleStartDay.value)
-        assertEquals(day(Calendar.NOVEMBER, 21), GetCurrentPeriodUseCase(repository)(now).nextStartMillis)
+        assertEquals(day(Calendar.NOVEMBER, 21), getCurrentPeriod().nextStartMillis)
     }
 
     @Test

@@ -4,12 +4,16 @@ import com.marzouki.datasaver.domain.enums.NetworkGeneration
 import com.marzouki.datasaver.domain.model.SpeedTestEvent
 import com.marzouki.datasaver.domain.model.SpeedTestProgress
 import com.marzouki.datasaver.domain.model.SpeedTestResult
+import com.marzouki.datasaver.domain.repository.Clock
 import com.marzouki.datasaver.domain.repository.SpeedTestRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-class RunSpeedTestUseCase @Inject constructor(private val repository: SpeedTestRepository) {
+class RunSpeedTestUseCase @Inject constructor(
+    private val repository: SpeedTestRepository,
+    private val clock: Clock,
+) {
 
     /**
      * Lance le test, puis l'ajoute à l'historique s'il va au bout. En données mobiles, chaque sens
@@ -20,7 +24,6 @@ class RunSpeedTestUseCase @Inject constructor(private val repository: SpeedTestR
         onWifi: Boolean,
         operatorName: String?,
         generation: NetworkGeneration?,
-        nowMillis: () -> Long = System::currentTimeMillis,
     ): Flow<SpeedTestEvent> = flow {
         var last: SpeedTestProgress? = null
         repository.measure(maxBytesPerPhase = if (onWifi) null else MOBILE_MAX_BYTES_PER_PHASE).collect {
@@ -32,7 +35,7 @@ class RunSpeedTestUseCase @Inject constructor(private val repository: SpeedTestR
             downloadMbps = done.downloadMbps ?: return@flow,
             uploadMbps = done.uploadMbps ?: return@flow,
             pingMs = done.pingMs ?: return@flow,
-            atMillis = nowMillis(),
+            atMillis = clock.nowMillis(),
             onWifi = onWifi,
             operatorName = operatorName.takeUnless { onWifi },
             generation = generation.takeUnless { onWifi },

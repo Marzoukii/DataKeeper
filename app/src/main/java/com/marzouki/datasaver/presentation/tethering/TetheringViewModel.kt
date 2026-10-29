@@ -1,8 +1,7 @@
 package com.marzouki.datasaver.presentation.tethering
 
 import androidx.lifecycle.viewModelScope
-import com.marzouki.datasaver.domain.model.TetheringSample
-import com.marzouki.datasaver.domain.model.bytesPerSecond
+import com.marzouki.datasaver.domain.repository.Clock
 import com.marzouki.datasaver.domain.usecase.GetTetheringUsageUseCase
 import com.marzouki.datasaver.domain.usecase.HasPhoneStatePermissionUseCase
 import com.marzouki.datasaver.domain.usecase.ObserveDataNetworkGenerationUseCase
@@ -14,10 +13,10 @@ import com.marzouki.datasaver.presentation.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -29,40 +28,30 @@ import javax.inject.Inject
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class TetheringViewModel @Inject constructor(
-    observeHotspotActive: ObserveHotspotActiveUseCase,
-    observeAlert: ObserveTetheringAlertUseCase,
-    observeDataOperator: ObserveDataOperatorUseCase,
-    observeDataNetworkGeneration: ObserveDataNetworkGenerationUseCase,
-    hasPhoneStatePermission: HasPhoneStatePermissionUseCase,
+    private val observeHotspotActive: ObserveHotspotActiveUseCase,
+    private val observeAlert: ObserveTetheringAlertUseCase,
+    private val observeDataOperator: ObserveDataOperatorUseCase,
+    private val observeDataNetworkGeneration: ObserveDataNetworkGenerationUseCase,
+    private val hasPhoneStatePermission: HasPhoneStatePermissionUseCase,
     private val getTetheringUsage: GetTetheringUsageUseCase,
     private val setAlert: SetTetheringAlertUseCase,
+    private val clock: Clock,
 ) : MviViewModel<TetheringState, TetheringIntent, TetheringEffect>(TetheringState()) {
 
-    /** Relevés des dernières minutes, du plus ancien au plus récent. */
-    private val samples = ArrayDeque<TetheringSample>()
-
-    init {
+    override fun observe(): List<Flow<*>> = listOfNotNull(
         observeHotspotActive()
-            .onEach { active ->
-                setState { copy(active = active) }
-                if (!active) samples.clear()
-            }
+            // Partage éteint : les relevés de la session passée ne comptent plus.
+            .onEach { active -> setState { copy(active = active, samples = if (active) samples else emptyList()) } }
             .flatMapLatest { active -> if (active) every(SAMPLE_MILLIS) else flowOf(Unit) }
-            .onEach { sample() }
-            .launchIn(viewModelScope)
-        observeAlert()
-            .onEach { alert -> setState { copy(alert = alert) } }
-            .launchIn(viewModelScope)
-        observeDataOperator()
-            .onEach { operator -> setState { copy(operatorName = operator?.name) } }
-            .launchIn(viewModelScope)
-        // La 4G ou 5G n'est lisible qu'avec la permission « Téléphone », demandée dans Ma consommation.
-        if (hasPhoneStatePermission()) {
-            observeDataNetworkGeneration()
-                .onEach { generation -> setState { copy(networkGeneration = generation) } }
-                .launchIn(viewModelScope)
-        }
-    }
+            .onEach { sample() },
+        observeAlert().onEach { alert -> setState { copy(alert = alert) } },
+        observeDataOperator().onEach { operator -> setState { copy(operatorName = operator?.name) } },
+        // La 4G ou 5G n'est lisible qu'avec la permission « Téléphone », demandée dans Ma consommation ;
+        // relue à chaque retour sur l'écran.
+        observeDataNetworkGeneration()
+            .onEach { generation -> setState { copy(networkGeneration = generation) } }
+            .takeIf { hasPhoneStatePermission() },
+    )
 
     override fun onIntent(intent: TetheringIntent) {
         when (intent) {
@@ -84,28 +73,9 @@ class TetheringViewModel @Inject constructor(
     private fun sample() {
         val active = currentState.active ?: return
         viewModelScope.launch {
-            val now = System.currentTimeMillis()
+            val now = clock.nowMillis()
             val usage = getTetheringUsage(active, now)
-            if (usage == null) {
-                samples.clear()
-                setState { copy(usage = null, recentBytesPerHour = null) }
-                return@launch
-            }
-            // Nouvelle session ou compteur reparti de zéro : les anciens relevés ne comptent plus.
-            if (samples.lastOrNull()?.let { it.usedBytes > usage.usedBytes } == true) samples.clear()
-            samples.addLast(TetheringSample(now, usage.usedBytes))
-            while (samples.first().atMillis < now - RECENT_WINDOW_MILLIS) samples.removeFirst()
-
-            val recent = samples.toList()
-            val recentSpan = recent.last().atMillis - recent.first().atMillis
-            setState {
-                copy(
-                    usage = usage,
-                    recentBytesPerHour = recent.bytesPerSecond()
-                        ?.takeIf { recentSpan >= MIN_RECENT_SPAN_MILLIS }
-                        ?.let { it * 3_600 },
-                )
-            }
+            setState { withSample(usage, now) }
         }
     }
 
@@ -118,7 +88,5 @@ class TetheringViewModel @Inject constructor(
 
     private companion object {
         const val SAMPLE_MILLIS = 2_000L
-        const val RECENT_WINDOW_MILLIS = 5 * 60_000L
-        const val MIN_RECENT_SPAN_MILLIS = 60_000L
     }
 }

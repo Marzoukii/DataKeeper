@@ -1,5 +1,6 @@
 package com.marzouki.datasaver.domain.usecase
 
+import com.marzouki.datasaver.domain.repository.Clock
 import com.marzouki.datasaver.domain.repository.QuotaAlertNotifier
 import com.marzouki.datasaver.domain.repository.QuotaRepository
 import kotlinx.coroutines.flow.first
@@ -13,9 +14,10 @@ import javax.inject.Inject
 class RemindBalanceRecalibrationUseCase @Inject constructor(
     private val quotaRepository: QuotaRepository,
     private val notifier: QuotaAlertNotifier,
+    private val clock: Clock,
 ) {
     suspend operator fun invoke(
-        nowMillis: Long = System.currentTimeMillis(),
+        nowMillis: Long = clock.nowMillis(),
         intervalMillis: Long = DEFAULT_INTERVAL_MILLIS,
     ): Boolean {
         val balance = quotaRepository.quota.first()?.balance ?: return false

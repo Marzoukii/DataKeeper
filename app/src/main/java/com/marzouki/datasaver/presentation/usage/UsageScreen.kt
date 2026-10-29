@@ -148,7 +148,8 @@ private fun UsageContent(
     onOpenSettings: () -> Unit = {},
     onOpenTethering: () -> Unit = {},
 ) {
-    val period = state.period ?: MonthPeriod.current()
+    // Le temps du premier chargement seulement : le ViewModel pose ensuite le cycle lu.
+    val period = state.period ?: MonthPeriod.current(System.currentTimeMillis())
     // Jour du graphique dont le détail est affiché en feuille de bas de page.
     var selectedDayMillis by rememberSaveable { mutableStateOf<Long?>(null) }
     PullToRefreshBox(

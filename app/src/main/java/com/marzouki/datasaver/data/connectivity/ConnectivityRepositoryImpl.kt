@@ -4,8 +4,11 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
+import com.marzouki.datasaver.data.shareWhileObserved
+import com.marzouki.datasaver.di.ApplicationScope
 import com.marzouki.datasaver.domain.repository.ConnectivityRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -15,9 +18,13 @@ import javax.inject.Inject
 /** Suit le réseau par défaut et indique s'il est non facturé, comme la contrainte WorkManager UNMETERED. */
 class ConnectivityRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
+    @param:ApplicationScope private val appScope: CoroutineScope,
 ) : ConnectivityRepository {
 
-    override fun observeUnmeteredConnection(): Flow<Boolean> = callbackFlow {
+    override fun observeUnmeteredConnection(): Flow<Boolean> = unmeteredConnection
+
+    // Téléchargements et test de débit le suivent : un seul rappel réseau pour les deux.
+    private val unmeteredConnection: Flow<Boolean> = callbackFlow {
         val connectivityManager = context.getSystemService(ConnectivityManager::class.java)
         val callback = object : ConnectivityManager.NetworkCallback() {
             override fun onCapabilitiesChanged(network: Network, capabilities: NetworkCapabilities) {
@@ -32,7 +39,7 @@ class ConnectivityRepositoryImpl @Inject constructor(
         trySend(current?.isUnmetered() == true)
         connectivityManager.registerDefaultNetworkCallback(callback)
         awaitClose { connectivityManager.unregisterNetworkCallback(callback) }
-    }.distinctUntilChanged()
+    }.distinctUntilChanged().shareWhileObserved(appScope)
 
     private fun NetworkCapabilities.isUnmetered(): Boolean =
         hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&

@@ -61,7 +61,9 @@ abstract class RepositoryModule {
     @Singleton
     abstract fun bindSpeedTestRepository(impl: SpeedTestRepositoryImpl): SpeedTestRepository
 
+    // Singleton : son suivi de la SIM est partagé entre tous les écrans.
     @Binds
+    @Singleton
     abstract fun bindOperatorRepository(impl: OperatorRepositoryImpl): OperatorRepository
 
     @Binds
@@ -73,7 +75,9 @@ abstract class RepositoryModule {
     @Binds
     abstract fun bindWifiRepository(impl: WifiRepositoryImpl): WifiRepository
 
+    // Singleton : son suivi du partage de connexion est partagé entre tous les écrans.
     @Binds
+    @Singleton
     abstract fun bindTetheringRepository(impl: TetheringRepositoryImpl): TetheringRepository
 
     @Binds

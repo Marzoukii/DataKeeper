@@ -11,7 +11,7 @@ import com.marzouki.datasaver.domain.usecase.SkipPlanSetupUseCase
 import com.marzouki.datasaver.presentation.mvi.MviViewModel
 import com.marzouki.datasaver.presentation.quota.QuotaViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -19,38 +19,29 @@ import javax.inject.Inject
 /** Pas d'effet : une fois le forfait enregistré, la racine de l'appli affiche le tableau de bord. */
 @HiltViewModel
 class PlanSetupViewModel @Inject constructor(
-    observeDataOperator: ObserveDataOperatorUseCase,
-    observePlanStatus: ObservePlanStatusUseCase,
-    observeSavedPlans: ObserveSavedPlansUseCase,
+    private val observeDataOperator: ObserveDataOperatorUseCase,
+    private val observePlanStatus: ObservePlanStatusUseCase,
+    private val observeSavedPlans: ObserveSavedPlansUseCase,
     private val completePlanSetup: CompletePlanSetupUseCase,
     private val skipPlanSetup: SkipPlanSetupUseCase,
     private val forgetSavedPlan: ForgetSavedPlanUseCase,
 ) : MviViewModel<PlanSetupState, PlanSetupIntent, Nothing>(PlanSetupState()) {
 
-    private var lastStatus: PlanStatus? = null
-
-    init {
+    override fun observe(): List<Flow<*>> = listOf(
         // La SIM peut encore changer pendant la saisie : le titre suit l'opérateur du moment.
-        observeDataOperator()
-            .onEach { operator -> setState { copy(operatorName = operator?.name) } }
-            .launchIn(viewModelScope)
+        observeDataOperator().onEach { operator -> setState { copy(operatorName = operator?.name) } },
         // Suit lui aussi la SIM : sur une carte Tunisie Telecom, jamais les forfaits Ooredoo.
-        observeSavedPlans()
-            .onEach { plans -> setState { copy(savedPlans = plans) } }
-            .launchIn(viewModelScope)
-        observePlanStatus()
-            .onEach { status ->
+        observeSavedPlans().onEach { plans -> setState { copy(savedPlans = plans) } },
+        observePlanStatus().onEach { status ->
+            setState {
                 // Le ViewModel survit au tableau de bord : un changement de SIM ultérieur repart
                 // d'un formulaire vierge, pas des chiffres (ni du « enregistrement… ») de l'ancienne.
-                val reset = lastStatus == PlanStatus.CONFIGURED && status != PlanStatus.CONFIGURED
-                lastStatus = status
-                setState {
-                    val form = if (reset) PlanSetupState(operatorName = operatorName, savedPlans = savedPlans) else this
-                    form.copy(operatorChanged = status == PlanStatus.OPERATOR_CHANGED)
-                }
+                val reset = planStatus == PlanStatus.CONFIGURED && status != PlanStatus.CONFIGURED
+                val form = if (reset) PlanSetupState(operatorName = operatorName, savedPlans = savedPlans) else this
+                form.copy(planStatus = status, operatorChanged = status == PlanStatus.OPERATOR_CHANGED)
             }
-            .launchIn(viewModelScope)
-    }
+        },
+    )
 
     override fun onIntent(intent: PlanSetupIntent) {
         when (intent) {
