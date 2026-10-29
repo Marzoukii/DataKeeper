@@ -10,7 +10,7 @@ import com.marzouki.datasaver.domain.usecase.RunSpeedTestUseCase
 import com.marzouki.datasaver.presentation.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.io.IOException
@@ -18,29 +18,21 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SpeedTestViewModel @Inject constructor(
-    observeWifiConnection: ObserveWifiConnectionUseCase,
-    observeDataOperator: ObserveDataOperatorUseCase,
-    observeDataNetworkGeneration: ObserveDataNetworkGenerationUseCase,
-    observeHistory: ObserveSpeedTestHistoryUseCase,
+    private val observeWifiConnection: ObserveWifiConnectionUseCase,
+    private val observeDataOperator: ObserveDataOperatorUseCase,
+    private val observeDataNetworkGeneration: ObserveDataNetworkGenerationUseCase,
+    private val observeHistory: ObserveSpeedTestHistoryUseCase,
     private val runSpeedTest: RunSpeedTestUseCase,
 ) : MviViewModel<SpeedTestState, SpeedTestIntent, SpeedTestEffect>(SpeedTestState()) {
 
     private var testJob: Job? = null
 
-    init {
-        observeWifiConnection()
-            .onEach { onWifi -> setState { copy(isOnWifi = onWifi) } }
-            .launchIn(viewModelScope)
-        observeDataOperator()
-            .onEach { operator -> setState { copy(operatorName = operator?.name) } }
-            .launchIn(viewModelScope)
-        observeDataNetworkGeneration()
-            .onEach { generation -> setState { copy(generation = generation) } }
-            .launchIn(viewModelScope)
-        observeHistory()
-            .onEach { history -> setState { copy(history = history) } }
-            .launchIn(viewModelScope)
-    }
+    override fun observe(): List<Flow<*>> = listOf(
+        observeWifiConnection().onEach { onWifi -> setState { copy(isOnWifi = onWifi) } },
+        observeDataOperator().onEach { operator -> setState { copy(operatorName = operator?.name) } },
+        observeDataNetworkGeneration().onEach { generation -> setState { copy(generation = generation) } },
+        observeHistory().onEach { history -> setState { copy(history = history) } },
+    )
 
     override fun onIntent(intent: SpeedTestIntent) {
         when (intent) {

@@ -20,12 +20,12 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -33,18 +33,18 @@ import javax.inject.Inject
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class UsageViewModel @Inject constructor(
-    observeQuota: ObserveQuotaUseCase,
-    observePricePerGb: ObservePricePerGbUseCase,
+    private val observeQuota: ObserveQuotaUseCase,
+    private val observePricePerGb: ObservePricePerGbUseCase,
     private val hasUsageAccess: HasUsageAccessUseCase,
     private val getCurrentPeriod: GetCurrentPeriodUseCase,
     private val getMonthlyUsage: GetMonthlyUsageUseCase,
     private val getDailyUsage: GetDailyUsageUseCase,
     private val getTopMobileApps: GetTopMobileAppsUseCase,
     private val getQuotaUsedBytes: GetQuotaUsedBytesUseCase,
-    observeDataOperator: ObserveDataOperatorUseCase,
+    private val observeDataOperator: ObserveDataOperatorUseCase,
     private val hasPhoneStatePermission: HasPhoneStatePermissionUseCase,
-    observeDataNetworkGeneration: ObserveDataNetworkGenerationUseCase,
-    observeHotspotActive: ObserveHotspotActiveUseCase,
+    private val observeDataNetworkGeneration: ObserveDataNetworkGenerationUseCase,
+    private val observeHotspotActive: ObserveHotspotActiveUseCase,
     private val getTetheringUsage: GetTetheringUsageUseCase,
 ) : MviViewModel<UsageState, UsageIntent, UsageEffect>(UsageState()) {
 
@@ -54,25 +54,19 @@ class UsageViewModel @Inject constructor(
     /** Relue au retour sur l'écran : la permission a pu être accordée ou retirée dans les paramètres. */
     private val phonePermission = MutableStateFlow(hasPhoneStatePermission())
 
-    init {
+    override fun observe(): List<Flow<*>> = listOf(
         phonePermission
             .onEach { granted -> setState { copy(hasPhonePermission = granted) } }
             .flatMapLatest { granted -> if (granted) observeDataNetworkGeneration() else flowOf(null) }
-            .onEach { generation -> setState { copy(networkGeneration = generation) } }
-            .launchIn(viewModelScope)
+            .onEach { generation -> setState { copy(networkGeneration = generation) } },
         observeQuota()
             .onEach { quota -> setState { copy(quota = quota) } }
             // Le décompte du forfait dépend du quota : la première valeur est lue par le Refresh de l'écran.
             .drop(1)
-            .onEach { refreshQuota() }
-            .launchIn(viewModelScope)
-        observePricePerGb()
-            .onEach { price -> setState { copy(pricePerGb = price) } }
-            .launchIn(viewModelScope)
+            .onEach { refreshQuota() },
+        observePricePerGb().onEach { price -> setState { copy(pricePerGb = price) } },
         // Suit la SIM des données en direct : carte changée ou data basculée sur l'autre SIM.
-        observeDataOperator()
-            .onEach { operator -> setState { copy(operatorName = operator?.name) } }
-            .launchIn(viewModelScope)
+        observeDataOperator().onEach { operator -> setState { copy(operatorName = operator?.name) } },
         // Carte du partage de connexion : affichée dès qu'il s'allume, sa conso relue toutes les 5 s.
         observeHotspotActive()
             .onEach { active -> hotspotActive = active }
@@ -88,9 +82,8 @@ class UsageViewModel @Inject constructor(
                     flowOf(Unit)
                 }
             }
-            .onEach { refreshTethering() }
-            .launchIn(viewModelScope)
-    }
+            .onEach { refreshTethering() },
+    )
 
     private fun refreshTethering() {
         if (!hotspotActive) {

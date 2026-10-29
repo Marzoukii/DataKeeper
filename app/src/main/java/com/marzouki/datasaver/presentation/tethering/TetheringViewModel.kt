@@ -14,10 +14,10 @@ import com.marzouki.datasaver.presentation.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -29,11 +29,11 @@ import javax.inject.Inject
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class TetheringViewModel @Inject constructor(
-    observeHotspotActive: ObserveHotspotActiveUseCase,
-    observeAlert: ObserveTetheringAlertUseCase,
-    observeDataOperator: ObserveDataOperatorUseCase,
-    observeDataNetworkGeneration: ObserveDataNetworkGenerationUseCase,
-    hasPhoneStatePermission: HasPhoneStatePermissionUseCase,
+    private val observeHotspotActive: ObserveHotspotActiveUseCase,
+    private val observeAlert: ObserveTetheringAlertUseCase,
+    private val observeDataOperator: ObserveDataOperatorUseCase,
+    private val observeDataNetworkGeneration: ObserveDataNetworkGenerationUseCase,
+    private val hasPhoneStatePermission: HasPhoneStatePermissionUseCase,
     private val getTetheringUsage: GetTetheringUsageUseCase,
     private val setAlert: SetTetheringAlertUseCase,
 ) : MviViewModel<TetheringState, TetheringIntent, TetheringEffect>(TetheringState()) {
@@ -41,28 +41,22 @@ class TetheringViewModel @Inject constructor(
     /** Relevés des dernières minutes, du plus ancien au plus récent. */
     private val samples = ArrayDeque<TetheringSample>()
 
-    init {
+    override fun observe(): List<Flow<*>> = listOfNotNull(
         observeHotspotActive()
             .onEach { active ->
                 setState { copy(active = active) }
                 if (!active) samples.clear()
             }
             .flatMapLatest { active -> if (active) every(SAMPLE_MILLIS) else flowOf(Unit) }
-            .onEach { sample() }
-            .launchIn(viewModelScope)
-        observeAlert()
-            .onEach { alert -> setState { copy(alert = alert) } }
-            .launchIn(viewModelScope)
-        observeDataOperator()
-            .onEach { operator -> setState { copy(operatorName = operator?.name) } }
-            .launchIn(viewModelScope)
-        // La 4G ou 5G n'est lisible qu'avec la permission « Téléphone », demandée dans Ma consommation.
-        if (hasPhoneStatePermission()) {
-            observeDataNetworkGeneration()
-                .onEach { generation -> setState { copy(networkGeneration = generation) } }
-                .launchIn(viewModelScope)
-        }
-    }
+            .onEach { sample() },
+        observeAlert().onEach { alert -> setState { copy(alert = alert) } },
+        observeDataOperator().onEach { operator -> setState { copy(operatorName = operator?.name) } },
+        // La 4G ou 5G n'est lisible qu'avec la permission « Téléphone », demandée dans Ma consommation ;
+        // relue à chaque retour sur l'écran.
+        observeDataNetworkGeneration()
+            .onEach { generation -> setState { copy(networkGeneration = generation) } }
+            .takeIf { hasPhoneStatePermission() },
+    )
 
     override fun onIntent(intent: TetheringIntent) {
         when (intent) {

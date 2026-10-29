@@ -14,10 +14,13 @@ import android.telephony.TelephonyDisplayInfo
 import android.telephony.TelephonyManager
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
+import com.marzouki.datasaver.data.shareWhileObserved
+import com.marzouki.datasaver.di.ApplicationScope
 import com.marzouki.datasaver.domain.enums.NetworkGeneration
 import com.marzouki.datasaver.domain.model.MobileOperator
 import com.marzouki.datasaver.domain.repository.OperatorRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
@@ -37,6 +40,7 @@ import javax.inject.Inject
 @OptIn(ExperimentalCoroutinesApi::class)
 class OperatorRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
+    @param:ApplicationScope private val appScope: CoroutineScope,
 ) : OperatorRepository {
 
     // Certaines surcouches lèvent une SecurityException sur les SIM : on la traite comme « pas de SIM ».
@@ -47,14 +51,14 @@ class OperatorRepositoryImpl @Inject constructor(
     }.getOrNull()
 
     override fun observeDataOperator(): Flow<MobileOperator?> =
-        dataSubscriptionChanges().map { dataOperator() }.distinctUntilChanged()
+        dataSubscriptionChanges.map { dataOperator() }.distinctUntilChanged()
 
     override fun hasPhoneStatePermission(): Boolean =
         ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED
 
     /** Se réabonne à l'autre SIM quand l'utilisateur y bascule les données mobiles. */
     override fun observeDataNetworkGeneration(): Flow<NetworkGeneration?> =
-        dataSubscriptionChanges()
+        dataSubscriptionChanges
             .map { SubscriptionManager.getDefaultDataSubscriptionId() }
             .distinctUntilChanged()
             .flatMapLatest { generationFlow(dataTelephony()) }
@@ -62,8 +66,9 @@ class OperatorRepositoryImpl @Inject constructor(
     /**
      * Émet à l'abonnement puis à chaque changement de SIM : carte insérée, retirée ou prête, SIM des
      * données choisie dans les réglages (double SIM). Aucune permission n'est nécessaire.
+     * Partagée : un seul récepteur et un seul écouteur, quel que soit le nombre d'écrans qui suivent la SIM.
      */
-    private fun dataSubscriptionChanges(): Flow<Unit> = callbackFlow {
+    private val dataSubscriptionChanges: Flow<Unit> = callbackFlow {
         trySend(Unit)
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
@@ -97,6 +102,7 @@ class OperatorRepositoryImpl @Inject constructor(
     }
         // Avant Android 11, l'écouteur s'attache au Looper du fil qui le crée.
         .flowOn(Dispatchers.Main)
+        .shareWhileObserved(appScope)
 
     private fun generationFlow(telephony: TelephonyManager?): Flow<NetworkGeneration?> {
         if (telephony == null || !hasPhoneStatePermission()) return flowOf(null)
