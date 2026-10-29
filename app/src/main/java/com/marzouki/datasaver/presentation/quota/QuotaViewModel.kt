@@ -21,9 +21,10 @@ import com.marzouki.datasaver.domain.usecase.SetQuotaAlertEnabledUseCase
 import com.marzouki.datasaver.domain.usecase.SetQuotaUseCase
 import com.marzouki.datasaver.presentation.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
@@ -33,24 +34,26 @@ import kotlin.math.roundToLong
 @HiltViewModel
 class QuotaViewModel @Inject constructor(
     private val observeQuota: ObserveQuotaUseCase,
-    observeCycleStartDay: ObserveCycleStartDayUseCase,
-    observePricePerGb: ObservePricePerGbUseCase,
+    private val observeCycleStartDay: ObserveCycleStartDayUseCase,
+    private val observePricePerGb: ObservePricePerGbUseCase,
     private val setPricePerGb: SetPricePerGbUseCase,
     private val setPlanPrice: SetPlanPriceUseCase,
     private val setQuota: SetQuotaUseCase,
     private val setQuotaAlertEnabled: SetQuotaAlertEnabledUseCase,
     private val setPlanCycle: SetPlanCycleUseCase,
-    observePlanValidity: ObservePlanValidityUseCase,
+    private val observePlanValidity: ObservePlanValidityUseCase,
     private val hasUsageAccess: HasUsageAccessUseCase,
     private val getCurrentPeriod: GetCurrentPeriodUseCase,
     private val getMonthlyUsage: GetMonthlyUsageUseCase,
     private val getDailyUsage: GetDailyUsageUseCase,
     private val getQuotaUsedBytes: GetQuotaUsedBytesUseCase,
     private val setOperatorBalance: SetOperatorBalanceUseCase,
-    observeDataOperator: ObserveDataOperatorUseCase,
+    private val observeDataOperator: ObserveDataOperatorUseCase,
 ): MviViewModel<QuotaState, QuotaIntent, QuotaEffect>(QuotaState()) {
 
-    init {
+    private var refreshJob: Job? = null
+
+    override fun observe(): List<Flow<*>> = listOf(
         observeQuota()
             .onEach { quota ->
                 setState {
@@ -59,28 +62,21 @@ class QuotaViewModel @Inject constructor(
             }
             // La première valeur est lue par le Refresh de l'écran ; un nouveau solde change le décompte.
             .drop(1)
-            .onEach { refreshUsage() }
-            .launchIn(viewModelScope)
+            .onEach { refreshUsage() },
         observeCycleStartDay()
             .onEach { day -> setState { copy(cycleStartDay = day) } }
             // La première valeur est lue par le Refresh de l'écran ; un changement relit le nouveau cycle.
             .drop(1)
-            .onEach { refreshUsage() }
-            .launchIn(viewModelScope)
+            .onEach { refreshUsage() },
         observePlanValidity()
             .onEach { validity -> setState { copy(validity = validity) } }
             // Comme le jour du cycle : un pass rallongé ou racheté change le cycle à relire.
             .drop(1)
-            .onEach { refreshUsage() }
-            .launchIn(viewModelScope)
-        observePricePerGb()
-            .onEach { price -> setState { copy(pricePerGb = price) } }
-            .launchIn(viewModelScope)
+            .onEach { refreshUsage() },
+        observePricePerGb().onEach { price -> setState { copy(pricePerGb = price) } },
         // Suit la SIM des données en direct : carte changée ou data basculée sur l'autre SIM.
-        observeDataOperator()
-            .onEach { operator -> setState { copy(operatorName = operator?.name) } }
-            .launchIn(viewModelScope)
-    }
+        observeDataOperator().onEach { operator -> setState { copy(operatorName = operator?.name) } },
+    )
 
     override fun onIntent(intent: QuotaIntent) {
         when (intent) {
@@ -122,7 +118,9 @@ class QuotaViewModel @Inject constructor(
     }
 
     private fun refreshUsage() {
-        viewModelScope.launch {
+        // Une relecture plus récente remplace la précédente : l'ancienne n'écrit jamais un état périmé après coup.
+        refreshJob?.cancel()
+        refreshJob = viewModelScope.launch {
             val period = getCurrentPeriod()
             setState { copy(period = period) }
             if (!hasUsageAccess()) {

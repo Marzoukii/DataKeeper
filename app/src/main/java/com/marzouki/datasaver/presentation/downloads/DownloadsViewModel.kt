@@ -1,6 +1,5 @@
 package com.marzouki.datasaver.presentation.downloads
 
-import androidx.lifecycle.viewModelScope
 import com.marzouki.datasaver.domain.usecase.CancelDownloadUseCase
 import com.marzouki.datasaver.domain.usecase.ClearFinishedDownloadsUseCase
 import com.marzouki.datasaver.domain.usecase.ObserveDownloadsUseCase
@@ -8,27 +7,23 @@ import com.marzouki.datasaver.domain.usecase.ObserveWifiConnectionUseCase
 import com.marzouki.datasaver.domain.usecase.ScheduleDownloadUseCase
 import com.marzouki.datasaver.presentation.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 @HiltViewModel
 class DownloadsViewModel @Inject constructor(
-    observeDownloads: ObserveDownloadsUseCase,
-    observeWifiConnection: ObserveWifiConnectionUseCase,
+    private val observeDownloads: ObserveDownloadsUseCase,
+    private val observeWifiConnection: ObserveWifiConnectionUseCase,
     private val scheduleDownload: ScheduleDownloadUseCase,
     private val cancelDownload: CancelDownloadUseCase,
     private val clearFinishedDownloads: ClearFinishedDownloadsUseCase,
 ) : MviViewModel<DownloadsState, DownloadsIntent, DownloadsEffect>(DownloadsState()) {
 
-    init {
-        observeDownloads()
-            .onEach { downloads -> setState { copy(downloads = downloads) } }
-            .launchIn(viewModelScope)
-        observeWifiConnection()
-            .onEach { onWifi -> setState { copy(isOnWifi = onWifi) } }
-            .launchIn(viewModelScope)
-    }
+    override fun observe(): List<Flow<*>> = listOf(
+        observeDownloads().onEach { downloads -> setState { copy(downloads = downloads) } },
+        observeWifiConnection().onEach { onWifi -> setState { copy(isOnWifi = onWifi) } },
+    )
 
     override fun onIntent(intent: DownloadsIntent) {
         when (intent) {

@@ -12,10 +12,13 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
+import com.marzouki.datasaver.data.shareWhileObserved
+import com.marzouki.datasaver.di.ApplicationScope
 import com.marzouki.datasaver.domain.model.TetheringAlert
 import com.marzouki.datasaver.domain.model.TetheringSession
 import com.marzouki.datasaver.domain.repository.TetheringRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
@@ -44,12 +47,16 @@ import kotlin.math.abs
 class TetheringRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val dataStore: DataStore<Preferences>,
+    @param:ApplicationScope private val appScope: CoroutineScope,
 ) : TetheringRepository {
 
     private val apFilter = IntentFilter(ACTION_WIFI_AP_STATE_CHANGED)
     private val tetherFilter = IntentFilter(ACTION_TETHER_STATE_CHANGED)
 
-    override fun observeHotspotActive(): Flow<Boolean> = callbackFlow {
+    override fun observeHotspotActive(): Flow<Boolean> = hotspotActive
+
+    // Ma consommation et Partage le suivent : un seul récepteur et un seul sondage pour les deux.
+    private val hotspotActive: Flow<Boolean> = callbackFlow {
         var apOn = false
         var tetherOn = false
         var interfaceOn = false
@@ -79,7 +86,7 @@ class TetheringRepositoryImpl @Inject constructor(
             poll.cancel()
             context.unregisterReceiver(receiver)
         }
-    }.distinctUntilChanged()
+    }.distinctUntilChanged().shareWhileObserved(appScope)
 
     override fun isHotspotActive(): Boolean =
         register(null, apFilter)?.isApEnabled() == true ||
