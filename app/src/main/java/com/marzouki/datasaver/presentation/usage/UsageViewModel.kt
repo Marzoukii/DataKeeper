@@ -21,7 +21,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
@@ -46,17 +45,15 @@ class UsageViewModel @Inject constructor(
     private val observeDataNetworkGeneration: ObserveDataNetworkGenerationUseCase,
     private val observeHotspotActive: ObserveHotspotActiveUseCase,
     private val getTetheringUsage: GetTetheringUsageUseCase,
-) : MviViewModel<UsageState, UsageIntent, UsageEffect>(UsageState()) {
+) : MviViewModel<UsageState, UsageIntent, UsageEffect>(
+    UsageState(hasPhonePermission = hasPhoneStatePermission()),
+) {
 
     private var refreshJob: Job? = null
-    private var hotspotActive = false
-
-    /** Relue au retour sur l'écran : la permission a pu être accordée ou retirée dans les paramètres. */
-    private val phonePermission = MutableStateFlow(hasPhoneStatePermission())
 
     override fun observe(): List<Flow<*>> = listOf(
-        phonePermission
-            .onEach { granted -> setState { copy(hasPhonePermission = granted) } }
+        // La permission est relue au retour sur l'écran : elle a pu être accordée ou retirée dans les paramètres.
+        select { hasPhonePermission }
             .flatMapLatest { granted -> if (granted) observeDataNetworkGeneration() else flowOf(null) }
             .onEach { generation -> setState { copy(networkGeneration = generation) } },
         observeQuota()
@@ -69,7 +66,7 @@ class UsageViewModel @Inject constructor(
         observeDataOperator().onEach { operator -> setState { copy(operatorName = operator?.name) } },
         // Carte du partage de connexion : affichée dès qu'il s'allume, sa conso relue toutes les 5 s.
         observeHotspotActive()
-            .onEach { active -> hotspotActive = active }
+            .onEach { active -> setState { copy(hotspotActive = active) } }
             .flatMapLatest { active ->
                 if (active) {
                     flow {
@@ -86,7 +83,7 @@ class UsageViewModel @Inject constructor(
     )
 
     private fun refreshTethering() {
-        if (!hotspotActive) {
+        if (!currentState.hotspotActive) {
             setState { copy(tethering = null) }
             return
         }
@@ -103,12 +100,12 @@ class UsageViewModel @Inject constructor(
     override fun onIntent(intent: UsageIntent) {
         when (intent) {
             UsageIntent.Refresh -> {
-                phonePermission.value = hasPhoneStatePermission()
+                setState { copy(hasPhonePermission = hasPhoneStatePermission()) }
                 refresh()
                 refreshTethering()
             }
             UsageIntent.GrantAccessClicked -> sendEffect(UsageEffect.OpenUsageAccessSettings)
-            UsageIntent.PhonePermissionResult -> phonePermission.value = hasPhoneStatePermission()
+            UsageIntent.PhonePermissionResult -> setState { copy(hasPhonePermission = hasPhoneStatePermission()) }
         }
     }
 

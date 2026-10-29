@@ -1,6 +1,7 @@
 package com.marzouki.datasaver.domain.usecase
 
 import com.marzouki.datasaver.domain.model.SavedPlan
+import com.marzouki.datasaver.domain.repository.Clock
 import com.marzouki.datasaver.domain.repository.OperatorRepository
 import com.marzouki.datasaver.domain.repository.QuotaRepository
 import javax.inject.Inject
@@ -17,6 +18,7 @@ class CompletePlanSetupUseCase @Inject constructor(
     private val setOperatorBalance: SetOperatorBalanceUseCase,
     private val setPlanPrice: SetPlanPriceUseCase,
     private val rememberPlan: RememberPlanUseCase,
+    private val clock: Clock,
 ) {
     /**
      * @param purchaseMillis jour d'achat (ou de renouvellement) du forfait.
@@ -28,7 +30,7 @@ class CompletePlanSetupUseCase @Inject constructor(
         validityDays: Int?,
         remainingBytes: Long?,
         planPriceMillimes: Long?,
-        nowMillis: Long = System.currentTimeMillis(),
+        nowMillis: Long = clock.nowMillis(),
     ) {
         setPlanCycle(purchaseMillis, validityDays)
         setQuota(limitBytes)

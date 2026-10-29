@@ -1,5 +1,6 @@
 package com.marzouki.datasaver.presentation.onboarding
 
+import com.marzouki.datasaver.domain.enums.PlanStatus
 import com.marzouki.datasaver.domain.model.PricePerGb
 import com.marzouki.datasaver.domain.model.SavedPlan
 import com.marzouki.datasaver.presentation.quota.PlanCycleInput
@@ -29,6 +30,8 @@ data class PlanSetupState(
     /** Erreurs affichées seulement après un premier essai de validation. */
     val showErrors: Boolean = false,
     val isSaving: Boolean = false,
+    /** Dernier état du forfait vu ; null avant la première lecture. */
+    val planStatus: PlanStatus? = null,
 ) {
     val planBytes: Long? get() = QuotaViewModel.parseGigabytes(planInput)
 

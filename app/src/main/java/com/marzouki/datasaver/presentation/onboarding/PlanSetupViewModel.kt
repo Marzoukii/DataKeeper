@@ -27,21 +27,18 @@ class PlanSetupViewModel @Inject constructor(
     private val forgetSavedPlan: ForgetSavedPlanUseCase,
 ) : MviViewModel<PlanSetupState, PlanSetupIntent, Nothing>(PlanSetupState()) {
 
-    private var lastStatus: PlanStatus? = null
-
     override fun observe(): List<Flow<*>> = listOf(
         // La SIM peut encore changer pendant la saisie : le titre suit l'opérateur du moment.
         observeDataOperator().onEach { operator -> setState { copy(operatorName = operator?.name) } },
         // Suit lui aussi la SIM : sur une carte Tunisie Telecom, jamais les forfaits Ooredoo.
         observeSavedPlans().onEach { plans -> setState { copy(savedPlans = plans) } },
         observePlanStatus().onEach { status ->
-            // Le ViewModel survit au tableau de bord : un changement de SIM ultérieur repart
-            // d'un formulaire vierge, pas des chiffres (ni du « enregistrement… ») de l'ancienne.
-            val reset = lastStatus == PlanStatus.CONFIGURED && status != PlanStatus.CONFIGURED
-            lastStatus = status
             setState {
+                // Le ViewModel survit au tableau de bord : un changement de SIM ultérieur repart
+                // d'un formulaire vierge, pas des chiffres (ni du « enregistrement… ») de l'ancienne.
+                val reset = planStatus == PlanStatus.CONFIGURED && status != PlanStatus.CONFIGURED
                 val form = if (reset) PlanSetupState(operatorName = operatorName, savedPlans = savedPlans) else this
-                form.copy(operatorChanged = status == PlanStatus.OPERATOR_CHANGED)
+                form.copy(planStatus = status, operatorChanged = status == PlanStatus.OPERATOR_CHANGED)
             }
         },
     )

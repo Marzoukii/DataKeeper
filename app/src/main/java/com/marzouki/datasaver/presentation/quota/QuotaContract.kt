@@ -28,12 +28,17 @@ data class QuotaState(
     val measuredDailyMobileBytes: List<Long>? = null,
     /** Opérateur des données mobiles détecté par la SIM (Ooredoo, Orange, Tunisie Telecom…). */
     val operatorName: String? = null,
+    /**
+     * Instant de référence, posé par le ViewModel depuis l'horloge injectée : l'état reste une
+     * valeur pure. Ne sert qu'à [displayPeriod] avant la première lecture du cycle.
+     */
+    val nowMillis: Long = 0L,
 ) {
     val status: QuotaStatus? get() = if (quota != null && usedMobileBytes != null) QuotaStatus(quota, usedMobileBytes) else null
 
     /** [period] une fois lu ; avant, celui qu'annoncent les réglages (pass ou cycle mensuel). */
     val displayPeriod: MonthPeriod
-        get() = period ?: validity?.periodAt(System.currentTimeMillis()) ?: MonthPeriod.current(cycleStartDay = cycleStartDay)
+        get() = period ?: validity?.periodAt(nowMillis) ?: MonthPeriod.current(nowMillis, cycleStartDay)
 
     val forecast: QuotaForecast?
         get() = if (quota != null && period != null && !dailyMobileBytes.isNullOrEmpty()) {

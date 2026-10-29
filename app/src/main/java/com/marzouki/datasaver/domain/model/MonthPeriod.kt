@@ -80,7 +80,7 @@ data class MonthPeriod(
             )
         }
 
-        fun current(nowMillis: Long = System.currentTimeMillis(), cycleStartDay: Int = 1): MonthPeriod {
+        fun current(nowMillis: Long, cycleStartDay: Int = 1): MonthPeriod {
             val startDay = cycleStartDay.coerceIn(1, MAX_CYCLE_START_DAY)
             val start = Calendar.getInstance().apply {
                 timeInMillis = nowMillis

@@ -1,14 +1,18 @@
 package com.marzouki.datasaver.domain.usecase
 
 import com.marzouki.datasaver.domain.model.TetheringUsage
+import com.marzouki.datasaver.domain.repository.Clock
 import com.marzouki.datasaver.domain.repository.TetheringRepository
 import javax.inject.Inject
 
 /** Partage en cours et data mobile consommée depuis son début ; null quand il est éteint. */
-class GetTetheringUsageUseCase @Inject constructor(private val repository: TetheringRepository) {
+class GetTetheringUsageUseCase @Inject constructor(
+    private val repository: TetheringRepository,
+    private val clock: Clock,
+) {
     suspend operator fun invoke(
         active: Boolean = repository.isHotspotActive(),
-        nowMillis: Long = System.currentTimeMillis(),
+        nowMillis: Long = clock.nowMillis(),
     ): TetheringUsage? {
         // Compteurs illisibles (rare) : la session reste suivie, sans conso.
         val counter = repository.mobileCounterBytes() ?: 0L
