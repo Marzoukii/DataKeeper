@@ -3,9 +3,11 @@ package com.marzouki.datasaver.presentation.quota
 import androidx.lifecycle.viewModelScope
 import com.marzouki.datasaver.R
 import com.marzouki.datasaver.domain.model.alignDailyToUsed
+import com.marzouki.datasaver.domain.model.withHistory
 import com.marzouki.datasaver.domain.repository.Clock
 import com.marzouki.datasaver.domain.usecase.GetCurrentPeriodUseCase
 import com.marzouki.datasaver.domain.usecase.GetDailyUsageUseCase
+import com.marzouki.datasaver.domain.usecase.GetMobileCounterUseCase
 import com.marzouki.datasaver.domain.usecase.GetMonthlyUsageUseCase
 import com.marzouki.datasaver.domain.usecase.GetQuotaUsedBytesUseCase
 import com.marzouki.datasaver.domain.usecase.HasUsageAccessUseCase
@@ -23,9 +25,11 @@ import com.marzouki.datasaver.domain.usecase.SetQuotaUseCase
 import com.marzouki.datasaver.presentation.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
@@ -50,6 +54,7 @@ class QuotaViewModel @Inject constructor(
     private val getQuotaUsedBytes: GetQuotaUsedBytesUseCase,
     private val setOperatorBalance: SetOperatorBalanceUseCase,
     private val observeDataOperator: ObserveDataOperatorUseCase,
+    private val getMobileCounter: GetMobileCounterUseCase,
     private val clock: Clock,
 ): MviViewModel<QuotaState, QuotaIntent, QuotaEffect>(QuotaState(nowMillis = clock.nowMillis())) {
 
@@ -78,6 +83,17 @@ class QuotaViewModel @Inject constructor(
         observePricePerGb().onEach { price -> setState { copy(pricePerGb = price) } },
         // Suit la SIM des données en direct : carte changée ou data basculée sur l'autre SIM.
         observeDataOperator().onEach { operator -> setState { copy(operatorName = operator?.name) } },
+        // L'historique d'Android est en retard de plusieurs minutes : sans le compteur en direct,
+        // la jauge resterait figée pendant un partage de connexion.
+        flow {
+            while (true) {
+                emit(Unit)
+                delay(LIVE_MOBILE_MILLIS)
+            }
+        }.onEach {
+            val counter = getMobileCounter() ?: return@onEach
+            setState { copy(liveMobile = liveMobile?.withCounter(counter)) }
+        },
     )
 
     override fun onIntent(intent: QuotaIntent) {
@@ -132,9 +148,23 @@ class QuotaViewModel @Inject constructor(
             }
             setState { copy(hasUsageAccess = true) }
             val quota = observeQuota().first()
+            // Relevé avant l'historique : ce qui passe pendant la lecture compte comme du direct.
+            val counter = getMobileCounter()
+            val mobile = getMonthlyUsage(period).getOrNull()?.mobileBytes
             // Recalée sur le solde opérateur s'il a été relevé ce cycle ; sinon tout le mobile du cycle.
-            val used = getQuotaUsedBytes(period).getOrNull() ?: getMonthlyUsage(period).getOrNull()?.mobileBytes
-            if (used != null) setState { copy(usedMobileBytes = used) }
+            val used = getQuotaUsedBytes(period).getOrNull() ?: mobile
+            if (used != null) {
+                setState {
+                    copy(
+                        usedMobileBytes = used,
+                        liveMobile = if (mobile != null && counter != null) {
+                            liveMobile.withHistory(period.startMillis, mobile, counter)
+                        } else {
+                            null
+                        },
+                    )
+                }
+            }
             // Un point par jour écoulé du cycle : du premier jour à aujourd'hui.
             getDailyUsage(days = period.currentDay, nowMillis = period.endMillis).onSuccess { days ->
                 val daily = days.map { it.mobileBytes }
@@ -166,6 +196,7 @@ class QuotaViewModel @Inject constructor(
     companion object {
         private const val BYTES_PER_GB = 1_000_000_000L
         private const val MAX_GB = 10_000.0
+        private const val LIVE_MOBILE_MILLIS = 2_000L
 
         /** "2,5" ou "2.5" Go → octets ; null si invalide. */
         fun parseGigabytes(input: String): Long? {

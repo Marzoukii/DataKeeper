@@ -2,8 +2,10 @@ package com.marzouki.datasaver.presentation
 
 import com.marzouki.datasaver.MainDispatcherRule
 import com.marzouki.datasaver.domain.enums.NetworkGeneration
+import com.marzouki.datasaver.domain.model.DataQuota
 import com.marzouki.datasaver.domain.usecase.GetCurrentPeriodUseCase
 import com.marzouki.datasaver.domain.usecase.GetDailyUsageUseCase
+import com.marzouki.datasaver.domain.usecase.GetMobileCounterUseCase
 import com.marzouki.datasaver.domain.usecase.GetMonthlyUsageUseCase
 import com.marzouki.datasaver.domain.usecase.GetQuotaUsedBytesUseCase
 import com.marzouki.datasaver.domain.usecase.GetTetheringUsageUseCase
@@ -18,6 +20,7 @@ import com.marzouki.datasaver.domain.usecase.ObserveQuotaUseCase
 import com.marzouki.datasaver.presentation.usage.UsageIntent
 import com.marzouki.datasaver.presentation.usage.UsageViewModel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -52,6 +55,7 @@ class UsageViewModelTest {
         observeDataNetworkGeneration = ObserveDataNetworkGenerationUseCase(operators),
         observeHotspotActive = ObserveHotspotActiveUseCase(tethering),
         getTetheringUsage = GetTetheringUsageUseCase(tethering, clock),
+        getMobileCounter = GetMobileCounterUseCase(tethering),
     )
 
     @Test
@@ -97,5 +101,23 @@ class UsageViewModelTest {
         assertEquals("2026-10", state.period?.key)
         assertNotNull(state.usage)
         assertEquals(3 * GB, state.usage?.mobileBytes)
+    }
+
+    @Test
+    fun `pendant un partage, le total et le quota du cycle suivent le compteur en direct`() = runTest(main.dispatcher) {
+        quotas.quota.value = DataQuota(25 * GB)
+        tethering.counterBytes = 10 * GB
+        val viewModel = viewModel()
+        backgroundScope.launch { viewModel.state.collect {} }
+        viewModel.onIntent(UsageIntent.Refresh)
+        assertEquals(3 * GB, viewModel.state.value.liveUsage?.mobileBytes)
+
+        // L'historique d'Android n'a pas bougé ; le compteur du téléphone, si.
+        tethering.hotspot.value = true
+        tethering.counterBytes = 10 * GB + 500_000_000
+        advanceTimeBy(2_001)
+
+        assertEquals(3 * GB + 500_000_000, viewModel.state.value.liveUsage?.mobileBytes)
+        assertEquals(3 * GB + 500_000_000, viewModel.state.value.quotaStatus?.usedBytes)
     }
 }

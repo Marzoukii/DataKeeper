@@ -1,8 +1,10 @@
 package com.marzouki.datasaver.presentation.usage
 
 import androidx.lifecycle.viewModelScope
+import com.marzouki.datasaver.domain.model.withHistory
 import com.marzouki.datasaver.domain.usecase.GetCurrentPeriodUseCase
 import com.marzouki.datasaver.domain.usecase.GetDailyUsageUseCase
+import com.marzouki.datasaver.domain.usecase.GetMobileCounterUseCase
 import com.marzouki.datasaver.domain.usecase.GetMonthlyUsageUseCase
 import com.marzouki.datasaver.domain.usecase.GetQuotaUsedBytesUseCase
 import com.marzouki.datasaver.domain.usecase.GetTetheringUsageUseCase
@@ -45,6 +47,7 @@ class UsageViewModel @Inject constructor(
     private val observeDataNetworkGeneration: ObserveDataNetworkGenerationUseCase,
     private val observeHotspotActive: ObserveHotspotActiveUseCase,
     private val getTetheringUsage: GetTetheringUsageUseCase,
+    private val getMobileCounter: GetMobileCounterUseCase,
 ) : MviViewModel<UsageState, UsageIntent, UsageEffect>(
     UsageState(hasPhonePermission = hasPhoneStatePermission()),
 ) {
@@ -67,20 +70,22 @@ class UsageViewModel @Inject constructor(
         // Carte du partage de connexion : affichée dès qu'il s'allume, sa conso relue toutes les 5 s.
         observeHotspotActive()
             .onEach { active -> setState { copy(hotspotActive = active) } }
-            .flatMapLatest { active ->
-                if (active) {
-                    flow {
-                        while (true) {
-                            emit(Unit)
-                            delay(TETHERING_REFRESH_MILLIS)
-                        }
-                    }
-                } else {
-                    flowOf(Unit)
-                }
-            }
+            .flatMapLatest { active -> if (active) every(TETHERING_REFRESH_MILLIS) else flowOf(Unit) }
             .onEach { refreshTethering() },
+        // L'historique d'Android est en retard de plusieurs minutes : sans le compteur en direct,
+        // le total et le quota resteraient figés pendant un partage de connexion.
+        every(LIVE_MOBILE_MILLIS).onEach {
+            val counter = getMobileCounter() ?: return@onEach
+            setState { copy(liveMobile = liveMobile?.withCounter(counter)) }
+        },
     )
+
+    private fun every(millis: Long) = flow {
+        while (true) {
+            emit(Unit)
+            delay(millis)
+        }
+    }
 
     private fun refreshTethering() {
         if (!currentState.hotspotActive) {
@@ -95,6 +100,7 @@ class UsageViewModel @Inject constructor(
 
     private companion object {
         const val TETHERING_REFRESH_MILLIS = 5_000L
+        const val LIVE_MOBILE_MILLIS = 2_000L
     }
 
     override fun onIntent(intent: UsageIntent) {
@@ -119,13 +125,23 @@ class UsageViewModel @Inject constructor(
         refreshJob = viewModelScope.launch {
             val period = getCurrentPeriod()
             setState { copy(period = period) }
+            // Relevé avant l'historique : ce qui passe pendant la lecture compte comme du direct.
+            val counter = getMobileCounter()
             // Les lectures sont indépendantes ; seul le total du cycle est indispensable.
             val usage = async { getMonthlyUsage(period) }
             val daily = async { getDailyUsage() }
             val apps = async { getTopMobileApps(period) }
             val quotaUsed = async { getQuotaUsedBytes(period) }
             usage.await()
-                .onSuccess { result -> setState { copy(usage = result, loadFailed = false) } }
+                .onSuccess { result ->
+                    setState {
+                        copy(
+                            usage = result,
+                            loadFailed = false,
+                            liveMobile = counter?.let { liveMobile.withHistory(period.startMillis, result.mobileBytes, it) },
+                        )
+                    }
+                }
                 .onFailure { setState { copy(loadFailed = true) } }
             val dailyResult = daily.await().getOrNull()
             val appsResult = apps.await().getOrNull()
