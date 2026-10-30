@@ -23,7 +23,7 @@
     <string name="onboarding_title">Let’s see where your data goes</string>
     <string name="onboarding_body">To compare your Wi‑Fi and mobile data, DataKeeper needs Android’s usage access.</string>
     <string name="onboarding_point_volumes">We only read volumes (MB, GB), never the content of your apps.</string>
-    <string name="onboarding_point_local">Everything stays on your phone, nothing is sent over the Internet.</string>
+    <string name="onboarding_point_local">Your usage stays on your phone. Only anonymous statistics and crash reports are sent to improve the app.</string>
     <string name="onboarding_point_revoke">You can remove the access at any time.</string>
     <string name="onboarding_open_settings">Open settings</string>
     <string name="onboarding_later">Later</string>

@@ -27,7 +27,7 @@
     <string name="onboarding_title">لنرَ أين تذهب بياناتك</string>
     <string name="onboarding_body">لمقارنة الـWifi بالـdonnées mobiles، يحتاج DataKeeper إلى إذن الوصول إلى بيانات الاستخدام في أندرويد.</string>
     <string name="onboarding_point_volumes">نقرأ الكميات فقط (ميغا، جيغا)، ولا نطّلع أبدًا على محتوى تطبيقاتك.</string>
-    <string name="onboarding_point_local">كل شيء يبقى على هاتفك، ولا يُرسل أي شيء عبر الإنترنت.</string>
+    <string name="onboarding_point_local">يبقى استهلاكك على هاتفك. تُرسل فقط إحصاءات مجهولة الهوية وتقارير الأعطال لتحسين التطبيق.</string>
     <string name="onboarding_point_revoke">يمكنك سحب الإذن في أي وقت.</string>
     <string name="onboarding_open_settings">فتح الإعدادات</string>
     <string name="onboarding_later">لاحقًا</string>
