@@ -15,3 +15,8 @@
 local.properties
 /.idea/deviceManager.xml
 /.idea/inspectionProfiles
+
+# Signature de la release : clé et mots de passe jamais dans Git
+/keystore.properties
+*.jks
+*.keystore
