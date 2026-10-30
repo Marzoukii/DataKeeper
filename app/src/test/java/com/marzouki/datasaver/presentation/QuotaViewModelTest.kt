@@ -7,6 +7,7 @@ import com.marzouki.datasaver.domain.model.DataUsage
 import com.marzouki.datasaver.domain.model.MonthPeriod
 import com.marzouki.datasaver.domain.usecase.GetCurrentPeriodUseCase
 import com.marzouki.datasaver.domain.usecase.GetDailyUsageUseCase
+import com.marzouki.datasaver.domain.usecase.GetMobileCounterUseCase
 import com.marzouki.datasaver.domain.usecase.GetMonthlyUsageUseCase
 import com.marzouki.datasaver.domain.usecase.GetQuotaUsedBytesUseCase
 import com.marzouki.datasaver.domain.usecase.HasUsageAccessUseCase
@@ -28,6 +29,7 @@ import com.marzouki.datasaver.presentation.quota.QuotaViewModel
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -41,6 +43,7 @@ class QuotaViewModelTest {
 
     private val quotas = FakeQuotaRepository()
     private val usage = FakeUsageRepository()
+    private val tethering = FakeTetheringRepository()
     private val clock = FakeClock()
 
     private fun viewModel() = QuotaViewModel(
@@ -60,6 +63,7 @@ class QuotaViewModelTest {
         getQuotaUsedBytes = GetQuotaUsedBytesUseCase(quotas, usage),
         setOperatorBalance = SetOperatorBalanceUseCase(quotas, clock),
         observeDataOperator = ObserveDataOperatorUseCase(FakeOperatorRepository()),
+        getMobileCounter = GetMobileCounterUseCase(tethering),
         clock = clock,
     )
 
@@ -113,5 +117,25 @@ class QuotaViewModelTest {
         // La première relecture a été annulée : la libérer ne change plus rien.
         slow.complete(Unit)
         assertEquals(2 * GB, viewModel.state.value.usedMobileBytes)
+    }
+
+    @Test
+    fun `la jauge suit le compteur en direct sans reculer à la relecture de l'historique`() = runTest(main.dispatcher) {
+        quotas.quota.value = DataQuota(25 * GB)
+        usage.mobileBytes = 3 * GB
+        tethering.counterBytes = 10 * GB
+        val viewModel = viewModel()
+        backgroundScope.launch { viewModel.state.collect {} }
+        viewModel.onIntent(QuotaIntent.Refresh)
+        assertEquals(3 * GB, viewModel.state.value.status?.usedBytes)
+
+        tethering.counterBytes = 11 * GB
+        advanceTimeBy(2_001)
+        assertEquals(4 * GB, viewModel.state.value.status?.usedBytes)
+
+        // Historique relu mais encore en retard : le chiffre affiché ne recule pas.
+        usage.mobileBytes = 3 * GB + 400_000_000
+        viewModel.onIntent(QuotaIntent.Refresh)
+        assertEquals(4 * GB, viewModel.state.value.status?.usedBytes)
     }
 }

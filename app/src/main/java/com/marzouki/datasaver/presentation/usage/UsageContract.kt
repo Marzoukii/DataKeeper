@@ -4,6 +4,7 @@ import com.marzouki.datasaver.domain.model.AppDataUsage
 import com.marzouki.datasaver.domain.model.DataQuota
 import com.marzouki.datasaver.domain.model.DataUsage
 import com.marzouki.datasaver.domain.model.DayUsage
+import com.marzouki.datasaver.domain.model.LiveMobileUsage
 import com.marzouki.datasaver.domain.model.MonthPeriod
 import com.marzouki.datasaver.domain.model.PricePerGb
 import com.marzouki.datasaver.domain.model.QuotaStatus
@@ -32,8 +33,17 @@ data class UsageState(
     val hotspotActive: Boolean = false,
     /** Partage de connexion en cours et sa conso ; null quand il est éteint. */
     val tethering: TetheringUsage? = null,
+    /** Data mobile mesurée en direct depuis la dernière lecture de l'historique d'Android. */
+    val liveMobile: LiveMobileUsage? = null,
 ) {
-    val quotaStatus: QuotaStatus? get() = if (quota != null && quotaUsedBytes != null) QuotaStatus(quota, quotaUsedBytes) else null
+    private val liveExtraBytes: Long get() = liveMobile?.extraBytes ?: 0L
+
+    /** [usage] avec la data mobile que l'historique n'a pas encore comptée : le total bouge en direct. */
+    val liveUsage: DataUsage? get() = usage?.let { it.copy(mobileBytes = it.mobileBytes + liveExtraBytes) }
+
+    private val liveQuotaUsedBytes: Long? get() = quotaUsedBytes?.plus(liveExtraBytes)
+
+    val quotaStatus: QuotaStatus? get() = liveQuotaUsedBytes?.let { used -> quota?.let { QuotaStatus(it, used) } }
 
     /**
      * Data mobile du cycle selon l'opérateur, quand son solde a été relevé ce cycle : le même chiffre
@@ -44,7 +54,7 @@ data class UsageState(
         get() {
             val period = period ?: return null
             if (quota?.balanceIn(period) == null) return null
-            return quotaUsedBytes
+            return liveQuotaUsedBytes
         }
 
     /** Appli à basculer en Wi-Fi tant elle pèse sur le forfait ; null si aucune ne dépasse le seuil. */
