@@ -178,7 +178,7 @@ private fun UsageContent(
             state.tethering?.let { tethering ->
                 item { TetheringBanner(tethering.usedBytes, onClick = onOpenTethering) }
             }
-            val usage = state.usage
+            val usage = state.liveUsage
             when {
                 !state.hasUsageAccess -> item {
                     UsageAccessRequiredCard(onGrantClick = { onIntent(UsageIntent.GrantAccessClicked) })

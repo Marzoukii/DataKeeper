@@ -2,6 +2,7 @@ package com.marzouki.datasaver.presentation.quota
 
 import androidx.annotation.StringRes
 import com.marzouki.datasaver.domain.model.DataQuota
+import com.marzouki.datasaver.domain.model.LiveMobileUsage
 import com.marzouki.datasaver.domain.model.MonthPeriod
 import com.marzouki.datasaver.domain.model.PlanValidity
 import com.marzouki.datasaver.domain.model.PricePerGb
@@ -33,8 +34,14 @@ data class QuotaState(
      * valeur pure. Ne sert qu'à [displayPeriod] avant la première lecture du cycle.
      */
     val nowMillis: Long = 0L,
+    /** Data mobile mesurée en direct depuis la dernière lecture de l'historique d'Android. */
+    val liveMobile: LiveMobileUsage? = null,
 ) {
-    val status: QuotaStatus? get() = if (quota != null && usedMobileBytes != null) QuotaStatus(quota, usedMobileBytes) else null
+    private val liveExtraBytes: Long get() = liveMobile?.extraBytes ?: 0L
+
+    /** Avec ce que l'historique n'a pas encore compté : la jauge bouge en direct pendant un partage. */
+    val status: QuotaStatus?
+        get() = usedMobileBytes?.let { used -> quota?.let { QuotaStatus(it, used + liveExtraBytes) } }
 
     /** [period] une fois lu ; avant, celui qu'annoncent les réglages (pass ou cycle mensuel). */
     val displayPeriod: MonthPeriod
@@ -42,11 +49,20 @@ data class QuotaState(
 
     val forecast: QuotaForecast?
         get() = if (quota != null && period != null && !dailyMobileBytes.isNullOrEmpty()) {
-            QuotaForecast(quota, period, dailyMobileBytes, measuredDailyMobileBytes ?: dailyMobileBytes)
+            // Le direct va au jour en cours : la courbe finit sur le même total que la jauge.
+            QuotaForecast(
+                quota,
+                period,
+                dailyMobileBytes.plusToday(liveExtraBytes),
+                (measuredDailyMobileBytes ?: dailyMobileBytes).plusToday(liveExtraBytes),
+            )
         } else {
             null
         }
 }
+
+private fun List<Long>.plusToday(bytes: Long): List<Long> =
+    if (bytes == 0L || isEmpty()) this else dropLast(1) + (last() + bytes)
 
 sealed interface QuotaIntent {
     data object Refresh : QuotaIntent
