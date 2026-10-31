@@ -48,6 +48,8 @@ fun DailyStackedBars(
     title: String? = null,
     selectedDayMillis: Long? = null,
     onDayClick: ((DayUsage) -> Unit)? = null,
+    /** Budget du jour en data mobile ; affiché sous la ligne d'aujourd'hui quand il est connu. */
+    todayBudgetBytes: Long? = null,
 ) {
     val maxWifi = days.maxOfOrNull { it.wifiBytes }?.takeIf { it > 0 } ?: 1L
     val maxMobile = days.maxOfOrNull { it.mobileBytes }?.takeIf { it > 0 } ?: 1L
@@ -130,8 +132,53 @@ fun DailyStackedBars(
                     modifier = Modifier.weight(1f),
                 )
             }
+            if (isToday && todayBudgetBytes != null) {
+                TodayBudget(day.mobileBytes, todayBudgetBytes)
+            }
         }
         HorizontalDivider(thickness = 2.dp, color = ruleColor)
+    }
+}
+
+/** Sous la ligne d'aujourd'hui, toujours sur la bande safran : le budget du jour et ce qu'il en reste. */
+@Composable
+private fun TodayBudget(usedBytes: Long, budgetBytes: Long) {
+    val over = usedBytes > budgetBytes
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .background(Brand.SaffronTint)
+            .padding(start = 56.dp, end = 4.dp, bottom = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                stringResource(R.string.budget_title),
+                style = MaterialTheme.typography.labelMedium,
+                color = Brand.OnSaffronTint,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                "${usedBytes.toReadableSize()} / ${budgetBytes.toReadableSize()}",
+                style = MaterialTheme.typography.labelMedium.numeric(),
+                color = if (over) TodayMobile else Brand.Night,
+            )
+        }
+        ThinBar(
+            fraction = if (budgetBytes == 0L) 1f else usedBytes.toFloat() / budgetBytes,
+            color = if (over) TodayMobile else Brand.Night,
+            trackColor = Brand.Saffron.copy(alpha = 0.35f),
+            height = 6.dp,
+        )
+        Text(
+            if (over) {
+                stringResource(R.string.budget_over, (usedBytes - budgetBytes).toReadableSize())
+            } else {
+                stringResource(R.string.budget_left, (budgetBytes - usedBytes).toReadableSize())
+            },
+            style = MaterialTheme.typography.bodySmall.numeric(),
+            color = if (over) TodayMobile else Brand.OnSaffronTint,
+        )
     }
 }
 
