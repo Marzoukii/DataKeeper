@@ -122,6 +122,7 @@
     <string name="usage_analyzing_apps">No app has used mobile data this cycle yet.</string>
     <string name="usage_day_hint">Tap a day to see its details.</string>
     <string name="usage_today_short">Today</string>
+    <string name="quota_cycle_grid_title">Your plan day by day</string>
     <string name="usage_day_total">%1$s in total</string>
     <string name="usage_day_share">%1$s · %2$d%%</string>
     <string name="usage_heavy_app_title">%1$s is eating your plan</string>

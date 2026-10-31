@@ -134,6 +134,7 @@
     <string name="usage_analyzing_apps">لم يستعمل أي تطبيق الـdonnées mobiles في هذه الدورة بعد.</string>
     <string name="usage_day_hint">اضغط على يوم لرؤية تفاصيله.</string>
     <string name="usage_today_short">اليوم</string>
+    <string name="quota_cycle_grid_title">الباقة يومًا بيوم</string>
     <string name="usage_day_total">%1$s في المجموع</string>
     <string name="usage_day_share">%1$s · %2$d%%</string>
     <string name="usage_heavy_app_title">%1$s يلتهم باقتك</string>
