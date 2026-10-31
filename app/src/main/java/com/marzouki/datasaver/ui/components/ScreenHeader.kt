@@ -1,5 +1,6 @@
 package com.marzouki.datasaver.ui.components
 
+import androidx.compose.ui.draw.shadow
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -39,6 +40,7 @@ fun ScreenHeader(
         modifier
             .fillMaxWidth()
             .padding(top = 8.dp, bottom = 4.dp)
+            .shadow(3.dp, RoundedCornerShape(28.dp), ambientColor = Color.Black.copy(alpha = 0.06f), spotColor = Color.Black.copy(alpha = 0.10f))
             .clip(RoundedCornerShape(28.dp))
             .heroSurface()
             .padding(start = 20.dp, end = 12.dp, top = 18.dp, bottom = 18.dp),
@@ -65,6 +67,7 @@ fun BackHeader(
         modifier
             .fillMaxWidth()
             .padding(top = 8.dp, bottom = 4.dp)
+            .shadow(3.dp, RoundedCornerShape(28.dp), ambientColor = Color.Black.copy(alpha = 0.06f), spotColor = Color.Black.copy(alpha = 0.10f))
             .clip(RoundedCornerShape(28.dp))
             .heroSurface()
             .padding(start = 8.dp, end = 20.dp, top = 12.dp, bottom = 16.dp),

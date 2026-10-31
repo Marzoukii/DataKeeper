@@ -372,14 +372,15 @@ private fun HistoryTable(result: SpeedTestResult, previous: List<SpeedTestResult
     DataKeeperCard(contentPadding = 16.dp) {
         SectionTitle(stringResource(R.string.speed_test_history), Icons.Rounded.History)
         Spacer(Modifier.height(12.dp))
-        HorizontalDivider(thickness = 2.dp, color = MaterialTheme.colorScheme.onSurface)
+        HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
         HistoryHeaderRow()
-        HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.onSurface)
+        HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
         Column(
             Modifier
                 .fillMaxWidth()
-                .background(Brand.AccentTint)
-                .padding(horizontal = 4.dp, vertical = 12.dp),
+                .clip(RoundedCornerShape(14.dp))
+                .background(Brand.AccentTint.copy(alpha = 0.7f))
+                .padding(horizontal = 10.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             HistoryCells(result, nowMillis, highlighted = true)
@@ -402,7 +403,7 @@ private fun HistoryTable(result: SpeedTestResult, previous: List<SpeedTestResult
             if (index > 0) HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
             Box(Modifier.padding(horizontal = 4.dp, vertical = 12.dp)) { HistoryCells(item, nowMillis, highlighted = false) }
         }
-        HorizontalDivider(thickness = 2.dp, color = MaterialTheme.colorScheme.onSurface)
+        HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
     }
 
 }

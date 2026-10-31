@@ -55,7 +55,7 @@ fun DailyStackedBars(
     val maxMobile = days.maxOfOrNull { it.mobileBytes }?.takeIf { it > 0 } ?: 1L
     // Un jour sorti de la fenêtre ne doit pas estomper toutes les lignes.
     val selected = selectedDayMillis?.takeIf { millis -> days.any { it.dayStartMillis == millis } }
-    val ruleColor = MaterialTheme.colorScheme.onSurface
+    val ruleColor = MaterialTheme.colorScheme.outlineVariant
 
     Column(modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -73,8 +73,7 @@ fun DailyStackedBars(
             LegendItem(DataColors.mobile, stringResource(R.string.usage_mobile))
         }
         Spacer(Modifier.height(12.dp))
-        // Double filet en tête et en pied, comme une feuille de calendrier imprimée.
-        HorizontalDivider(thickness = 2.dp, color = ruleColor)
+        HorizontalDivider(thickness = 1.dp, color = ruleColor)
         days.forEachIndexed { index, day ->
             val isToday = index == days.lastIndex
             val description = stringResource(
@@ -90,7 +89,7 @@ fun DailyStackedBars(
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .then(if (isToday) Modifier.background(Brand.AccentTint) else Modifier)
+                    .then(if (isToday) Modifier.clip(RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp)).background(Brand.AccentTint.copy(alpha = 0.7f)) else Modifier)
                     .then(
                         if (onDayClick != null) {
                             Modifier.clickable(role = Role.Button) { onDayClick(day) }
@@ -107,7 +106,7 @@ fun DailyStackedBars(
                 Column(Modifier.width(52.dp)) {
                     Text(
                         dayOfMonth(day.dayStartMillis),
-                        style = MaterialTheme.typography.titleLarge.numeric(),
+                        style = MaterialTheme.typography.titleLarge.numeric().copy(fontWeight = FontWeight.Medium),
                         color = if (isToday) Brand.Accent else MaterialTheme.colorScheme.onSurface,
                     )
                     Text(
@@ -136,7 +135,7 @@ fun DailyStackedBars(
                 TodayBudget(day.mobileBytes, todayBudgetBytes)
             }
         }
-        HorizontalDivider(thickness = 2.dp, color = ruleColor)
+        HorizontalDivider(thickness = 1.dp, color = ruleColor)
     }
 }
 
@@ -147,7 +146,8 @@ private fun TodayBudget(usedBytes: Long, budgetBytes: Long) {
     Column(
         Modifier
             .fillMaxWidth()
-            .background(Brand.AccentTint)
+            .clip(RoundedCornerShape(bottomStart = 14.dp, bottomEnd = 14.dp))
+            .background(Brand.AccentTint.copy(alpha = 0.7f))
             .padding(start = 56.dp, end = 4.dp, bottom = 12.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {

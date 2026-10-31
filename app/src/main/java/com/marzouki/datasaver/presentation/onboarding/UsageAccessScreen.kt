@@ -1,5 +1,6 @@
 package com.marzouki.datasaver.presentation.onboarding
 
+import androidx.compose.ui.draw.shadow
 import com.marzouki.datasaver.ui.theme.numeric
 import com.marzouki.datasaver.ui.theme.Brand
 import com.marzouki.datasaver.ui.components.heroSurface
@@ -92,6 +93,7 @@ fun UsageAccessScreen(
                 Column(
                     Modifier
                         .fillMaxWidth()
+                        .shadow(3.dp, RoundedCornerShape(32.dp), ambientColor = Color.Black.copy(alpha = 0.06f), spotColor = Color.Black.copy(alpha = 0.10f))
                         .clip(RoundedCornerShape(32.dp))
                         .heroSurface()
                         .padding(20.dp),

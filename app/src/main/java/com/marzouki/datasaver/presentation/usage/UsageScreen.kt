@@ -1,5 +1,6 @@
 package com.marzouki.datasaver.presentation.usage
 
+import androidx.compose.ui.draw.shadow
 import com.marzouki.datasaver.ui.theme.Brand
 import com.marzouki.datasaver.ui.components.SavingsCard
 import com.marzouki.datasaver.ui.components.toReadableSizeParts
@@ -289,6 +290,7 @@ private fun UsageHeroHeader(
         Modifier
             .fillMaxWidth()
             .padding(top = 8.dp, bottom = 4.dp)
+            .shadow(3.dp, RoundedCornerShape(28.dp), ambientColor = Color.Black.copy(alpha = 0.06f), spotColor = Color.Black.copy(alpha = 0.10f))
             .clip(RoundedCornerShape(28.dp))
             .heroSurface()
             .clickable(onClick = onOpenQuota)

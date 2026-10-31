@@ -1,5 +1,7 @@
 package com.marzouki.datasaver.presentation.quota
 
+import androidx.compose.ui.draw.shadow
+import androidx.compose.foundation.border
 import com.marzouki.datasaver.ui.theme.Brand
 import com.marzouki.datasaver.ui.components.dayOfMonth
 import com.marzouki.datasaver.ui.components.SectionTitle
@@ -284,6 +286,7 @@ private fun QuotaHeroHeader(
         Modifier
             .fillMaxWidth()
             .padding(top = 8.dp, bottom = 4.dp)
+            .shadow(3.dp, RoundedCornerShape(28.dp), ambientColor = Color.Black.copy(alpha = 0.06f), spotColor = Color.Black.copy(alpha = 0.10f))
             .clip(RoundedCornerShape(28.dp))
             .heroSurface()
             .padding(horizontal = 20.dp, vertical = 18.dp),
@@ -439,7 +442,7 @@ private fun CycleGridCard(forecast: QuotaForecast) {
                         val isFuture = index > todayIndex
                         val over = bytes != null && !isToday && bytes > fairShare
                         val background = when {
-                            isToday -> Brand.AccentTint
+                            isToday -> MaterialTheme.colorScheme.surface
                             over -> MaterialTheme.colorScheme.tertiaryContainer
                             isFuture -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
                             else -> MaterialTheme.colorScheme.surface
@@ -455,6 +458,7 @@ private fun CycleGridCard(forecast: QuotaForecast) {
                                 .weight(1f)
                                 .height(56.dp)
                                 .background(background)
+                                .then(if (isToday) Modifier.border(2.dp, Brand.Accent) else Modifier)
                                 .padding(horizontal = 6.dp, vertical = 6.dp),
                             verticalArrangement = Arrangement.SpaceBetween,
                         ) {

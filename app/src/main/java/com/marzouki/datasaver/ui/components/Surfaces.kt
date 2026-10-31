@@ -1,5 +1,6 @@
 package com.marzouki.datasaver.ui.components
 
+import androidx.compose.ui.draw.shadow
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -74,14 +75,21 @@ fun DataKeeperCard(
     } else {
         MaterialTheme.colorScheme.outlineVariant
     }
-    val border = if (bordered) BorderStroke(1.dp, borderColor) else null
+    // Carte « verre » (par défaut) : ombre douce et sans bordure, plus sobre qu'un liseré.
+    val isGlass = containerColor == LocalExtendedColors.current.glass
+    val border = if (bordered && !isGlass) BorderStroke(1.dp, borderColor) else null
+    val shadowed = if (isGlass) {
+        modifier.shadow(3.dp, shape, ambientColor = Color.Black.copy(alpha = 0.06f), spotColor = Color.Black.copy(alpha = 0.10f))
+    } else {
+        modifier
+    }
     val inner: @Composable ColumnScope.() -> Unit = {
         Column(Modifier.padding(contentPadding), content = content)
     }
     if (onClick != null) {
-        Card(onClick, modifier.fillMaxWidth(), shape = shape, colors = colors, elevation = elevation, border = border, content = inner)
+        Card(onClick, shadowed.fillMaxWidth(), shape = shape, colors = colors, elevation = elevation, border = border, content = inner)
     } else {
-        Card(modifier.fillMaxWidth(), shape = shape, colors = colors, elevation = elevation, border = border, content = inner)
+        Card(shadowed.fillMaxWidth(), shape = shape, colors = colors, elevation = elevation, border = border, content = inner)
     }
 }
 
@@ -182,7 +190,6 @@ fun Modifier.glowBackground(): Modifier = this
 @Composable
 fun Modifier.heroSurface(): Modifier = this
     .background(MaterialTheme.colorScheme.surface)
-    .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(28.dp))
 
 /** Pastille d'icône : carré arrondi rose, pictogramme rouge corail. */
 @Composable

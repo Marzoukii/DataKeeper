@@ -38,9 +38,9 @@ private fun style(
 private val Default = Typography()
 
 val Typography = Typography(
-    displayLarge = Default.displayLarge.copy(fontFamily = ReadexPro, fontWeight = FontWeight.Bold),
-    displayMedium = Default.displayMedium.copy(fontFamily = ReadexPro, fontWeight = FontWeight.Bold),
-    displaySmall = style(ReadexPro, FontWeight.SemiBold, 40.sp, 44.sp, (-1).sp),
+    displayLarge = Default.displayLarge.copy(fontFamily = ReadexPro, fontWeight = FontWeight.Medium, letterSpacing = (-1).sp),
+    displayMedium = Default.displayMedium.copy(fontFamily = ReadexPro, fontWeight = FontWeight.Medium, letterSpacing = (-1).sp),
+    displaySmall = style(ReadexPro, FontWeight.Medium, 40.sp, 44.sp, (-1).sp),
     headlineLarge = style(ReadexPro, FontWeight.SemiBold, 34.sp, 36.sp, (-1).sp),
     headlineMedium = Default.headlineMedium.copy(fontFamily = ReadexPro, fontWeight = FontWeight.Bold),
     headlineSmall = style(ReadexPro, FontWeight.SemiBold, 26.sp, 32.sp, (-0.5).sp),

@@ -1,5 +1,7 @@
 package com.marzouki.datasaver.presentation.onboarding
 
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.shadow
 import com.marzouki.datasaver.ui.theme.Brand
 import com.marzouki.datasaver.ui.components.heroSurface
 import com.marzouki.datasaver.ui.components.glowBackground
@@ -116,6 +118,7 @@ private fun PlanSetupContent(state: PlanSetupState, onIntent: (PlanSetupIntent) 
                 Column(
                     Modifier
                         .fillMaxWidth()
+                        .shadow(3.dp, RoundedCornerShape(28.dp), ambientColor = Color.Black.copy(alpha = 0.06f), spotColor = Color.Black.copy(alpha = 0.10f))
                         .clip(RoundedCornerShape(28.dp))
                         .heroSurface()
                         .padding(20.dp),
