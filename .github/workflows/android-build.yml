@@ -1,0 +1,78 @@
+name: Build Android
+
+on:
+  push:
+    branches: [develop, master, "design/**", "feature/**"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # google-services.json n'est pas dans Git : on prend le secret s'il existe,
+      # sinon un fichier factice qui suffit pour compiler (Firebase ne fonctionnera pas dans cet APK).
+      - name: google-services.json
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            printf '%s' "$GOOGLE_SERVICES_JSON" > app/google-services.json
+          else
+            cat > app/google-services.json <<'JSON'
+          {
+            "project_info": {
+              "project_number": "000000000000",
+              "project_id": "datakeeper-ci",
+              "storage_bucket": "datakeeper-ci.appspot.com"
+            },
+            "client": [
+              {
+                "client_info": {
+                  "mobilesdk_app_id": "1:000000000000:android:0000000000000000",
+                  "android_client_info": { "package_name": "com.marzouki.datasaver" }
+                },
+                "oauth_client": [],
+                "api_key": [{ "current_key": "AIzaSyCI000000000000000000000000000000" }],
+                "services": { "appinvite_service": { "other_platform_oauth_client": [] } }
+              }
+            ],
+            "configuration_version": "1"
+          }
+          JSON
+          fi
+
+      - name: Tests unitaires
+        run: ./gradlew --no-daemon testDebugUnitTest
+
+      - name: Compiler l'APK debug
+        run: ./gradlew --no-daemon assembleDebug
+
+      - name: Rapport des tests
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapports-tests
+          path: |
+            app/build/reports/tests
+            domain/build/reports/tests
+          if-no-files-found: ignore
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: datakeeper-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
