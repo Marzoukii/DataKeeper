@@ -13,16 +13,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 
-// Le secondaire reprend la menthe : chips, onglets et indicateurs restent dans la palette Wi-Fi.
+// Primaire = accent rouge corail ; secondaire = vert du Wi-Fi ; tertiaire = orange de la data mobile.
 internal val LightColorScheme = lightColorScheme(
     primary = LightPrimary,
     onPrimary = LightOnPrimary,
     primaryContainer = LightPrimaryContainer,
     onPrimaryContainer = LightOnPrimaryContainer,
-    secondary = LightPrimary,
-    onSecondary = LightOnPrimary,
-    secondaryContainer = LightPrimaryContainer,
-    onSecondaryContainer = LightOnPrimaryContainer,
+    secondary = LightSecondary,
+    onSecondary = LightOnSecondary,
+    secondaryContainer = LightSecondaryContainer,
+    onSecondaryContainer = LightOnSecondaryContainer,
     tertiary = LightTertiary,
     onTertiary = LightOnTertiary,
     tertiaryContainer = LightTertiaryContainer,
@@ -53,10 +53,10 @@ internal val DarkColorScheme = darkColorScheme(
     onPrimary = DarkOnPrimary,
     primaryContainer = DarkPrimaryContainer,
     onPrimaryContainer = DarkOnPrimaryContainer,
-    secondary = DarkPrimary,
-    onSecondary = DarkOnPrimary,
-    secondaryContainer = DarkPrimaryContainer,
-    onSecondaryContainer = DarkOnPrimaryContainer,
+    secondary = DarkSecondary,
+    onSecondary = DarkOnSecondary,
+    secondaryContainer = DarkSecondaryContainer,
+    onSecondaryContainer = DarkOnSecondaryContainer,
     tertiary = DarkTertiary,
     onTertiary = DarkOnTertiary,
     tertiaryContainer = DarkTertiaryContainer,
@@ -98,17 +98,17 @@ data class ExtendedColors(
 private val LightExtended = ExtendedColors(
     success = LightSuccess,
     successContainer = LightSuccessContainer,
-    glass = Color.White.copy(alpha = 0.70f),
-    glassBorder = Color.White.copy(alpha = 0.85f),
-    glowStrength = 0.30f,
+    glass = LightSurface,
+    glassBorder = LightOutlineVariant,
+    glowStrength = 0f,
 )
 
 private val DarkExtended = ExtendedColors(
     success = DarkSuccess,
     successContainer = DarkSuccessContainer,
-    glass = DarkSurface.copy(alpha = 0.72f),
-    glassBorder = Color.White.copy(alpha = 0.10f),
-    glowStrength = 0.22f,
+    glass = DarkSurface,
+    glassBorder = DarkOutlineVariant,
+    glowStrength = 0f,
 )
 
 val LocalExtendedColors = staticCompositionLocalOf { LightExtended }
@@ -116,7 +116,7 @@ val LocalExtendedColors = staticCompositionLocalOf { LightExtended }
 /** Alias sémantiques : on parle de Wi-Fi et de mobile, jamais de « primary » ou « tertiary ». */
 object DataColors {
     val wifi: Color
-        @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primary
+        @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.secondary
     val mobile: Color
         @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.tertiary
     val success: Color
@@ -124,12 +124,12 @@ object DataColors {
     val successContainer: Color
         @Composable @ReadOnlyComposable get() = LocalExtendedColors.current.successContainer
     val today: Color
-        @Composable @ReadOnlyComposable get() = Brand.Saffron
+        @Composable @ReadOnlyComposable get() = Brand.Accent
     val todayTint: Color
-        @Composable @ReadOnlyComposable get() = Brand.SaffronTint
+        @Composable @ReadOnlyComposable get() = Brand.AccentTint
 }
 
-/** Pas de couleurs dynamiques (Android 12+) : la menthe, le corail et le safran portent un sens. */
+/** Pas de couleurs dynamiques (Android 12+) : le vert, l'orange et le rouge portent un sens. */
 @Composable
 fun DataKeeperTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),

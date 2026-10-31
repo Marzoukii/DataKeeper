@@ -310,7 +310,7 @@ private fun NetworkRow(network: OpenWifiNetwork, connected: Boolean, onConnect: 
         if (network.portal == WifiPortal.WITH_PORTAL) {
             IconTile(Icons.Rounded.Wifi, colors.tertiaryContainer, DataColors.mobile)
         } else {
-            IconTile(Icons.Rounded.Wifi, colors.primaryContainer, DataColors.wifi)
+            IconTile(Icons.Rounded.Wifi, colors.secondaryContainer, DataColors.wifi)
         }
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -333,7 +333,7 @@ private fun NetworkRow(network: OpenWifiNetwork, connected: Boolean, onConnect: 
         }
         Spacer(Modifier.width(8.dp))
         if (connected) {
-            Text(stringResource(R.string.wifi_connected), style = MaterialTheme.typography.labelLarge, color = colors.primary)
+            Text(stringResource(R.string.wifi_connected), style = MaterialTheme.typography.labelLarge, color = DataColors.wifi)
         } else {
             OutlinedButton(onClick = onConnect, shape = CircleShape) {
                 Text(stringResource(R.string.wifi_connect))
@@ -401,7 +401,7 @@ private fun NoticeCard(title: String, body: String, button: String, onClick: () 
             Button(
                 onClick = onClick,
                 shape = CircleShape,
-                colors = ButtonDefaults.buttonColors(containerColor = Brand.Night, contentColor = Brand.OnNight),
+                colors = ButtonDefaults.buttonColors(containerColor = Brand.Accent, contentColor = Brand.OnAccent),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
@@ -419,7 +419,7 @@ private fun WifiPinIllustration(modifier: Modifier = Modifier) {
         listOf(0.95f to 0.45f, 0.68f to 0.75f).forEach { (r, alpha) ->
             val radius = size.width * r / 2
             drawArc(
-                color = Brand.GlowMint.copy(alpha = alpha),
+                color = Brand.Wifi.copy(alpha = alpha),
                 startAngle = 200f,
                 sweepAngle = 140f,
                 useCenter = false,
@@ -436,8 +436,8 @@ private fun WifiPinIllustration(modifier: Modifier = Modifier) {
             cubicTo(cx + pinR * 1.3f, top, cx + pinR * 1.6f, top + pinR * 1.5f, cx, size.height * 0.98f)
             close()
         }
-        drawPath(pin, Brand.Night)
-        drawCircle(Brand.Saffron, radius = pinR * 0.62f, center = Offset(cx, top + pinR * 0.95f))
+        drawPath(pin, Brand.Accent)
+        drawCircle(Brand.Accent, radius = pinR * 0.62f, center = Offset(cx, top + pinR * 0.95f))
     }
 }
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Trois lignes du carnet : le jour passé en blanc, aujourd'hui en safran, ce qu'il reste en menthe.
+  Trois lignes du carnet : trois jours du carnet, en blanc et rose sur l'accent rouge corail.
   Tout tient dans la zone sûre de 66 dp.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
@@ -12,9 +12,9 @@
         android:fillColor="#FFFFFF"
         android:pathData="M39,38h30a4,4 0,0 1,0 8h-30a4,4 0,0 1,0 -8z" />
     <path
-        android:fillColor="#F5B840"
+        android:fillColor="#FCE3DE"
         android:pathData="M39,50h30a4,4 0,0 1,0 8h-30a4,4 0,0 1,0 -8z" />
     <path
-        android:fillColor="#5ED6BF"
+        android:fillColor="#FFFFFF" android:fillAlpha="0.7"
         android:pathData="M39,62h14a4,4 0,0 1,0 8h-14a4,4 0,0 1,0 -8z" />
 </vector>

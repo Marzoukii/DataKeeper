@@ -7,6 +7,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -170,59 +171,27 @@ private fun PlaceholderLine(modifier: Modifier) {
     )
 }
 
+/** Fond d'écran uni (les anciens halos colorés ont été retirés) ; gardé pour ne pas toucher les écrans. */
+@Suppress("UnusedReceiverParameter")
+fun Modifier.glowBackground(): Modifier = this
+
 /**
- * Halos colorés (menthe, corail, indigo) peints derrière le contenu : ce sont eux qu'on devine
- * à travers les cartes en verre. Des dégradés radiaux, donc visibles sur toutes les versions d'Android.
+ * Fond des blocs d'en-tête : carte blanche à liseré clair, comme les autres cartes. À poser après
+ * un `clip` à la forme du bloc.
  */
 @Composable
-fun Modifier.glowBackground(): Modifier {
-    val strength = LocalExtendedColors.current.glowStrength
-    return drawBehind {
-        fun glow(color: Color, cx: Float, cy: Float, radius: Float, alpha: Float) {
-            drawCircle(
-                brush = Brush.radialGradient(
-                    colors = listOf(color.copy(alpha = alpha), Color.Transparent),
-                    center = Offset(cx, cy),
-                    radius = radius,
-                ),
-                radius = radius,
-                center = Offset(cx, cy),
-            )
-        }
-        val r = size.minDimension * 0.75f
-        glow(Brand.GlowMint, size.width * 0.05f, size.height * 0.28f, r, strength)
-        glow(Brand.GlowCoral, size.width * 1.0f, size.height * 0.52f, r, strength * 0.7f)
-        glow(Brand.GlowIndigo, size.width * 0.45f, size.height * 0.85f, r, strength * 0.8f)
-    }
-}
+fun Modifier.heroSurface(): Modifier = this
+    .background(MaterialTheme.colorScheme.surface)
+    .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(28.dp))
 
-/** Fond bleu nuit des en-têtes, avec une lueur menthe en haut et corail en bas. */
-fun Modifier.nightGlow(): Modifier = drawBehind {
-    drawRect(Brand.Night)
-    drawRect(
-        Brush.radialGradient(
-            colors = listOf(Brand.GlowMint.copy(alpha = 0.32f), Color.Transparent),
-            center = Offset(size.width, 0f),
-            radius = size.maxDimension * 0.9f,
-        ),
-    )
-    drawRect(
-        Brush.radialGradient(
-            colors = listOf(Brand.GlowCoral.copy(alpha = 0.26f), Color.Transparent),
-            center = Offset(0f, size.height * 1.1f),
-            radius = size.maxDimension * 0.75f,
-        ),
-    )
-}
-
-/** Pastille d'icône : carré arrondi bleu nuit, pictogramme menthe. */
+/** Pastille d'icône : carré arrondi rose, pictogramme rouge corail. */
 @Composable
 fun IconChip(
     icon: ImageVector,
     modifier: Modifier = Modifier,
     size: Dp = 28.dp,
-    containerColor: Color = Brand.Night,
-    contentColor: Color = Brand.GlowMint,
+    containerColor: Color = Brand.AccentTint,
+    contentColor: Color = Brand.Accent,
 ) {
     Box(
         modifier

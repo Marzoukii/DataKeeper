@@ -3,7 +3,7 @@ package com.marzouki.datasaver.presentation.usage
 import com.marzouki.datasaver.ui.theme.Brand
 import com.marzouki.datasaver.ui.components.SavingsCard
 import com.marzouki.datasaver.ui.components.toReadableSizeParts
-import com.marzouki.datasaver.ui.components.nightGlow
+import com.marzouki.datasaver.ui.components.heroSurface
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.clickable
@@ -290,17 +290,17 @@ private fun UsageHeroHeader(
             .fillMaxWidth()
             .padding(top = 8.dp, bottom = 4.dp)
             .clip(RoundedCornerShape(28.dp))
-            .nightGlow()
+            .heroSurface()
             .clickable(onClick = onOpenQuota)
             .padding(start = 20.dp, end = 12.dp, top = 16.dp, bottom = 20.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text(stringResource(R.string.usage_title), style = MaterialTheme.typography.headlineSmall, color = Brand.OnNight)
+                Text(stringResource(R.string.usage_title), style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onSurface)
                 Text(
                     stringResource(R.string.usage_overline, planLabel, period.currentDay, period.totalDays),
                     style = MaterialTheme.typography.bodyMedium.numeric(),
-                    color = Brand.OnNightVariant,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             HeaderIconButton(Icons.Rounded.Settings, stringResource(R.string.usage_settings), onOpenSettings)
@@ -308,8 +308,8 @@ private fun UsageHeroHeader(
         Spacer(Modifier.height(14.dp))
         when {
             status == null -> {
-                Text(stringResource(R.string.quota_summary_none_title), style = MaterialTheme.typography.titleLarge, color = Brand.OnNight)
-                Text(stringResource(R.string.quota_summary_none_body), style = MaterialTheme.typography.bodyMedium, color = Brand.OnNightVariant)
+                Text(stringResource(R.string.quota_summary_none_title), style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface)
+                Text(stringResource(R.string.quota_summary_none_body), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             status.isExceeded -> {
                 Text(
@@ -319,7 +319,7 @@ private fun UsageHeroHeader(
                         formatDayMonth(period.nextStartMillis),
                     ),
                     style = MaterialTheme.typography.titleLarge.numeric(),
-                    color = Brand.GlowCoral,
+                    color = Brand.Mobile,
                 )
             }
             else -> {
@@ -328,13 +328,13 @@ private fun UsageHeroHeader(
                     Text(
                         remaining.value,
                         style = MaterialTheme.typography.displayMedium.numeric(),
-                        color = Brand.OnNight,
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
                         "${remaining.unit} ${stringResource(R.string.widget_remaining)}",
                         style = MaterialTheme.typography.titleMedium,
-                        color = Brand.OnNight,
+                        color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.padding(bottom = 8.dp),
                     )
                 }
@@ -352,13 +352,13 @@ private fun UsageHeroHeader(
                         append(pluralStringResource(R.plurals.widget_days_left, period.remainingDays, period.remainingDays))
                     },
                     style = MaterialTheme.typography.bodyMedium.numeric(),
-                    color = Brand.Saffron,
+                    color = Brand.Accent,
                 )
                 Spacer(Modifier.height(12.dp))
                 ThinBar(
                     fraction = status.usedRatio,
-                    color = Brand.GlowCoral,
-                    trackColor = Color.White.copy(alpha = 0.14f),
+                    color = Brand.Mobile,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
                     height = 8.dp,
                 )
             }

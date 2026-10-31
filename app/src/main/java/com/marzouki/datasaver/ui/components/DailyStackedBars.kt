@@ -90,7 +90,7 @@ fun DailyStackedBars(
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .then(if (isToday) Modifier.background(Brand.SaffronTint) else Modifier)
+                    .then(if (isToday) Modifier.background(Brand.AccentTint) else Modifier)
                     .then(
                         if (onDayClick != null) {
                             Modifier.clickable(role = Role.Button) { onDayClick(day) }
@@ -108,13 +108,13 @@ fun DailyStackedBars(
                     Text(
                         dayOfMonth(day.dayStartMillis),
                         style = MaterialTheme.typography.titleLarge.numeric(),
-                        color = if (isToday) Brand.Night else MaterialTheme.colorScheme.onSurface,
+                        color = if (isToday) Brand.Accent else MaterialTheme.colorScheme.onSurface,
                     )
                     Text(
                         if (isToday) stringResource(R.string.usage_today_short) else dayShortName(day.dayStartMillis),
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = if (isToday) FontWeight.SemiBold else FontWeight.Medium,
-                        color = if (isToday) Brand.OnSaffronTint else MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = if (isToday) Brand.OnAccentTint else MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                     )
                 }
@@ -147,7 +147,7 @@ private fun TodayBudget(usedBytes: Long, budgetBytes: Long) {
     Column(
         Modifier
             .fillMaxWidth()
-            .background(Brand.SaffronTint)
+            .background(Brand.AccentTint)
             .padding(start = 56.dp, end = 4.dp, bottom = 12.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
@@ -155,19 +155,19 @@ private fun TodayBudget(usedBytes: Long, budgetBytes: Long) {
             Text(
                 stringResource(R.string.budget_title),
                 style = MaterialTheme.typography.labelMedium,
-                color = Brand.OnSaffronTint,
+                color = Brand.OnAccentTint,
                 modifier = Modifier.weight(1f),
             )
             Text(
                 "${usedBytes.toReadableSize()} / ${budgetBytes.toReadableSize()}",
                 style = MaterialTheme.typography.labelMedium.numeric(),
-                color = if (over) TodayMobile else Brand.Night,
+                color = if (over) TodayMobile else Brand.Accent,
             )
         }
         ThinBar(
             fraction = if (budgetBytes == 0L) 1f else usedBytes.toFloat() / budgetBytes,
-            color = if (over) TodayMobile else Brand.Night,
-            trackColor = Brand.Saffron.copy(alpha = 0.35f),
+            color = if (over) TodayMobile else Brand.Accent,
+            trackColor = Brand.AccentSoft,
             height = 6.dp,
         )
         Text(
@@ -177,7 +177,7 @@ private fun TodayBudget(usedBytes: Long, budgetBytes: Long) {
                 stringResource(R.string.budget_left, (budgetBytes - usedBytes).toReadableSize())
             },
             style = MaterialTheme.typography.bodySmall.numeric(),
-            color = if (over) TodayMobile else Brand.OnSaffronTint,
+            color = if (over) TodayMobile else Brand.OnAccentTint,
         )
     }
 }

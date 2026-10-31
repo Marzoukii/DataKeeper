@@ -1,19 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Fond de l'icône : le bleu nuit de l'appli, avec une lueur menthe en haut à droite. -->
+<!-- Fond de l'icône : l'accent rouge corail de l'appli. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
     <path
-        android:fillColor="#111A44"
+        android:fillColor="#D23B22"
         android:pathData="M0,0h108v108h-108z" />
-    <path
-        android:fillColor="#5ED6BF"
-        android:fillAlpha="0.16"
-        android:pathData="M108,0m-62,0a62,62 0,1 1,124 0a62,62 0,1 1,-124 0" />
-    <path
-        android:fillColor="#F0603F"
-        android:fillAlpha="0.12"
-        android:pathData="M0,108m-48,0a48,48 0,1 1,96 0a48,48 0,1 1,-96 0" />
 </vector>

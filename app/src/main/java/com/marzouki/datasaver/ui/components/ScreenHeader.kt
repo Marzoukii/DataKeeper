@@ -32,7 +32,7 @@ fun ScreenHeader(
     overline: String,
     title: String,
     modifier: Modifier = Modifier,
-    overlineColor: Color = Brand.OnNightVariant,
+    overlineColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     action: (@Composable () -> Unit)? = null,
 ) {
     Row(
@@ -40,12 +40,12 @@ fun ScreenHeader(
             .fillMaxWidth()
             .padding(top = 8.dp, bottom = 4.dp)
             .clip(RoundedCornerShape(28.dp))
-            .nightGlow()
+            .heroSurface()
             .padding(start = 20.dp, end = 12.dp, top = 18.dp, bottom = 18.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.headlineSmall, color = Brand.OnNight)
+            Text(title, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onSurface)
             Text(overline, style = MaterialTheme.typography.bodyMedium, color = overlineColor)
         }
         action?.invoke()
@@ -66,17 +66,17 @@ fun BackHeader(
             .fillMaxWidth()
             .padding(top = 8.dp, bottom = 4.dp)
             .clip(RoundedCornerShape(28.dp))
-            .nightGlow()
+            .heroSurface()
             .padding(start = 8.dp, end = 20.dp, top = 12.dp, bottom = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(onClick = onBack) {
-            Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = backDescription, tint = Brand.OnNight)
+            Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = backDescription, tint = MaterialTheme.colorScheme.onSurface)
         }
         Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.headlineSmall, color = Brand.OnNight)
+            Text(title, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onSurface)
             if (subtitle != null) {
-                Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = Brand.OnNightVariant)
+                Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
@@ -88,8 +88,8 @@ fun HeaderIconButton(icon: ImageVector, contentDescription: String, onClick: () 
     FilledIconButton(
         onClick = onClick,
         colors = IconButtonDefaults.filledIconButtonColors(
-            containerColor = Color.White.copy(alpha = 0.12f),
-            contentColor = Brand.OnNight,
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onSurface,
         ),
         modifier = Modifier.padding(start = 8.dp),
     ) {

@@ -1,7 +1,7 @@
 package com.marzouki.datasaver.presentation.onboarding
 
 import com.marzouki.datasaver.ui.theme.Brand
-import com.marzouki.datasaver.ui.components.nightGlow
+import com.marzouki.datasaver.ui.components.heroSurface
 import com.marzouki.datasaver.ui.components.glowBackground
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -117,7 +117,7 @@ private fun PlanSetupContent(state: PlanSetupState, onIntent: (PlanSetupIntent) 
                     Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(28.dp))
-                        .nightGlow()
+                        .heroSurface()
                         .padding(20.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
@@ -128,18 +128,18 @@ private fun PlanSetupContent(state: PlanSetupState, onIntent: (PlanSetupIntent) 
                             stringResource(R.string.setup_title)
                         },
                         style = MaterialTheme.typography.headlineSmall,
-                        color = Brand.OnNight,
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
                     Text(
                         stringResource(if (state.operatorChanged) R.string.setup_body_operator_changed else R.string.setup_body),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Brand.OnNightVariant,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
 
                 val chipColors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = Brand.Night,
-                    selectedLabelColor = Brand.OnNight,
+                    selectedContainerColor = Brand.Accent,
+                    selectedLabelColor = Brand.OnAccent,
                 )
 
                 // 0. Forfaits déjà utilisés chez cet opérateur : un appui remplit tout.

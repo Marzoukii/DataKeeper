@@ -4,6 +4,8 @@ import android.os.Build
 import androidx.annotation.StringRes
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -164,23 +166,10 @@ private fun MainScaffold(requestedTab: String?, onTabRequestHandled: () -> Unit,
         bottomBar = {
             // Réglages et partage de connexion sont des sous-écrans, avec leur flèche retour : pas d'onglets dessous.
             if (currentRoute == AppRoutes.SETTINGS || currentRoute == AppRoutes.TETHERING) return@Scaffold
-            // Barre flottante en verre bleu nuit, détachée des bords : le contenu reste lisible autour.
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .windowInsetsPadding(WindowInsets.navigationBars)
-                    .padding(horizontal = 12.dp, vertical = 10.dp)
-                    .shadow(16.dp, RoundedCornerShape(28.dp), ambientColor = Brand.NightDeep, spotColor = Brand.NightDeep)
-                    .clip(RoundedCornerShape(28.dp))
-                    .background(Brand.Night.copy(alpha = 0.90f))
-                    .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(28.dp)),
-            ) {
-                NavigationBar(
-                    containerColor = Color.Transparent,
-                    tonalElevation = 0.dp,
-                    windowInsets = WindowInsets(0, 0, 0, 0),
-                    modifier = Modifier.height(72.dp),
-                ) {
+            // Barre blanche pleine largeur, filet clair au-dessus ; l'onglet actif en pastille rose et rouge corail.
+            Column {
+                HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
+                NavigationBar(containerColor = MaterialTheme.colorScheme.surface, tonalElevation = 0.dp) {
                     Destination.entries.forEach { destination ->
                         NavigationBarItem(
                             selected = destination == current,
@@ -188,11 +177,11 @@ private fun MainScaffold(requestedTab: String?, onTabRequestHandled: () -> Unit,
                             icon = { Icon(destination.icon, contentDescription = null) },
                             label = { Text(stringResource(destination.labelRes), maxLines = 1) },
                             colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = Brand.Saffron,
-                                selectedIconColor = Brand.Night,
-                                selectedTextColor = Brand.OnNight,
-                                unselectedIconColor = Brand.OnNightVariant,
-                                unselectedTextColor = Brand.OnNightVariant,
+                                indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                                selectedIconColor = MaterialTheme.colorScheme.primary,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
                             ),
                         )
                     }

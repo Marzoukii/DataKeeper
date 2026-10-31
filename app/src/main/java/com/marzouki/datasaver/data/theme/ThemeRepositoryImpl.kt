@@ -22,7 +22,7 @@ class ThemeRepositoryImpl @Inject constructor(
 ) : ThemeRepository {
 
     override val themeMode: Flow<ThemeMode> = dataStore.data
-        .map { prefs -> prefs[KEY_THEME_MODE]?.let { name -> ThemeMode.entries.firstOrNull { it.name == name } } ?: ThemeMode.SYSTEM }
+        .map { prefs -> prefs[KEY_THEME_MODE]?.let { name -> ThemeMode.entries.firstOrNull { it.name == name } } ?: ThemeMode.LIGHT }
         .distinctUntilChanged()
 
     override suspend fun setThemeMode(mode: ThemeMode) {

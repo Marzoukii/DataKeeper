@@ -2,7 +2,7 @@ package com.marzouki.datasaver.presentation.onboarding
 
 import com.marzouki.datasaver.ui.theme.numeric
 import com.marzouki.datasaver.ui.theme.Brand
-import com.marzouki.datasaver.ui.components.nightGlow
+import com.marzouki.datasaver.ui.components.heroSurface
 import com.marzouki.datasaver.ui.components.glowBackground
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.foundation.background
@@ -93,7 +93,7 @@ fun UsageAccessScreen(
                     Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(32.dp))
-                        .nightGlow()
+                        .heroSurface()
                         .padding(20.dp),
                 ) {
                     Logo()
@@ -103,13 +103,13 @@ fun UsageAccessScreen(
                     Text(
                         stringResource(R.string.onboarding_title),
                         style = MaterialTheme.typography.headlineLarge.copy(fontSize = 30.sp, lineHeight = 36.sp),
-                        color = Brand.OnNight,
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
                     Spacer(Modifier.height(10.dp))
                     Text(
                         stringResource(R.string.onboarding_body),
                         style = MaterialTheme.typography.bodyLarge,
-                        color = Brand.OnNightVariant,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
                 Spacer(Modifier.height(16.dp))
@@ -130,7 +130,7 @@ fun UsageAccessScreen(
             Button(
                 onClick = onOpenSettings,
                 shape = CircleShape,
-                colors = ButtonDefaults.buttonColors(containerColor = Brand.Night, contentColor = Brand.OnNight),
+                colors = ButtonDefaults.buttonColors(containerColor = Brand.Accent, contentColor = Brand.OnAccent),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -225,17 +225,17 @@ private fun Logo() {
             Modifier
                 .size(36.dp)
                 .clip(RoundedCornerShape(10.dp))
-                .background(Brand.NightRaised)
+                .background(Brand.Accent)
                 .semantics { contentDescription = description }
                 .padding(horizontal = 8.dp),
             verticalArrangement = Arrangement.spacedBy(3.dp, Alignment.CenterVertically),
         ) {
             LogoBar(Color.White, 1f)
-            LogoBar(Brand.Saffron, 1f)
-            LogoBar(Brand.GlowMint, 0.58f)
+            LogoBar(Brand.Accent, 1f)
+            LogoBar(Brand.Wifi, 0.58f)
         }
         Spacer(Modifier.width(10.dp))
-        Text(stringResource(R.string.app_name), style = MaterialTheme.typography.titleLarge, color = Brand.OnNight)
+        Text(stringResource(R.string.app_name), style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface)
     }
 }
 
@@ -275,7 +275,7 @@ private fun Illustration() {
         Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color.White.copy(alpha = 0.08f))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(horizontal = 14.dp, vertical = 12.dp)
             .clearAndSetSemantics { contentDescription = description },
         verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -287,18 +287,18 @@ private fun Illustration() {
                     Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
-                        .background(if (today) Brand.Saffron else Color.Transparent)
+                        .background(if (today) Brand.AccentTint else Color.Transparent)
                         .padding(horizontal = if (today) 8.dp else 0.dp, vertical = if (today) 6.dp else 0.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
                         day,
                         style = MaterialTheme.typography.titleMedium.numeric(),
-                        color = if (today) Brand.Night else Brand.OnNight,
+                        color = if (today) Brand.OnAccentTint else MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.width(36.dp),
                     )
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        IllustrationLine(if (today) Color(0xFF0B6E62) else Brand.GlowMint, wifi)
+                        IllustrationLine(if (today) Color(0xFF0B6E62) else Brand.Wifi, wifi)
                         IllustrationLine(if (today) Color(0xFFC9461F) else Color(0xFFFF8466), mobile)
                     }
                 }

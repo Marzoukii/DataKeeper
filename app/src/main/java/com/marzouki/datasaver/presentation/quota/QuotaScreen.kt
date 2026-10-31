@@ -3,7 +3,7 @@ package com.marzouki.datasaver.presentation.quota
 import com.marzouki.datasaver.ui.theme.Brand
 import com.marzouki.datasaver.ui.components.dayOfMonth
 import com.marzouki.datasaver.ui.components.SectionTitle
-import com.marzouki.datasaver.ui.components.nightGlow
+import com.marzouki.datasaver.ui.components.heroSurface
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.background
 import androidx.compose.ui.graphics.Color
@@ -285,10 +285,10 @@ private fun QuotaHeroHeader(
             .fillMaxWidth()
             .padding(top = 8.dp, bottom = 4.dp)
             .clip(RoundedCornerShape(28.dp))
-            .nightGlow()
+            .heroSurface()
             .padding(horizontal = 20.dp, vertical = 18.dp),
     ) {
-        Text(stringResource(R.string.quota_title), style = MaterialTheme.typography.headlineSmall, color = Brand.OnNight)
+        Text(stringResource(R.string.quota_title), style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onSurface)
         Text(
             buildString {
                 if (operatorName != null && quota != null) {
@@ -297,36 +297,36 @@ private fun QuotaHeroHeader(
                 append(stringResource(R.string.quota_overline, formatDayMonth(period.nextStartMillis)))
             },
             style = MaterialTheme.typography.bodyMedium.numeric(),
-            color = Brand.OnNightVariant,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.height(14.dp))
         when {
             quota == null || status == null -> Text(
                 stringResource(R.string.quota_none),
                 style = MaterialTheme.typography.titleLarge,
-                color = Brand.OnNight,
+                color = MaterialTheme.colorScheme.onSurface,
             )
             status.isExceeded -> Text(
                 stringResource(R.string.quota_exceeded_chip, status.exceededBytes.toReadableSize()),
                 style = MaterialTheme.typography.displaySmall.numeric(),
-                color = Brand.GlowCoral,
+                color = Brand.Mobile,
             )
             else -> {
                 val remaining = status.remainingBytes.toReadableSizeParts()
                 Row(verticalAlignment = Alignment.Bottom) {
-                    Text(remaining.value, style = MaterialTheme.typography.displayMedium.numeric(), color = Brand.OnNight)
+                    Text(remaining.value, style = MaterialTheme.typography.displayMedium.numeric(), color = MaterialTheme.colorScheme.onSurface)
                     Spacer(Modifier.width(8.dp))
                     Text(
                         "${remaining.unit} ${stringResource(R.string.widget_remaining)}",
                         style = MaterialTheme.typography.titleMedium,
-                        color = Brand.OnNight,
+                        color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.padding(bottom = 8.dp),
                     )
                 }
                 Text(
                     pluralStringResource(R.plurals.widget_days_left, period.remainingDays, period.remainingDays),
                     style = MaterialTheme.typography.titleSmall.numeric(),
-                    color = Brand.Saffron,
+                    color = Brand.Accent,
                 )
             }
         }
@@ -336,8 +336,8 @@ private fun QuotaHeroHeader(
             Box(Modifier.fillMaxWidth()) {
                 ThinBar(
                     fraction = status.usedRatio,
-                    color = Brand.GlowCoral,
-                    trackColor = Color.White.copy(alpha = 0.14f),
+                    color = Brand.Mobile,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
                     height = 10.dp,
                 )
                 if (quota.alertEnabled) {
@@ -351,7 +351,7 @@ private fun QuotaHeroHeader(
                             Modifier
                                 .width(2.dp)
                                 .height(10.dp)
-                                .background(Brand.Saffron),
+                                .background(Brand.Accent),
                         )
                     }
                 }
@@ -383,7 +383,7 @@ private fun QuotaHeroHeader(
                         formatDayMonth(balance.atMillis),
                     ),
                     style = MaterialTheme.typography.bodySmall,
-                    color = Brand.OnNightVariant,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -396,10 +396,10 @@ private fun NightChip(text: String) {
     Text(
         text,
         style = MaterialTheme.typography.labelLarge.numeric(),
-        color = Brand.OnNight,
+        color = MaterialTheme.colorScheme.onSurface,
         modifier = Modifier
             .clip(RoundedCornerShape(10.dp))
-            .background(Color.White.copy(alpha = 0.10f))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(horizontal = 12.dp, vertical = 7.dp),
     )
 }
@@ -439,13 +439,13 @@ private fun CycleGridCard(forecast: QuotaForecast) {
                         val isFuture = index > todayIndex
                         val over = bytes != null && !isToday && bytes > fairShare
                         val background = when {
-                            isToday -> Brand.Saffron
+                            isToday -> Brand.AccentTint
                             over -> MaterialTheme.colorScheme.tertiaryContainer
                             isFuture -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
                             else -> MaterialTheme.colorScheme.surface
                         }
                         val ink = when {
-                            isToday -> Brand.Night
+                            isToday -> Brand.Accent
                             over -> MaterialTheme.colorScheme.onTertiaryContainer
                             isFuture -> MaterialTheme.colorScheme.onSurfaceVariant
                             else -> MaterialTheme.colorScheme.onSurface
