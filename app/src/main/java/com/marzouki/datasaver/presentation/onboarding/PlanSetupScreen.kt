@@ -1,5 +1,10 @@
 package com.marzouki.datasaver.presentation.onboarding
 
+import com.marzouki.datasaver.ui.theme.Brand
+import com.marzouki.datasaver.ui.components.nightGlow
+import com.marzouki.datasaver.ui.components.glowBackground
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.RoundedCornerShape
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
@@ -96,9 +101,10 @@ private fun PlanSetupContent(state: PlanSetupState, onIntent: (PlanSetupIntent) 
     Surface(modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(
             Modifier
+                .glowBackground()
                 .windowInsetsPadding(WindowInsets.safeDrawing)
                 .imePadding()
-                .padding(24.dp),
+                .padding(horizontal = 16.dp, vertical = 16.dp),
         ) {
             Column(
                 Modifier
@@ -107,23 +113,33 @@ private fun PlanSetupContent(state: PlanSetupState, onIntent: (PlanSetupIntent) 
                     .padding(top = 16.dp, bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                Text(
-                    if (state.operatorName != null) {
-                        stringResource(R.string.setup_title_operator, state.operatorName)
-                    } else {
-                        stringResource(R.string.setup_title)
-                    },
-                    style = MaterialTheme.typography.headlineSmall,
-                )
-                Text(
-                    stringResource(if (state.operatorChanged) R.string.setup_body_operator_changed else R.string.setup_body),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(28.dp))
+                        .nightGlow()
+                        .padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(
+                        if (state.operatorName != null) {
+                            stringResource(R.string.setup_title_operator, state.operatorName)
+                        } else {
+                            stringResource(R.string.setup_title)
+                        },
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = Brand.OnNight,
+                    )
+                    Text(
+                        stringResource(if (state.operatorChanged) R.string.setup_body_operator_changed else R.string.setup_body),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Brand.OnNightVariant,
+                    )
+                }
 
                 val chipColors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    selectedContainerColor = Brand.Night,
+                    selectedLabelColor = Brand.OnNight,
                 )
 
                 // 0. Forfaits déjà utilisés chez cet opérateur : un appui remplit tout.

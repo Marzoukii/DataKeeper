@@ -1,5 +1,10 @@
 package com.marzouki.datasaver.presentation.onboarding
 
+import com.marzouki.datasaver.ui.theme.numeric
+import com.marzouki.datasaver.ui.theme.Brand
+import com.marzouki.datasaver.ui.components.nightGlow
+import com.marzouki.datasaver.ui.components.glowBackground
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -73,8 +78,9 @@ fun UsageAccessScreen(
     Surface(modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(
             Modifier
+                .glowBackground()
                 .windowInsetsPadding(WindowInsets.safeDrawing)
-                .padding(24.dp),
+                .padding(horizontal = 16.dp, vertical = 16.dp),
         ) {
             Column(
                 Modifier
@@ -83,25 +89,36 @@ fun UsageAccessScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(top = 16.dp, bottom = 24.dp),
             ) {
-                Logo()
-                Spacer(Modifier.height(24.dp))
-                Illustration()
-                Spacer(Modifier.height(24.dp))
-                Text(
-                    stringResource(R.string.onboarding_title),
-                    style = MaterialTheme.typography.headlineLarge.copy(fontSize = 30.sp, lineHeight = 36.sp),
-                )
-                Spacer(Modifier.height(12.dp))
-                Text(
-                    stringResource(R.string.onboarding_body),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Spacer(Modifier.height(24.dp))
-                Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                    CheckPoint(stringResource(R.string.onboarding_point_volumes))
-                    CheckPoint(stringResource(R.string.onboarding_point_local))
-                    CheckPoint(stringResource(R.string.onboarding_point_revoke))
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(32.dp))
+                        .nightGlow()
+                        .padding(20.dp),
+                ) {
+                    Logo()
+                    Spacer(Modifier.height(20.dp))
+                    Illustration()
+                    Spacer(Modifier.height(20.dp))
+                    Text(
+                        stringResource(R.string.onboarding_title),
+                        style = MaterialTheme.typography.headlineLarge.copy(fontSize = 30.sp, lineHeight = 36.sp),
+                        color = Brand.OnNight,
+                    )
+                    Spacer(Modifier.height(10.dp))
+                    Text(
+                        stringResource(R.string.onboarding_body),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Brand.OnNightVariant,
+                    )
+                }
+                Spacer(Modifier.height(16.dp))
+                DataKeeperCard(contentPadding = 16.dp) {
+                    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                        CheckPoint(stringResource(R.string.onboarding_point_volumes))
+                        CheckPoint(stringResource(R.string.onboarding_point_local))
+                        CheckPoint(stringResource(R.string.onboarding_point_revoke))
+                    }
                 }
                 // Dans la zone défilante : avec ses étapes, la carte ne tiendrait pas sur un petit écran.
                 if (showRestrictedHelp) {
@@ -113,6 +130,7 @@ fun UsageAccessScreen(
             Button(
                 onClick = onOpenSettings,
                 shape = CircleShape,
+                colors = ButtonDefaults.buttonColors(containerColor = Brand.Night, contentColor = Brand.OnNight),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -202,27 +220,34 @@ private fun RestrictedStep(number: Int, text: String) {
 private fun Logo() {
     val description = stringResource(R.string.onboarding_logo_description)
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(
+        // Trois lignes du carnet : le jour passé, aujourd'hui en safran, ce qu'il reste en menthe.
+        Column(
             Modifier
                 .size(36.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.primary)
-                .semantics { contentDescription = description },
-            contentAlignment = Alignment.Center,
+                .clip(RoundedCornerShape(10.dp))
+                .background(Brand.NightRaised)
+                .semantics { contentDescription = description }
+                .padding(horizontal = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(3.dp, Alignment.CenterVertically),
         ) {
-            Icon(Icons.Rounded.Shield, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(24.dp))
-            Icon(
-                Icons.Rounded.Wifi,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .size(12.dp)
-                    .offset(y = (-1).dp),
-            )
+            LogoBar(Color.White, 1f)
+            LogoBar(Brand.Saffron, 1f)
+            LogoBar(Brand.GlowMint, 0.58f)
         }
         Spacer(Modifier.width(10.dp))
-        Text(stringResource(R.string.app_name), style = MaterialTheme.typography.titleLarge)
+        Text(stringResource(R.string.app_name), style = MaterialTheme.typography.titleLarge, color = Brand.OnNight)
     }
+}
+
+@Composable
+private fun LogoBar(color: Color, fraction: Float) {
+    Box(
+        Modifier
+            .fillMaxWidth(fraction)
+            .height(4.dp)
+            .clip(CircleShape)
+            .background(color),
+    )
 }
 
 /**
@@ -242,50 +267,54 @@ private fun Modifier.fadingBottomEdge(color: Color, height: Dp = 32.dp): Modifie
 private val IllustrationCardWidth = 240.dp
 private val IllustrationBubbleSize = 56.dp
 
-/** Carte avec quatre barres Wi-Fi et une petite barre mobile, et une bulle Wi-Fi sur son coin. */
+/** Un petit carnet : quatre jours, surtout en Wi-Fi, le troisième en bande safran (aujourd'hui). */
 @Composable
 private fun Illustration() {
     val description = stringResource(R.string.onboarding_illustration_description)
-    // La bulle est centrée sur le coin haut droit de la carte, quelle que soit la largeur de l'écran ;
-    // la boîte déborde de la carte d'une demi-bulle de chaque côté pour garder la carte centrée.
-    Box(
+    Column(
         Modifier
             .fillMaxWidth()
-            .wrapContentWidth()
-            .width(IllustrationCardWidth + IllustrationBubbleSize)
-            .height(150.dp + IllustrationBubbleSize / 2)
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White.copy(alpha = 0.08f))
+            .padding(horizontal = 14.dp, vertical = 12.dp)
             .clearAndSetSemantics { contentDescription = description },
-        contentAlignment = Alignment.BottomCenter,
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        DataKeeperCard(
-            Modifier
-                .width(IllustrationCardWidth)
-                .height(150.dp),
-            shape = MaterialTheme.shapes.extraLarge,
-        ) {
-            Row(
-                Modifier.fillMaxSize(),
-                horizontalArrangement = Arrangement.spacedBy(14.dp, Alignment.CenterHorizontally),
-                verticalAlignment = Alignment.Bottom,
-            ) {
-                listOf(0.55f, 0.85f, 0.65f, 1f).forEach { IllustrationBar(DataColors.wifi, it) }
-                IllustrationBar(DataColors.mobile, 0.22f)
+        listOf(Triple("26", 0.70f, 0.18f), Triple("27", 0.86f, 0.14f), Triple("28", 0.52f, 0.10f), Triple("29", 0.62f, 0.22f))
+            .forEachIndexed { index, (day, wifi, mobile) ->
+                val today = index == 2
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(if (today) Brand.Saffron else Color.Transparent)
+                        .padding(horizontal = if (today) 8.dp else 0.dp, vertical = if (today) 6.dp else 0.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        day,
+                        style = MaterialTheme.typography.titleMedium.numeric(),
+                        color = if (today) Brand.Night else Brand.OnNight,
+                        modifier = Modifier.width(36.dp),
+                    )
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        IllustrationLine(if (today) Color(0xFF0B6E62) else Brand.GlowMint, wifi)
+                        IllustrationLine(if (today) Color(0xFFC9461F) else Color(0xFFFF8466), mobile)
+                    }
+                }
             }
-        }
-        Box(
-            Modifier
-                .align(Alignment.TopEnd)
-                .size(IllustrationBubbleSize)
-                // Anneau couleur de fond : la bulle se détache proprement de la bordure de la carte.
-                .border(4.dp, MaterialTheme.colorScheme.background, CircleShape)
-                .padding(4.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primaryContainer),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(Icons.Rounded.Wifi, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(26.dp))
-        }
     }
+}
+
+@Composable
+private fun IllustrationLine(color: Color, fraction: Float) {
+    Box(
+        Modifier
+            .fillMaxWidth(fraction)
+            .height(7.dp)
+            .clip(CircleShape)
+            .background(color),
+    )
 }
 
 @Composable

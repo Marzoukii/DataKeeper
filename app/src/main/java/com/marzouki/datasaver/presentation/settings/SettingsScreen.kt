@@ -1,5 +1,6 @@
 package com.marzouki.datasaver.presentation.settings
 
+import com.marzouki.datasaver.ui.components.BackHeader
 import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -98,12 +99,11 @@ private fun SettingsContent(
             .padding(horizontal = Spacing.screenHorizontal, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(Spacing.betweenCards),
     ) {
-        Row(Modifier.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = stringResource(R.string.settings_back))
-            }
-            Text(stringResource(R.string.settings_title), style = MaterialTheme.typography.headlineSmall)
-        }
+        BackHeader(
+            title = stringResource(R.string.settings_title),
+            backDescription = stringResource(R.string.settings_back),
+            onBack = onBack,
+        )
 
         SectionLabel(R.string.settings_appearance)
         Row(
@@ -156,9 +156,9 @@ private fun SettingsContent(
 private fun SectionLabel(@StringRes textRes: Int) {
     val locale = LocalConfiguration.current.locales[0]
     Text(
-        stringResource(textRes).uppercase(locale),
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.primary,
+        stringResource(textRes),
+        style = MaterialTheme.typography.titleMedium,
+        color = MaterialTheme.colorScheme.onSurface,
         modifier = Modifier.padding(start = Spacing.titleExtra, top = 8.dp),
     )
 }

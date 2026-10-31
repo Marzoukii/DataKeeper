@@ -8,6 +8,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -47,6 +49,36 @@ fun ScreenHeader(
             Text(overline, style = MaterialTheme.typography.bodyMedium, color = overlineColor)
         }
         action?.invoke()
+    }
+}
+
+/** En-tête des sous-écrans (réglages, partage de connexion) : bloc bleu nuit avec la flèche retour. */
+@Composable
+fun BackHeader(
+    title: String,
+    backDescription: String,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    subtitle: String? = null,
+) {
+    Row(
+        modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp, bottom = 4.dp)
+            .clip(RoundedCornerShape(28.dp))
+            .nightGlow()
+            .padding(start = 8.dp, end = 20.dp, top = 12.dp, bottom = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        IconButton(onClick = onBack) {
+            Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = backDescription, tint = Brand.OnNight)
+        }
+        Column(Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.headlineSmall, color = Brand.OnNight)
+            if (subtitle != null) {
+                Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = Brand.OnNightVariant)
+            }
+        }
     }
 }
 
