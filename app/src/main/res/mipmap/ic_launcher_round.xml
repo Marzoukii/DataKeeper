@@ -7,7 +7,7 @@
         android:right="10dp"
         android:top="10dp">
         <shape android:shape="oval">
-            <solid android:color="#2357E8" />
+            <solid android:color="#111A44" />
         </shape>
     </item>
     <item android:drawable="@drawable/ic_launcher_foreground" />

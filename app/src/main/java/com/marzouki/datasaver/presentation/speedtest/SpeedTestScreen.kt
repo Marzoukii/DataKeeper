@@ -1,5 +1,7 @@
 package com.marzouki.datasaver.presentation.speedtest
 
+import com.marzouki.datasaver.ui.components.SectionTitle
+import androidx.compose.material.icons.rounded.History
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -76,6 +78,7 @@ import com.marzouki.datasaver.ui.components.formatDayTime
 import com.marzouki.datasaver.ui.components.formatElapsed
 import com.marzouki.datasaver.ui.components.formatMbps
 import com.marzouki.datasaver.ui.components.toReadableSize
+import com.marzouki.datasaver.ui.theme.Brand
 import com.marzouki.datasaver.ui.theme.DataColors
 import com.marzouki.datasaver.ui.theme.Spacing
 import com.marzouki.datasaver.ui.theme.numeric
@@ -251,7 +254,7 @@ private fun ColumnScope.RunningContent(progress: SpeedTestProgress, onCancel: ()
     ScreenHeader(
         overline = stringResource(R.string.speed_test_running_overline),
         title = stringResource(progress.phase.labelRes),
-        overlineColor = MaterialTheme.colorScheme.primary,
+        overlineColor = Brand.GlowMint,
     )
     DataKeeperCard(shape = MaterialTheme.shapes.extraLarge) {
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -385,7 +388,7 @@ private fun ColumnScope.ResultContent(result: SpeedTestResult, previous: List<Sp
     }
     if (previous.isNotEmpty()) {
         DataKeeperCard(contentPadding = 16.dp) {
-            Text(stringResource(R.string.speed_test_history), style = MaterialTheme.typography.titleSmall)
+            SectionTitle(stringResource(R.string.speed_test_history), Icons.Rounded.History)
             Spacer(Modifier.height(8.dp))
             previous.forEach { HistoryRow(it, nowMillis) }
         }

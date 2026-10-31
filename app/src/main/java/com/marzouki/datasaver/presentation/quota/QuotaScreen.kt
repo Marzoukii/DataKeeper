@@ -1,5 +1,9 @@
 package com.marzouki.datasaver.presentation.quota
 
+import androidx.compose.foundation.layout.width
+import com.marzouki.datasaver.ui.components.IconChip
+import androidx.compose.material.icons.rounded.Today
+import androidx.compose.material.icons.rounded.TrendingUp
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -106,7 +110,7 @@ import com.marzouki.datasaver.ui.components.formatUsedOf
 import com.marzouki.datasaver.ui.components.toReadableSize
 import com.marzouki.datasaver.ui.components.toReadableSizeParts
 import com.marzouki.datasaver.ui.theme.DataColors
-import com.marzouki.datasaver.ui.theme.SpaceGrotesk
+import com.marzouki.datasaver.ui.theme.ReadexPro
 import com.marzouki.datasaver.ui.theme.Spacing
 import com.marzouki.datasaver.ui.theme.numeric
 import java.util.Calendar
@@ -354,6 +358,8 @@ private fun DailyBudgetCard(forecast: QuotaForecast) {
     }
     DataKeeperCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
+            IconChip(Icons.Rounded.Today)
+            Spacer(Modifier.width(10.dp))
             Text(
                 stringResource(R.string.budget_title),
                 style = MaterialTheme.typography.titleMedium,
@@ -405,6 +411,8 @@ private fun ForecastCard(forecast: QuotaForecast) {
 
     DataKeeperCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
+            IconChip(Icons.Rounded.TrendingUp)
+            Spacer(Modifier.width(10.dp))
             Text(
                 stringResource(R.string.forecast_title),
                 style = MaterialTheme.typography.titleMedium,
@@ -418,7 +426,7 @@ private fun ForecastCard(forecast: QuotaForecast) {
                 append(body)
                 val start = body.indexOf(projected)
                 if (start >= 0) {
-                    addStyle(SpanStyle(fontFamily = SpaceGrotesk, fontWeight = FontWeight.Bold), start, start + projected.length)
+                    addStyle(SpanStyle(fontFamily = ReadexPro, fontWeight = FontWeight.Bold), start, start + projected.length)
                 }
             },
             style = MaterialTheme.typography.bodyMedium,
@@ -452,6 +460,8 @@ private fun PlanCard(state: QuotaState, onIntent: (QuotaIntent) -> Unit, onOther
 
     DataKeeperCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
+            IconChip(Icons.Rounded.SimCard)
+            Spacer(Modifier.width(10.dp))
             Text(
                 stringResource(R.string.quota_plan_title),
                 style = MaterialTheme.typography.titleMedium,
@@ -465,7 +475,7 @@ private fun PlanCard(state: QuotaState, onIntent: (QuotaIntent) -> Unit, onOther
                         withStyle(SpanStyle(fontSize = 15.sp)) { append(" ${value.unit}") }
                     }
                 },
-                style = MaterialTheme.typography.titleLarge.copy(fontFamily = SpaceGrotesk, fontSize = 22.sp),
+                style = MaterialTheme.typography.titleLarge.copy(fontFamily = ReadexPro, fontSize = 22.sp),
                 color = MaterialTheme.colorScheme.primary,
             )
         }

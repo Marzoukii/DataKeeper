@@ -9,18 +9,15 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import com.marzouki.datasaver.R
 
-/** Titres et tous les chiffres (Go, Mo, %). */
-val SpaceGrotesk = FontFamily(
-    Font(R.font.space_grotesk_medium, FontWeight.Medium),
-    Font(R.font.space_grotesk_semibold, FontWeight.SemiBold),
-    Font(R.font.space_grotesk_bold, FontWeight.Bold),
-)
-
-/** Texte courant. */
-val DmSans = FontFamily(
-    Font(R.font.dm_sans_regular, FontWeight.Normal),
-    Font(R.font.dm_sans_medium, FontWeight.Medium),
-    Font(R.font.dm_sans_semibold, FontWeight.SemiBold),
+/**
+ * Readex Pro, latin et arabe dans la même police : titres, texte et chiffres (tabulaires partout,
+ * pour que les colonnes du carnet restent alignées).
+ */
+val ReadexPro = FontFamily(
+    Font(R.font.readex_pro_regular, FontWeight.Normal),
+    Font(R.font.readex_pro_medium, FontWeight.Medium),
+    Font(R.font.readex_pro_semibold, FontWeight.SemiBold),
+    Font(R.font.readex_pro_bold, FontWeight.Bold),
 )
 
 private fun style(
@@ -35,26 +32,27 @@ private fun style(
     fontSize = size,
     lineHeight = lineHeight,
     letterSpacing = letterSpacing,
+    fontFeatureSettings = "tnum",
 )
 
 private val Default = Typography()
 
 val Typography = Typography(
-    displayLarge = Default.displayLarge.copy(fontFamily = SpaceGrotesk, fontWeight = FontWeight.Bold),
-    displayMedium = Default.displayMedium.copy(fontFamily = SpaceGrotesk, fontWeight = FontWeight.Bold),
-    displaySmall = style(SpaceGrotesk, FontWeight.Bold, 40.sp, 44.sp, (-1).sp),
-    headlineLarge = style(SpaceGrotesk, FontWeight.Bold, 34.sp, 36.sp, (-1).sp),
-    headlineMedium = Default.headlineMedium.copy(fontFamily = SpaceGrotesk, fontWeight = FontWeight.Bold),
-    headlineSmall = style(SpaceGrotesk, FontWeight.Bold, 26.sp, 32.sp, (-0.5).sp),
-    titleLarge = style(SpaceGrotesk, FontWeight.Bold, 22.sp, 28.sp),
-    titleMedium = style(DmSans, FontWeight.SemiBold, 16.sp, 22.sp),
-    titleSmall = style(DmSans, FontWeight.SemiBold, 14.sp, 20.sp),
-    bodyLarge = style(DmSans, FontWeight.Normal, 16.sp, 24.sp),
-    bodyMedium = style(DmSans, FontWeight.Normal, 14.sp, 20.sp),
-    bodySmall = style(DmSans, FontWeight.Normal, 13.sp, 18.sp),
-    labelLarge = style(DmSans, FontWeight.SemiBold, 15.sp, 20.sp),
-    labelMedium = style(DmSans, FontWeight.SemiBold, 12.sp, 16.sp),
-    labelSmall = Default.labelSmall.copy(fontFamily = DmSans, fontWeight = FontWeight.Medium),
+    displayLarge = Default.displayLarge.copy(fontFamily = ReadexPro, fontWeight = FontWeight.Bold),
+    displayMedium = Default.displayMedium.copy(fontFamily = ReadexPro, fontWeight = FontWeight.Bold),
+    displaySmall = style(ReadexPro, FontWeight.SemiBold, 40.sp, 44.sp, (-1).sp),
+    headlineLarge = style(ReadexPro, FontWeight.SemiBold, 34.sp, 36.sp, (-1).sp),
+    headlineMedium = Default.headlineMedium.copy(fontFamily = ReadexPro, fontWeight = FontWeight.Bold),
+    headlineSmall = style(ReadexPro, FontWeight.SemiBold, 26.sp, 32.sp, (-0.5).sp),
+    titleLarge = style(ReadexPro, FontWeight.SemiBold, 22.sp, 28.sp),
+    titleMedium = style(ReadexPro, FontWeight.SemiBold, 16.sp, 22.sp),
+    titleSmall = style(ReadexPro, FontWeight.SemiBold, 14.sp, 20.sp),
+    bodyLarge = style(ReadexPro, FontWeight.Normal, 16.sp, 24.sp),
+    bodyMedium = style(ReadexPro, FontWeight.Normal, 14.sp, 20.sp),
+    bodySmall = style(ReadexPro, FontWeight.Normal, 13.sp, 18.sp),
+    labelLarge = style(ReadexPro, FontWeight.SemiBold, 15.sp, 20.sp),
+    labelMedium = style(ReadexPro, FontWeight.SemiBold, 12.sp, 16.sp),
+    labelSmall = Default.labelSmall.copy(fontFamily = ReadexPro, fontWeight = FontWeight.Medium),
 )
 
 /**
@@ -85,5 +83,5 @@ private fun Typography.withoutLetterSpacing(): Typography {
     )
 }
 
-/** Même style en Space Grotesk, pour un chiffre placé dans un texte en DM Sans. */
-fun TextStyle.numeric(): TextStyle = copy(fontFamily = SpaceGrotesk)
+/** Chiffres tabulaires, pour un nombre placé dans un texte courant. */
+fun TextStyle.numeric(): TextStyle = copy(fontFamily = ReadexPro, fontFeatureSettings = "tnum")

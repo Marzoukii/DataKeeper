@@ -1,5 +1,8 @@
 package com.marzouki.datasaver.presentation.usage
 
+import com.marzouki.datasaver.ui.components.SectionTitle
+import androidx.compose.material.icons.rounded.Apps
+import androidx.compose.material.icons.rounded.CalendarMonth
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.LocalActivity
@@ -265,7 +268,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.dashboard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             } else {
-                Text(stringResource(R.string.usage_last_7_days), style = MaterialTheme.typography.titleMedium)
+                SectionTitle(stringResource(R.string.usage_last_7_days), Icons.Rounded.CalendarMonth)
                 Spacer(Modifier.height(12.dp))
                 AnalyzingBox(stringResource(R.string.usage_analyzing_days))
             }
@@ -273,7 +276,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.dashboard(
     }
     item {
         DataKeeperCard {
-            Text(stringResource(R.string.usage_top_apps_title), style = MaterialTheme.typography.titleMedium)
+            SectionTitle(stringResource(R.string.usage_top_apps_title), Icons.Rounded.Apps)
             Spacer(Modifier.height(8.dp))
             if (state.topMobileApps.isEmpty()) {
                 Spacer(Modifier.height(4.dp))

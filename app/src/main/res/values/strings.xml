@@ -124,6 +124,7 @@
     <string name="usage_analyzing_days">Le graphique se remplira dès qu’Android aura mesuré du trafic ces derniers jours.</string>
     <string name="usage_analyzing_apps">Aucune appli n’a encore utilisé de données mobiles ce cycle.</string>
     <string name="usage_day_hint">Touche un jour pour voir son détail.</string>
+    <string name="usage_today_short">Auj.</string>
     <string name="usage_day_total">%1$s au total</string>
     <string name="usage_day_share">%1$s · %2$d %%</string>
     <string name="usage_heavy_app_title">%1$s dévore ton forfait</string>

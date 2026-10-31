@@ -4,6 +4,17 @@ import android.os.Build
 import androidx.annotation.StringRes
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import com.marzouki.datasaver.ui.components.glowBackground
+import com.marzouki.datasaver.ui.theme.Brand
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -153,21 +164,38 @@ private fun MainScaffold(requestedTab: String?, onTabRequestHandled: () -> Unit,
         bottomBar = {
             // Réglages et partage de connexion sont des sous-écrans, avec leur flèche retour : pas d'onglets dessous.
             if (currentRoute == AppRoutes.SETTINGS || currentRoute == AppRoutes.TETHERING) return@Scaffold
-            NavigationBar(containerColor = MaterialTheme.colorScheme.surface, tonalElevation = 0.dp) {
-                Destination.entries.forEach { destination ->
-                    NavigationBarItem(
-                        selected = destination == current,
-                        onClick = { navController.navigateToTab(destination) },
-                        icon = { Icon(destination.icon, contentDescription = null) },
-                        label = { Text(stringResource(destination.labelRes)) },
-                        colors = NavigationBarItemDefaults.colors(
-                            indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                            selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                            selectedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        ),
-                    )
+            // Barre flottante en verre bleu nuit, détachée des bords : le contenu reste lisible autour.
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .windowInsetsPadding(WindowInsets.navigationBars)
+                    .padding(horizontal = 12.dp, vertical = 10.dp)
+                    .shadow(16.dp, RoundedCornerShape(28.dp), ambientColor = Brand.NightDeep, spotColor = Brand.NightDeep)
+                    .clip(RoundedCornerShape(28.dp))
+                    .background(Brand.Night.copy(alpha = 0.90f))
+                    .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(28.dp)),
+            ) {
+                NavigationBar(
+                    containerColor = Color.Transparent,
+                    tonalElevation = 0.dp,
+                    windowInsets = WindowInsets(0, 0, 0, 0),
+                    modifier = Modifier.height(72.dp),
+                ) {
+                    Destination.entries.forEach { destination ->
+                        NavigationBarItem(
+                            selected = destination == current,
+                            onClick = { navController.navigateToTab(destination) },
+                            icon = { Icon(destination.icon, contentDescription = null) },
+                            label = { Text(stringResource(destination.labelRes), maxLines = 1) },
+                            colors = NavigationBarItemDefaults.colors(
+                                indicatorColor = Brand.Saffron,
+                                selectedIconColor = Brand.Night,
+                                selectedTextColor = Brand.OnNight,
+                                unselectedIconColor = Brand.OnNightVariant,
+                                unselectedTextColor = Brand.OnNightVariant,
+                            ),
+                        )
+                    }
                 }
             }
         },
@@ -175,7 +203,10 @@ private fun MainScaffold(requestedTab: String?, onTabRequestHandled: () -> Unit,
         NavHost(
             navController = navController,
             startDestination = Destination.USAGE.route,
-            modifier = Modifier.padding(innerPadding),
+            modifier = Modifier
+                .fillMaxSize()
+                .glowBackground()
+                .padding(innerPadding),
         ) {
             composable(Destination.USAGE.route) {
                 UsageScreen(
