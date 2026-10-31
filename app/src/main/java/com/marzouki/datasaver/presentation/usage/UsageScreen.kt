@@ -174,7 +174,18 @@ private fun UsageContent(
             verticalArrangement = Arrangement.spacedBy(Spacing.betweenCards),
         ) {
             item {
-                UsageHeroHeader(state, period, onOpenQuota = onOpenQuota, onOpenSettings = onOpenSettings)
+                ScreenHeader(
+                    overline = stringResource(
+                        R.string.usage_overline,
+                        state.operatorName?.let { stringResource(R.string.usage_plan_label_operator, it) }
+                            ?: formatMonthYear(period.endMillis),
+                        period.currentDay,
+                        period.totalDays,
+                    ),
+                    title = stringResource(R.string.usage_title),
+                ) {
+                    HeaderIconButton(Icons.Rounded.Settings, stringResource(R.string.usage_settings), onOpenSettings)
+                }
             }
             state.tethering?.let { tethering ->
                 item { TetheringBanner(tethering.usedBytes, onClick = onOpenTethering) }
@@ -215,9 +226,6 @@ private fun androidx.compose.foundation.lazy.LazyListScope.dashboard(
     onDayClick: (DayUsage) -> Unit,
 ) {
     item {
-        LedgerCard(state, period, selectedDayMillis, onDayClick)
-    }
-    item {
         if (usage.totalBytes == 0L) {
             EmptyUsageCard()
         } else {
@@ -240,13 +248,22 @@ private fun androidx.compose.foundation.lazy.LazyListScope.dashboard(
     if (heavyApp != null && quota != null) {
         item { HeavyAppBanner(heavyApp, quota.limitBytes) }
     }
+    // Ordre de l'ancien tableau de bord : répartition, quota, économies et forfait, puis le carnet.
+    item { QuotaSummaryCard(state.quotaStatus, period, onClick = onOpenQuota) }
     item {
-        SavingsCard(
+        SavingsAndPlanRow(
             wifiBytes = usage.wifiBytes,
             pricePerGb = state.pricePerGb,
-            onSetPrice = onOpenQuota,
+            status = state.quotaStatus,
+            quota = state.quota,
+            balance = state.quota?.balanceIn(period),
+            onOpenQuota = onOpenQuota,
             operatorName = state.operatorName,
+            resetMillis = period.nextStartMillis,
         )
+    }
+    item {
+        LedgerCard(state, period, selectedDayMillis, onDayClick)
     }
     item {
         DataKeeperCard {
