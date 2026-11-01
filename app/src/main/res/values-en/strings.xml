@@ -513,4 +513,6 @@
     <string name="budget_left_short">%1$s more without touching tomorrow</string>
     <string name="budget_over_short">Over by %1$s: switch to Wi‑Fi</string>
     <string name="quota_grid_subtitle">Mobile data per day · budget ≈ %1$s</string>
+    <string name="usage_split_total">Total %1$s</string>
+    <string name="usage_first_hint">First day: the figures fill in during the day.</string>
 </resources>

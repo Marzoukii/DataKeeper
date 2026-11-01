@@ -525,4 +525,6 @@
     <string name="budget_left_short">Encore %1$s sans entamer demain</string>
     <string name="budget_over_short">Dépassé de %1$s : passe en Wi‑Fi</string>
     <string name="quota_grid_subtitle">Data mobile par jour · budget ≈ %1$s</string>
+    <string name="usage_split_total">Total %1$s</string>
+    <string name="usage_first_hint">Premier jour : les chiffres se remplissent au fil de la journée.</string>
 </resources>

@@ -548,4 +548,6 @@
     <string name="budget_left_short">يتبقى %1$s دون المساس بالغد</string>
     <string name="budget_over_short">تجاوزت بـ %1$s: انتقل إلى الواي فاي</string>
     <string name="quota_grid_subtitle">بيانات الجوال يوميًا · الميزانية ≈ %1$s</string>
+    <string name="usage_split_total">المجموع %1$s</string>
+    <string name="usage_first_hint">اليوم الأول: تمتلئ الأرقام خلال اليوم.</string>
 </resources>
