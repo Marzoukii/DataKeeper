@@ -473,4 +473,8 @@
     </plurals>
     <string name="wifi_no_ads_count">%1$d sans pub</string>
     <string name="wifi_nearest_label">LE PLUS PROCHE</string>
+    <string name="downloads_active">Actif</string>
+    <string name="downloads_stat_mobile">de données mobiles utilisés</string>
+    <string name="downloads_stat_saved_money">d’économie sur ton forfait</string>
+    <string name="downloads_stat_saved_data">épargnés à ton forfait</string>
 </resources>

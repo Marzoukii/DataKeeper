@@ -461,4 +461,8 @@
     </plurals>
     <string name="wifi_no_ads_count">%1$d ad-free</string>
     <string name="wifi_nearest_label">NEAREST</string>
+    <string name="downloads_active">Active</string>
+    <string name="downloads_stat_mobile">of mobile data used</string>
+    <string name="downloads_stat_saved_money">saved on your plan</string>
+    <string name="downloads_stat_saved_data">spared from your plan</string>
 </resources>

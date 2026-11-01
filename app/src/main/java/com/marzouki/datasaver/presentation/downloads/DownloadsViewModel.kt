@@ -3,6 +3,7 @@ package com.marzouki.datasaver.presentation.downloads
 import com.marzouki.datasaver.domain.usecase.CancelDownloadUseCase
 import com.marzouki.datasaver.domain.usecase.ClearFinishedDownloadsUseCase
 import com.marzouki.datasaver.domain.usecase.ObserveDownloadsUseCase
+import com.marzouki.datasaver.domain.usecase.ObservePricePerGbUseCase
 import com.marzouki.datasaver.domain.usecase.ObserveWifiConnectionUseCase
 import com.marzouki.datasaver.domain.usecase.ScheduleDownloadUseCase
 import com.marzouki.datasaver.presentation.mvi.MviViewModel
@@ -18,11 +19,13 @@ class DownloadsViewModel @Inject constructor(
     private val scheduleDownload: ScheduleDownloadUseCase,
     private val cancelDownload: CancelDownloadUseCase,
     private val clearFinishedDownloads: ClearFinishedDownloadsUseCase,
+    private val observePricePerGb: ObservePricePerGbUseCase,
 ) : MviViewModel<DownloadsState, DownloadsIntent, DownloadsEffect>(DownloadsState()) {
 
     override fun observe(): List<Flow<*>> = listOf(
         observeDownloads().onEach { downloads -> setState { copy(downloads = downloads) } },
         observeWifiConnection().onEach { onWifi -> setState { copy(isOnWifi = onWifi) } },
+        observePricePerGb().onEach { price -> setState { copy(pricePerGb = price) } },
     )
 
     override fun onIntent(intent: DownloadsIntent) {

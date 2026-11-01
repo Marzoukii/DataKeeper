@@ -1,6 +1,7 @@
 package com.marzouki.datasaver.presentation.downloads
 
 import com.marzouki.datasaver.domain.enums.DownloadSchedule
+import com.marzouki.datasaver.domain.model.PricePerGb
 import com.marzouki.datasaver.domain.model.ScheduledDownload
 
 data class DownloadsState(
@@ -11,6 +12,8 @@ data class DownloadsState(
     val downloads: List<ScheduledDownload> = emptyList(),
     /** Réseau non facturé disponible : les téléchargements peuvent tourner. */
     val isOnWifi: Boolean = false,
+    /** Prix du Go du forfait, pour chiffrer en dinars ce que les téléchargements en Wi-Fi ont épargné. */
+    val pricePerGb: PricePerGb? = null,
 )
 
 sealed interface DownloadsIntent {

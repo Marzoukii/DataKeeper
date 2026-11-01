@@ -75,7 +75,7 @@ fun DownloadItemCard(
                 Progress(item, stateColor)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        statusText(item),
+                        downloadStatusText(item),
                         style = MaterialTheme.typography.labelMedium,
                         color = stateColor,
                         modifier = Modifier
@@ -160,8 +160,9 @@ private fun ScheduledDownload.stateColor(): Color = when (state) {
     DownloadState.WAITING_FOR_WIFI, DownloadState.CANCELLED -> MaterialTheme.colorScheme.onSurfaceVariant
 }
 
+/** État lisible d'un téléchargement : « Prévu à 02:00 », « Téléchargement… 64 % », « Terminé ». */
 @Composable
-private fun statusText(download: ScheduledDownload): String = when (download.state) {
+fun downloadStatusText(download: ScheduledDownload): String = when (download.state) {
     DownloadState.WAITING_FOR_WIFI -> {
         val start = download.earliestStartMillis?.takeIf { it > System.currentTimeMillis() }
         if (start != null) {

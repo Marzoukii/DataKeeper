@@ -496,4 +496,8 @@
     </plurals>
     <string name="wifi_no_ads_count">%1$d بدون إعلانات</string>
     <string name="wifi_nearest_label">الأقرب</string>
+    <string name="downloads_active">نشط</string>
+    <string name="downloads_stat_mobile">من بيانات الجوال مستعملة</string>
+    <string name="downloads_stat_saved_money">توفير في باقتك</string>
+    <string name="downloads_stat_saved_data">وفّرتها من باقتك</string>
 </resources>
