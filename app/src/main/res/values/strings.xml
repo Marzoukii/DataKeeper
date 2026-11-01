@@ -488,7 +488,4 @@
     <string name="usage_hero_budget">Budget par jour</string>
     <string name="usage_hero_budget_value">≈ %1$s</string>
     <string name="usage_hero_until">jusqu’au %1$s</string>
-    <string name="plan_cycle_activation_title">Activé à %1$s</string>
-    <string name="plan_cycle_activation_subtitle">La data mobile utilisée avant cette heure reste sur l’ancien forfait</string>
-    <string name="plan_cycle_activation_choose">Heure d’activation du forfait</string>
 </resources>

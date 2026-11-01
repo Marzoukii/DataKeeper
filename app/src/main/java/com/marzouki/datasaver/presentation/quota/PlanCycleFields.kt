@@ -34,13 +34,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.material.icons.rounded.Schedule
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.TimePicker
-import androidx.compose.material3.rememberTimePickerState
-import java.text.DateFormat
-import java.util.Date
 import com.marzouki.datasaver.R
 import com.marzouki.datasaver.domain.model.MonthPeriod
 import com.marzouki.datasaver.domain.model.PlanValidity
@@ -61,8 +54,9 @@ private val VALIDITY_PRESETS = listOf(7, 15, 30)
  */
 data class PlanCycleInput(
     /**
-     * Jour d'achat ou de renouvellement. Pour un pass pris aujourd'hui, l'heure d'activation compte :
-     * la data mobile consommée avant reste sur l'ancien forfait. Les autres jours, minuit.
+     * Jour d'achat ou de renouvellement. Pour un pass saisi le jour même, l'heure de la saisie sert
+     * d'heure d'activation, sans rien demander : la data mobile consommée avant reste sur l'ancien
+     * forfait. Les autres jours, minuit.
      */
     val purchaseMillis: Long = System.currentTimeMillis(),
     val validityInput: String = VALIDITY_PRESETS.last().toString(),
@@ -122,7 +116,6 @@ fun PlanCycleFields(
     modifier: Modifier = Modifier,
 ) {
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
-    var showTimePicker by rememberSaveable { mutableStateOf(false) }
     val period = input.period()
     Column(modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
         DataKeeperCard(contentPadding = 0.dp) {
@@ -146,21 +139,6 @@ fun PlanCycleFields(
                     contentDescription = stringResource(R.string.plan_cycle_purchase_choose),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-            }
-            if (!input.monthly && isToday(input.purchaseMillis)) {
-                HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
-                SettingRow(
-                    icon = Icons.Rounded.Schedule,
-                    title = stringResource(R.string.plan_cycle_activation_title, formatClock(input.purchaseMillis)),
-                    subtitle = stringResource(R.string.plan_cycle_activation_subtitle),
-                    onClick = { showTimePicker = true },
-                ) {
-                    Icon(
-                        Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-                        contentDescription = stringResource(R.string.plan_cycle_activation_choose),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
             }
         }
         val chipColors = FilterChipDefaults.filterChipColors(
@@ -245,55 +223,11 @@ fun PlanCycleFields(
             onDismiss = { showDatePicker = false },
         )
     }
-    if (showTimePicker) {
-        ActivationTimePicker(
-            selectedMillis = input.purchaseMillis,
-            onSelect = {
-                onChange(input.copy(purchaseMillis = it))
-                showTimePicker = false
-            },
-            onDismiss = { showTimePicker = false },
-        )
-    }
-}
-
-/** Heure d'activation d'un pass pris aujourd'hui, jamais dans le futur. */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun ActivationTimePicker(selectedMillis: Long, onSelect: (Long) -> Unit, onDismiss: () -> Unit) {
-    val selected = Calendar.getInstance().apply { timeInMillis = selectedMillis }
-    val state = rememberTimePickerState(
-        initialHour = selected.get(Calendar.HOUR_OF_DAY),
-        initialMinute = selected.get(Calendar.MINUTE),
-        is24Hour = true,
-    )
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.plan_cycle_activation_choose)) },
-        text = { TimePicker(state = state) },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    val chosen = Calendar.getInstance().apply {
-                        timeInMillis = selectedMillis
-                        set(Calendar.HOUR_OF_DAY, state.hour)
-                        set(Calendar.MINUTE, state.minute)
-                        set(Calendar.SECOND, 0)
-                        set(Calendar.MILLISECOND, 0)
-                    }.timeInMillis
-                    onSelect(minOf(chosen, System.currentTimeMillis()))
-                },
-            ) { Text(stringResource(R.string.action_save)) }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } },
-    )
 }
 
 private fun isToday(millis: Long): Boolean =
     PlanCycleInput.startOfDay(millis) == PlanCycleInput.startOfDay(System.currentTimeMillis())
 
-private fun formatClock(millis: Long): String =
-    DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(millis))
 
 /**
  * Le sélecteur de Material raisonne en jours UTC : on y convertit le jour local, et inversement,

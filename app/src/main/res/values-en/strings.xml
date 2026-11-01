@@ -476,7 +476,4 @@
     <string name="usage_hero_budget">Daily budget</string>
     <string name="usage_hero_budget_value">≈ %1$s</string>
     <string name="usage_hero_until">until %1$s</string>
-    <string name="plan_cycle_activation_title">Activated at %1$s</string>
-    <string name="plan_cycle_activation_subtitle">Mobile data used before this time stays on the previous plan</string>
-    <string name="plan_cycle_activation_choose">Plan activation time</string>
 </resources>
