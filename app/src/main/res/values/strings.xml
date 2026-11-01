@@ -466,4 +466,11 @@
         <item quantity="many">%1$d précédents</item>
         <item quantity="other">%1$d précédents</item>
     </plurals>
+    <plurals name="wifi_area_count">
+        <item quantity="one">Autour de toi · %1$d réseau</item>
+        <item quantity="many">Autour de toi · %1$d réseaux</item>
+        <item quantity="other">Autour de toi · %1$d réseaux</item>
+    </plurals>
+    <string name="wifi_no_ads_count">%1$d sans pub</string>
+    <string name="wifi_nearest_label">LE PLUS PROCHE</string>
 </resources>

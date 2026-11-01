@@ -455,4 +455,10 @@
         <item quantity="one">%1$d earlier</item>
         <item quantity="other">%1$d earlier</item>
     </plurals>
+    <plurals name="wifi_area_count">
+        <item quantity="one">Around you · %1$d network</item>
+        <item quantity="other">Around you · %1$d networks</item>
+    </plurals>
+    <string name="wifi_no_ads_count">%1$d ad-free</string>
+    <string name="wifi_nearest_label">NEAREST</string>
 </resources>

@@ -486,4 +486,14 @@
         <item quantity="many">%1$d سابقًا</item>
         <item quantity="other">%1$d سابق</item>
     </plurals>
+    <plurals name="wifi_area_count">
+        <item quantity="zero">حولك · لا شبكات</item>
+        <item quantity="one">حولك · شبكة واحدة</item>
+        <item quantity="two">حولك · شبكتان</item>
+        <item quantity="few">حولك · %1$d شبكات</item>
+        <item quantity="many">حولك · %1$d شبكة</item>
+        <item quantity="other">حولك · %1$d شبكة</item>
+    </plurals>
+    <string name="wifi_no_ads_count">%1$d بدون إعلانات</string>
+    <string name="wifi_nearest_label">الأقرب</string>
 </resources>
