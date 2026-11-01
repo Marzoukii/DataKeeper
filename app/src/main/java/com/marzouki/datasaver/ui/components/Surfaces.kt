@@ -191,14 +191,14 @@ fun Modifier.glowBackground(): Modifier = this
 fun Modifier.heroSurface(): Modifier = this
     .background(MaterialTheme.colorScheme.surface)
 
-/** Pastille d'icône : carré arrondi rose, pictogramme rouge corail. */
+/** Pastille d'icône : carré arrondi lavande pâle, pictogramme violet (suit le thème clair ou sombre). */
 @Composable
 fun IconChip(
     icon: ImageVector,
     modifier: Modifier = Modifier,
     size: Dp = 28.dp,
-    containerColor: Color = Brand.AccentTint,
-    contentColor: Color = Brand.Accent,
+    containerColor: Color = MaterialTheme.colorScheme.primaryContainer,
+    contentColor: Color = MaterialTheme.colorScheme.primary,
 ) {
     Box(
         modifier

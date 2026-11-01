@@ -59,6 +59,14 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.marzouki.datasaver.R
+import kotlin.math.sin
+import kotlin.math.cos
+import com.marzouki.datasaver.ui.components.SPEED_GAUGE_MAX_MBPS
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.Offset
 import com.marzouki.datasaver.domain.enums.NetworkGeneration
 import com.marzouki.datasaver.domain.enums.SpeedTestPhase
 import com.marzouki.datasaver.domain.enums.SpeedTestRating
@@ -78,7 +86,6 @@ import com.marzouki.datasaver.ui.components.formatDayTime
 import com.marzouki.datasaver.ui.components.formatElapsed
 import com.marzouki.datasaver.ui.components.formatMbps
 import com.marzouki.datasaver.ui.components.toReadableSize
-import com.marzouki.datasaver.ui.theme.Brand
 import com.marzouki.datasaver.ui.theme.DataColors
 import com.marzouki.datasaver.ui.theme.Spacing
 import com.marzouki.datasaver.ui.theme.numeric
@@ -99,7 +106,10 @@ fun SpeedTestScreen(
     SpeedTestContent(state, viewModel::onIntent, modifier)
 }
 
-/** Accueil du test, test en cours, puis résultat : un seul écran qui change de contenu. */
+/**
+ * Écran Débit du parcours : carte réseau, carte résultat (jauge, envoi et ping, échelle, verdict),
+ * bouton de test, puis l'historique en tableau. Pendant un test, la jauge suit la mesure en direct.
+ */
 @Composable
 private fun SpeedTestContent(
     state: SpeedTestState,
@@ -108,27 +118,35 @@ private fun SpeedTestContent(
     nowMillis: Long = System.currentTimeMillis(),
 ) {
     val progress = state.progress
-    val result = state.result
-    Column(modifier.fillMaxSize()) {
-        Column(
-            Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = Spacing.screenHorizontal, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(Spacing.betweenCards),
-        ) {
-            when {
-                progress != null -> RunningContent(progress, onCancel = { onIntent(SpeedTestIntent.CancelClicked) })
-                result != null -> ResultContent(result, state.history.filter { it != result }, nowMillis)
-                else -> IdleContent(state, onStart = { onIntent(SpeedTestIntent.StartClicked) }, nowMillis)
-            }
-        }
-        if (progress == null && result != null) {
+    Column(
+        modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = Spacing.screenHorizontal, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(Spacing.betweenCards),
+    ) {
+        if (progress != null) {
+            RunningContent(progress, onCancel = { onIntent(SpeedTestIntent.CancelClicked) })
+        } else {
+            val latest = state.result ?: state.history.firstOrNull()
+            ScreenHeader(
+                overline = stringResource(R.string.speed_test_overline),
+                title = stringResource(R.string.speed_test_title),
+            )
+            NetworkCard(state.isOnWifi)
+            ResultCard(latest, fresh = state.result != null, nowMillis = nowMillis)
             StartButton(
-                label = stringResource(R.string.speed_test_restart),
-                icon = Icons.Rounded.Refresh,
+                label = stringResource(if (latest == null) R.string.speed_test_start else R.string.speed_test_restart),
+                icon = if (latest == null) Icons.Rounded.PlayArrow else Icons.Rounded.Refresh,
                 onClick = { onIntent(SpeedTestIntent.StartClicked) },
-                modifier = Modifier.padding(horizontal = Spacing.screenHorizontal, vertical = 12.dp),
+            )
+            val previous = state.history.filter { it != latest }
+            if (previous.isNotEmpty()) HistoryCard(previous, nowMillis)
+            Text(
+                stringResource(R.string.speed_test_note, RunSpeedTestUseCase.MOBILE_MAX_BYTES.toReadableSize()),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
             )
         }
     }
@@ -141,28 +159,156 @@ private fun SpeedTestContent(
     }
 }
 
-/** Avant le test : réseau utilisé, bouton de lancement, puis l'historique en tableau réglé. */
+/**
+ * Carte résultat : pastille « Test terminé », jauge en arc, débit descendant en grand, envoi et
+ * ping en tuiles, échelle Lent → Excellent et verdict. Sans test, la jauge reste vide avec une invite.
+ */
 @Composable
-private fun ColumnScope.IdleContent(state: SpeedTestState, onStart: () -> Unit, nowMillis: Long) {
-    ScreenHeader(
-        overline = stringResource(R.string.speed_test_overline),
-        title = stringResource(R.string.speed_test_title),
-    )
-    NetworkCard(state.isOnWifi)
-    StartButton(stringResource(R.string.speed_test_start), Icons.Rounded.PlayArrow, onStart, Modifier.fillMaxWidth())
-    val history = state.history
-    if (history.isEmpty()) {
-        DataKeeperCard(contentPadding = 16.dp) {
-            SectionTitle(stringResource(R.string.speed_test_history), Icons.Rounded.History)
-            Spacer(Modifier.height(10.dp))
+private fun ResultCard(result: SpeedTestResult?, fresh: Boolean, nowMillis: Long) {
+    DataKeeperCard(shape = MaterialTheme.shapes.extraLarge, contentPadding = 20.dp) {
+        Column(
+            Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            if (result != null) {
+                val whenLabel = formatDayTime(result.atMillis, nowMillis)
+                StatusPill(
+                    if (fresh) {
+                        stringResource(R.string.speed_test_done_overline, whenLabel)
+                    } else {
+                        stringResource(R.string.speed_test_last_at, whenLabel)
+                    },
+                )
+            }
+            ArcGauge(result?.downloadMbps)
+            Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 2.dp)) {
+                Text(
+                    result?.let { formatMbps(it.downloadMbps) } ?: "—",
+                    style = MaterialTheme.typography.displaySmall.numeric().copy(fontSize = 52.sp, lineHeight = 56.sp),
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    stringResource(R.string.speed_test_unit_mbps),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 6.dp, bottom = 8.dp),
+                )
+            }
             Text(
-                stringResource(R.string.speed_test_none),
-                style = MaterialTheme.typography.bodyMedium,
+                stringResource(R.string.speed_test_phase_download),
+                style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 2.dp),
             )
+            if (result == null) {
+                Text(
+                    stringResource(R.string.speed_test_none),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                )
+            } else {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    MiniMetric(
+                        Icons.Rounded.ArrowUpward,
+                        stringResource(R.string.speed_test_phase_upload),
+                        formatMbps(result.uploadMbps),
+                        stringResource(R.string.speed_test_unit_mbps),
+                    )
+                    MiniMetric(
+                        Icons.AutoMirrored.Rounded.ShowChart,
+                        stringResource(R.string.speed_test_phase_ping),
+                        result.pingMs.toString(),
+                        stringResource(R.string.speed_test_unit_ms),
+                    )
+                }
+                SpeedScale(result.downloadMbps)
+                Text(
+                    stringResource(SpeedTestRating.from(result.downloadMbps).labelRes()),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center,
+                )
+                result.server?.label?.let {
+                    Text(
+                        stringResource(R.string.speed_test_server, it),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            }
         }
-    } else {
-        HistoryTable(history.first(), history.drop(1), nowMillis)
+    }
+}
+
+/** Pastille verte « Test terminé · Aujourd'hui 14:12 ». */
+@Composable
+private fun StatusPill(text: String) {
+    Row(
+        Modifier
+            .clip(CircleShape)
+            .background(DataColors.successContainer)
+            .padding(horizontal = 10.dp, vertical = 5.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(Icons.Rounded.Check, contentDescription = null, tint = DataColors.success, modifier = Modifier.size(14.dp))
+        Spacer(Modifier.width(5.dp))
+        Text(text, style = MaterialTheme.typography.labelMedium, color = DataColors.success)
+    }
+}
+
+/** Jauge en demi-cercle : piste grise, arc violet jusqu'au débit (borné à 100 Mbps), pastille au bout. */
+@Composable
+private fun ArcGauge(mbps: Double?) {
+    val target = ((mbps ?: 0.0) / SPEED_GAUGE_MAX_MBPS).coerceIn(0.0, 1.0).toFloat()
+    val fraction by animateFloatAsState(target, label = "arcGauge")
+    val track = MaterialTheme.colorScheme.surfaceVariant
+    val arc = MaterialTheme.colorScheme.primary
+    val knobFill = MaterialTheme.colorScheme.surface
+    Canvas(Modifier.size(width = 240.dp, height = 132.dp)) {
+        val stroke = 18.dp.toPx()
+        val radius = (size.width - stroke) / 2f
+        val center = Offset(size.width / 2f, size.height - stroke / 2f)
+        val topLeft = Offset(center.x - radius, center.y - radius)
+        val arcSize = Size(radius * 2, radius * 2)
+        drawArc(track, 180f, 180f, false, topLeft, arcSize, style = Stroke(stroke, cap = StrokeCap.Round))
+        if (fraction > 0f) {
+            drawArc(arc, 180f, 180f * fraction, false, topLeft, arcSize, style = Stroke(stroke, cap = StrokeCap.Round))
+            val angle = Math.toRadians((180f + 180f * fraction).toDouble())
+            val knob = Offset(center.x + radius * cos(angle).toFloat(), center.y + radius * sin(angle).toFloat())
+            drawCircle(knobFill, radius = 11.dp.toPx(), center = knob)
+            drawCircle(arc, radius = 11.dp.toPx(), center = knob, style = Stroke(5.dp.toPx()))
+        }
+    }
+}
+
+/** Tuile grise « Envoi 9,7 Mbps » ou « Ping 24 ms ». */
+@Composable
+private fun RowScope.MiniMetric(icon: ImageVector, label: String, value: String, unit: String) {
+    Row(
+        Modifier
+            .weight(1f)
+            .clip(RoundedCornerShape(14.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+        Spacer(Modifier.width(10.dp))
+        Column {
+            Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text(value, style = MaterialTheme.typography.titleMedium.numeric(), color = MaterialTheme.colorScheme.onSurface)
+                Text(
+                    unit,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 4.dp, bottom = 2.dp),
+                )
+            }
+        }
     }
 }
 
@@ -174,7 +320,7 @@ private fun NetworkCard(isOnWifi: Boolean) {
             IconTile(
                 icon = if (isOnWifi) Icons.Rounded.Wifi else Icons.Rounded.SignalCellularAlt,
                 container = if (isOnWifi) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.tertiaryContainer,
-                content = if (isOnWifi) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onTertiaryContainer,
+                content = if (isOnWifi) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onTertiaryContainer,
                 size = 40,
             )
             Spacer(Modifier.width(12.dp))
@@ -198,64 +344,12 @@ private fun NetworkCard(isOnWifi: Boolean) {
 }
 
 @Composable
-private fun LastTestCard(last: SpeedTestResult?, nowMillis: Long) {
-    DataKeeperCard {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(stringResource(R.string.speed_test_last), style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
-            if (last != null) {
-                Text(
-                    "${formatDayTime(last.atMillis, nowMillis)} · ${last.badgeLabel()}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
-        Spacer(Modifier.height(12.dp))
-        if (last == null) {
-            Text(
-                stringResource(R.string.speed_test_none),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        } else {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                val mbps = stringResource(R.string.speed_test_unit_mbps)
-                LastTestTile(stringResource(R.string.speed_test_download), formatMbps(last.downloadMbps), mbps, DataColors.wifi)
-                LastTestTile(stringResource(R.string.speed_test_upload), formatMbps(last.uploadMbps), mbps, DataColors.mobile)
-                LastTestTile(
-                    stringResource(R.string.speed_test_ping),
-                    last.pingMs.toString(),
-                    stringResource(R.string.speed_test_unit_ms),
-                    MaterialTheme.colorScheme.onSurface,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun RowScope.LastTestTile(label: String, value: String, unit: String, color: Color) {
-    Column(
-        Modifier
-            .weight(1f)
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .padding(vertical = 12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(value, style = MaterialTheme.typography.titleLarge.numeric(), color = color)
-        Text(unit, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
-}
-
-@Composable
 private fun ColumnScope.RunningContent(progress: SpeedTestProgress, onCancel: () -> Unit) {
     val phaseColor = progress.phase.color()
     ScreenHeader(
         overline = stringResource(R.string.speed_test_running_overline),
         title = stringResource(progress.phase.labelRes),
-        overlineColor = Brand.Wifi,
+        overlineColor = DataColors.wifi,
     )
     DataKeeperCard(shape = MaterialTheme.shapes.extraLarge) {
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -353,59 +447,24 @@ private fun StepRow(phase: SpeedTestPhase, status: StepStatus, progress: SpeedTe
     }
 }
 
-/**
- * Résultat : le dernier test en première ligne du tableau d'historique, en bande safran, avec
- * l'échelle de débit et le verdict ; les tests précédents dessous, en lignes réglées.
- */
+/** Historique : les tests précédents en tableau réglé (date, réseau, descendant, montant, ping). */
 @Composable
-private fun ColumnScope.ResultContent(result: SpeedTestResult, previous: List<SpeedTestResult>, nowMillis: Long) {
-    ScreenHeader(
-        overline = stringResource(R.string.speed_test_done_overline, formatElapsed(result.atMillis, nowMillis)),
-        title = stringResource(R.string.speed_test_title),
-    )
-    HistoryTable(result, previous, nowMillis)
-}
-
-/** Historique en tableau réglé : le test le plus récent en tête, en bande rose avec l'échelle et le verdict. */
-@Composable
-private fun HistoryTable(result: SpeedTestResult, previous: List<SpeedTestResult>, nowMillis: Long) {
-    DataKeeperCard(contentPadding = 16.dp) {
-        SectionTitle(stringResource(R.string.speed_test_history), Icons.Rounded.History)
-        Spacer(Modifier.height(12.dp))
-        HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
-        HistoryHeaderRow()
-        HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(14.dp))
-                .background(Brand.AccentTint.copy(alpha = 0.7f))
-                .padding(horizontal = 10.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            HistoryCells(result, nowMillis, highlighted = true)
-            SpeedScale(result.downloadMbps)
+private fun HistoryCard(previous: List<SpeedTestResult>, nowMillis: Long) {
+    DataKeeperCard(contentPadding = 18.dp) {
+        SectionTitle(stringResource(R.string.speed_test_history), Icons.Rounded.History) {
             Text(
-                stringResource(SpeedTestRating.from(result.downloadMbps).labelRes()),
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
-                color = Brand.Accent,
+                pluralStringResource(R.plurals.speed_test_history_count, previous.size, previous.size),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            result.server?.label?.let {
-                Text(
-                    stringResource(R.string.speed_test_server, it),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Brand.OnAccentTint,
-                )
-            }
         }
-        previous.forEachIndexed { index, item ->
-            if (index > 0) HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
-            Box(Modifier.padding(horizontal = 4.dp, vertical = 12.dp)) { HistoryCells(item, nowMillis, highlighted = false) }
+        Spacer(Modifier.height(10.dp))
+        HistoryHeaderRow()
+        previous.forEach { item ->
+            HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
+            Box(Modifier.padding(vertical = 12.dp)) { HistoryCells(item, nowMillis) }
         }
-        HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
     }
-
 }
 
 private fun SpeedTestRating.labelRes(): Int = when (this) {
@@ -415,23 +474,23 @@ private fun SpeedTestRating.labelRes(): Int = when (this) {
     SpeedTestRating.SLOW -> R.string.speed_test_rating_slow
 }
 
-private val HistoryColumns = listOf(1.6f, 1f, 1f, 0.9f, 0.8f)
+private val HistoryColumns = listOf(1.7f, 1f, 0.9f, 0.8f, 0.7f)
 
 @Composable
 private fun HistoryHeaderRow() {
-    Row(Modifier.padding(horizontal = 4.dp, vertical = 8.dp)) {
+    Row(Modifier.padding(vertical = 6.dp)) {
         listOf(
-            stringResource(R.string.speed_test_last),
+            stringResource(R.string.speed_test_date),
             stringResource(R.string.speed_test_network),
-            stringResource(R.string.speed_test_download),
-            stringResource(R.string.speed_test_upload),
+            stringResource(R.string.speed_test_down),
+            stringResource(R.string.speed_test_up),
             stringResource(R.string.speed_test_ping),
         ).forEachIndexed { index, label ->
             Text(
                 label,
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = if (index >= 2) TextAlign.End else TextAlign.Start,
+                textAlign = if (index >= 1) TextAlign.End else TextAlign.Start,
                 maxLines = 1,
                 modifier = Modifier.weight(HistoryColumns[index]),
             )
@@ -440,22 +499,16 @@ private fun HistoryHeaderRow() {
 }
 
 @Composable
-private fun HistoryCells(result: SpeedTestResult, nowMillis: Long, highlighted: Boolean) {
-    val ink = if (highlighted) Brand.Accent else MaterialTheme.colorScheme.onSurface
-    val valueStyle = if (highlighted) {
-        MaterialTheme.typography.titleMedium.numeric()
-    } else {
-        MaterialTheme.typography.bodyMedium.numeric()
-    }
+private fun HistoryCells(result: SpeedTestResult, nowMillis: Long) {
+    val valueStyle = MaterialTheme.typography.bodyMedium.numeric()
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
             formatDayTime(result.atMillis, nowMillis),
             style = MaterialTheme.typography.bodySmall,
-            fontWeight = if (highlighted) FontWeight.SemiBold else FontWeight.Normal,
-            color = ink,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(HistoryColumns[0]),
         )
-        Box(Modifier.weight(HistoryColumns[1])) {
+        Box(Modifier.weight(HistoryColumns[1]), contentAlignment = Alignment.CenterEnd) {
             val (container, content) = if (result.onWifi) {
                 MaterialTheme.colorScheme.secondaryContainer to MaterialTheme.colorScheme.onSecondaryContainer
             } else {
@@ -464,144 +517,61 @@ private fun HistoryCells(result: SpeedTestResult, nowMillis: Long, highlighted: 
             Text(
                 result.badgeLabel(),
                 style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.SemiBold,
                 color = content,
                 modifier = Modifier
-                    .clip(RoundedCornerShape(6.dp))
+                    .clip(CircleShape)
                     .background(container)
-                    .padding(horizontal = 8.dp, vertical = 3.dp),
+                    .padding(horizontal = 9.dp, vertical = 3.dp),
             )
         }
-        Text(formatMbps(result.downloadMbps), style = valueStyle, fontWeight = FontWeight.SemiBold, color = ink, textAlign = TextAlign.End, modifier = Modifier.weight(HistoryColumns[2]))
-        Text(formatMbps(result.uploadMbps), style = valueStyle, color = ink, textAlign = TextAlign.End, modifier = Modifier.weight(HistoryColumns[3]))
-        Text(result.pingMs.toString(), style = valueStyle, color = ink, textAlign = TextAlign.End, modifier = Modifier.weight(HistoryColumns[4]))
+        Text(formatMbps(result.downloadMbps), style = valueStyle, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.End, modifier = Modifier.weight(HistoryColumns[2]))
+        Text(formatMbps(result.uploadMbps), style = valueStyle, fontWeight = FontWeight.Medium, textAlign = TextAlign.End, modifier = Modifier.weight(HistoryColumns[3]))
+        Text(result.pingMs.toString(), style = valueStyle, fontWeight = FontWeight.Medium, textAlign = TextAlign.End, modifier = Modifier.weight(HistoryColumns[4]))
     }
 }
 
-/** Échelle Lent / Correct / Bon / Excellent avec un repère au débit mesuré (échelle bornée à 100 Mbps). */
+/** Échelle en quatre segments égaux (Lent, Correct, Bon, Excellent) : le segment atteint en violet, les précédents en violet pâle. */
 @Composable
 private fun SpeedScale(mbps: Double) {
-    val bands = listOf(5.0 to R.string.speed_test_rating_slow, 15.0 to R.string.speed_test_rating_fair, 50.0 to R.string.speed_test_rating_good, 100.0 to R.string.speed_test_rating_excellent)
-    val widths = listOf(0.08f, 0.12f, 0.40f, 0.40f)
-    val active = bands.indexOfFirst { mbps < it.first }.let { if (it < 0) bands.lastIndex else it }
-    val position = when {
-        mbps < 5 -> mbps / 5 * 0.08
-        mbps < 15 -> 0.08 + (mbps - 5) / 10 * 0.12
-        mbps < 50 -> 0.20 + (mbps - 15) / 35 * 0.40
-        else -> (0.60 + (mbps - 50) / 50 * 0.40).coerceAtMost(1.0)
-    }.toFloat()
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Box(Modifier.fillMaxWidth().height(14.dp), contentAlignment = Alignment.CenterStart) {
-            Row(Modifier.fillMaxWidth().height(8.dp), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                widths.forEachIndexed { index, w ->
-                    Box(
-                        Modifier
-                            .weight(w)
-                            .height(8.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(if (index == active) Brand.Accent else Brand.AccentTint),
-                    )
-                }
-            }
-            Box(Modifier.fillMaxWidth(position.coerceIn(0.01f, 1f)), contentAlignment = Alignment.CenterEnd) {
+    val labels = listOf(
+        R.string.speed_test_scale_slow,
+        R.string.speed_test_scale_fair,
+        R.string.speed_test_scale_good,
+        R.string.speed_test_scale_excellent,
+    )
+    val active = when (SpeedTestRating.from(mbps)) {
+        SpeedTestRating.SLOW -> 0
+        SpeedTestRating.FAIR -> 1
+        SpeedTestRating.GOOD -> 2
+        SpeedTestRating.EXCELLENT -> 3
+    }
+    val primary = MaterialTheme.colorScheme.primary
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        labels.forEachIndexed { index, label ->
+            Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                 Box(
                     Modifier
-                        .width(4.dp)
-                        .height(14.dp)
-                        .clip(RoundedCornerShape(2.dp))
-                        .background(DataColors.mobile),
+                        .fillMaxWidth()
+                        .height(6.dp)
+                        .clip(CircleShape)
+                        .background(
+                            when {
+                                index == active -> primary
+                                index < active -> primary.copy(alpha = 0.35f)
+                                else -> MaterialTheme.colorScheme.surfaceVariant
+                            },
+                        ),
+                )
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    stringResource(label),
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = if (index == active) FontWeight.SemiBold else FontWeight.Normal,
+                    color = if (index == active) primary else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
-        Text(
-            formatMbps(mbps) + " " + stringResource(R.string.speed_test_unit_mbps),
-            style = MaterialTheme.typography.labelSmall.numeric(),
-            color = Brand.OnAccentTint,
-        )
-    }
-}
-
-@Composable
-private fun RatingPill(rating: SpeedTestRating) {
-    val (container, content) = when (rating) {
-        SpeedTestRating.EXCELLENT, SpeedTestRating.GOOD -> DataColors.successContainer to DataColors.success
-        SpeedTestRating.FAIR -> MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer
-        SpeedTestRating.SLOW -> MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
-    }
-    val label = when (rating) {
-        SpeedTestRating.EXCELLENT -> R.string.speed_test_rating_excellent
-        SpeedTestRating.GOOD -> R.string.speed_test_rating_good
-        SpeedTestRating.FAIR -> R.string.speed_test_rating_fair
-        SpeedTestRating.SLOW -> R.string.speed_test_rating_slow
-    }
-    InfoPill(stringResource(label), containerColor = container, contentColor = content)
-}
-
-@Composable
-private fun MetricCard(
-    icon: ImageVector,
-    iconContainer: Color,
-    iconContent: Color,
-    value: String,
-    valueColor: Color,
-    label: String,
-    modifier: Modifier = Modifier,
-) {
-    DataKeeperCard(modifier = modifier, contentPadding = 12.dp) {
-        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            IconTile(icon, iconContainer, iconContent, size = 28, shape = CircleShape)
-            Spacer(Modifier.height(8.dp))
-            Text(value, style = MaterialTheme.typography.titleLarge.numeric(), color = valueColor)
-            Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-    }
-}
-
-@Composable
-private fun DetailRow(label: String, value: String) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        // Les noms de serveur sont longs (« Agence Tunisienne d'Internet · Belvédère ») : ils passent à la ligne, calés à droite.
-        Text(
-            value,
-            style = MaterialTheme.typography.titleSmall,
-            textAlign = TextAlign.End,
-            modifier = Modifier
-                .weight(1f)
-                .padding(start = 16.dp),
-        )
-    }
-}
-
-@Composable
-private fun HistoryRow(result: SpeedTestResult, nowMillis: Long) {
-    Row(Modifier.padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-        val (container, content) = if (result.onWifi) {
-            MaterialTheme.colorScheme.secondaryContainer to MaterialTheme.colorScheme.onSecondaryContainer
-        } else {
-            MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer
-        }
-        Box(
-            Modifier
-                .width(40.dp)
-                .clip(RoundedCornerShape(6.dp))
-                .background(container)
-                .padding(vertical = 3.dp),
-            contentAlignment = Alignment.Center,
-        ) { Text(result.badgeLabel(), style = MaterialTheme.typography.labelSmall, color = content) }
-        Spacer(Modifier.width(10.dp))
-        Text(
-            formatDayTime(result.atMillis, nowMillis),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1f),
-        )
-        Text(formatMbps(result.downloadMbps), style = MaterialTheme.typography.titleSmall.numeric(), fontWeight = FontWeight.Bold)
-        Text(
-            stringResource(R.string.speed_test_unit_mbps),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(start = 6.dp),
-        )
     }
 }
 

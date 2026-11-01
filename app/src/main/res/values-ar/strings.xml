@@ -469,4 +469,21 @@
     <string name="usage_tethering_body">استهلكت أجهزتك %1$s</string>
     <string name="notification_tethering_title">مشاركة الاتصال: استُهلك %1$s</string>
     <string name="notification_tethering_text">تجاوزت أجهزتك المتصلة %1$s. أوقف المشاركة للحفاظ على باقتك.</string>
+    <string name="speed_test_last_at">آخر اختبار · %1$s</string>
+    <string name="speed_test_note">السرعات بالميغابت في الثانية والاستجابة بالميلي ثانية. على بيانات الجوال، قد يستهلك الاختبار حتى %1$s من باقتك.</string>
+    <string name="speed_test_scale_slow">بطيء</string>
+    <string name="speed_test_scale_fair">مقبول</string>
+    <string name="speed_test_scale_good">جيد</string>
+    <string name="speed_test_scale_excellent">ممتاز</string>
+    <string name="speed_test_date">التاريخ</string>
+    <string name="speed_test_down">تنزيل</string>
+    <string name="speed_test_up">رفع</string>
+    <plurals name="speed_test_history_count">
+        <item quantity="zero">%1$d سابق</item>
+        <item quantity="one">%1$d سابق</item>
+        <item quantity="two">%1$d سابقان</item>
+        <item quantity="few">%1$d سابقة</item>
+        <item quantity="many">%1$d سابقًا</item>
+        <item quantity="other">%1$d سابق</item>
+    </plurals>
 </resources>
