@@ -477,4 +477,15 @@
     <string name="downloads_stat_mobile">de données mobiles utilisés</string>
     <string name="downloads_stat_saved_money">d’économie sur ton forfait</string>
     <string name="downloads_stat_saved_data">épargnés à ton forfait</string>
+    <string name="usage_hero_left">Il te reste</string>
+    <string name="usage_hero_exceeded">Quota dépassé de</string>
+    <string name="usage_hero_remaining_suffix">restants</string>
+    <string name="usage_hero_of">sur %1$s · %2$s · expire le %3$s</string>
+    <string name="usage_hero_used">%1$s utilisés · %2$d %%</string>
+    <string name="usage_hero_alert">Alerte à %1$d %%</string>
+    <string name="usage_hero_today">Aujourd’hui</string>
+    <string name="usage_hero_today_of">sur %1$s</string>
+    <string name="usage_hero_budget">Budget par jour</string>
+    <string name="usage_hero_budget_value">≈ %1$s</string>
+    <string name="usage_hero_until">jusqu’au %1$s</string>
 </resources>

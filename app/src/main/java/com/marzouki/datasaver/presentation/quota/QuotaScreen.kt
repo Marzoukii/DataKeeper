@@ -269,8 +269,8 @@ private fun QuotaContent(
 }
 
 /**
- * En-tête du quota : bloc bleu nuit avec ce qu'il reste en grand, les jours restants, la barre du
- * forfait (repère safran au seuil d'alerte) et les repères du jour.
+ * En-tête du quota : titre et ligne de contexte posés sur le fond, puis la carte du solde (reste en
+ * grand, jours restants, jauge avec repère d'alerte, pastilles utilisé / par jour / alerte).
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -282,128 +282,113 @@ private fun QuotaHeroHeader(
     dailyBudgetBytes: Long?,
     operatorName: String?,
 ) {
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp, bottom = 4.dp)
-            .shadow(3.dp, RoundedCornerShape(28.dp), ambientColor = Color.Black.copy(alpha = 0.06f), spotColor = Color.Black.copy(alpha = 0.10f))
-            .clip(RoundedCornerShape(28.dp))
-            .heroSurface()
-            .padding(horizontal = 20.dp, vertical = 18.dp),
-    ) {
-        Text(stringResource(R.string.quota_title), style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onSurface)
-        Text(
-            buildString {
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.betweenCards)) {
+        ScreenHeader(
+            overline = buildString {
                 if (operatorName != null && quota != null) {
                     append(operatorName).append(' ').append(quota.limitBytes.toReadableSize()).append(" · ")
                 }
                 append(stringResource(R.string.quota_overline, formatDayMonth(period.nextStartMillis)))
             },
-            style = MaterialTheme.typography.bodyMedium.numeric(),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            title = stringResource(R.string.quota_title),
         )
-        Spacer(Modifier.height(14.dp))
-        when {
-            quota == null || status == null -> Text(
-                stringResource(R.string.quota_none),
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            status.isExceeded -> Text(
-                stringResource(R.string.quota_exceeded_chip, status.exceededBytes.toReadableSize()),
-                style = MaterialTheme.typography.displaySmall.numeric(),
-                color = Brand.Mobile,
-            )
-            else -> {
-                val remaining = status.remainingBytes.toReadableSizeParts()
-                Row(verticalAlignment = Alignment.Bottom) {
-                    Text(remaining.value, style = MaterialTheme.typography.displayMedium.numeric(), color = MaterialTheme.colorScheme.onSurface)
+        DataKeeperCard(shape = RoundedCornerShape(24.dp), contentPadding = 20.dp) {
+            when {
+                quota == null || status == null -> Text(
+                    stringResource(R.string.quota_none),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                status.isExceeded -> Text(
+                    stringResource(R.string.quota_exceeded_chip, status.exceededBytes.toReadableSize()),
+                    style = MaterialTheme.typography.displaySmall.numeric(),
+                    color = MaterialTheme.colorScheme.error,
+                )
+                else -> Row(verticalAlignment = Alignment.Bottom) {
+                    Text(
+                        status.remainingBytes.toReadableSize(),
+                        style = MaterialTheme.typography.displaySmall.numeric().copy(fontSize = 48.sp, lineHeight = 52.sp),
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        "${remaining.unit} ${stringResource(R.string.widget_remaining)}",
+                        stringResource(R.string.widget_remaining) + " · " +
+                            pluralStringResource(R.plurals.days, period.remainingDays, period.remainingDays),
                         style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(bottom = 8.dp),
                     )
                 }
-                Text(
-                    pluralStringResource(R.plurals.widget_days_left, period.remainingDays, period.remainingDays),
-                    style = MaterialTheme.typography.titleSmall.numeric(),
-                    color = Brand.Accent,
-                )
             }
-        }
-        if (quota != null && status != null) {
-            Spacer(Modifier.height(14.dp))
-            val alertFraction = quota.alertThresholdPercent / 100f
-            Box(Modifier.fillMaxWidth()) {
-                ThinBar(
-                    fraction = status.usedRatio,
-                    color = Brand.Mobile,
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                    height = 10.dp,
-                )
-                if (quota.alertEnabled) {
-                    Box(
-                        Modifier
-                            .fillMaxWidth(alertFraction)
-                            .height(10.dp),
-                        contentAlignment = Alignment.CenterEnd,
-                    ) {
-                        Box(
-                            Modifier
-                                .width(2.dp)
-                                .height(10.dp)
-                                .background(Brand.Accent),
-                        )
+            if (quota != null && status != null) {
+                Spacer(Modifier.height(14.dp))
+                val alertFraction = quota.alertThresholdPercent / 100f
+                Box(Modifier.fillMaxWidth().height(20.dp), contentAlignment = Alignment.CenterStart) {
+                    ThinBar(
+                        fraction = status.usedRatio.coerceIn(0f, 1f),
+                        color = if (status.isExceeded) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.primaryContainer,
+                        height = 12.dp,
+                    )
+                    if (quota.alertEnabled) {
+                        Box(Modifier.fillMaxWidth(alertFraction), contentAlignment = Alignment.CenterEnd) {
+                            Box(
+                                Modifier
+                                    .width(2.dp)
+                                    .height(20.dp)
+                                    .clip(RoundedCornerShape(1.dp))
+                                    .background(MaterialTheme.colorScheme.onSurface),
+                            )
+                        }
                     }
                 }
-            }
-            Spacer(Modifier.height(12.dp))
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                NightChip(
-                    "${status.usedBytes.toReadableSize()} · " +
-                        stringResource(R.string.percent, (status.usedRatio * 100).roundToInt()),
-                )
-                if (!status.isExceeded) {
+                Spacer(Modifier.height(12.dp))
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     NightChip(
+                        stringResource(R.string.usage_hero_used, status.usedBytes.toReadableSize(), (status.usedRatio * 100).roundToInt()),
+                    )
+                    if (!status.isExceeded) {
+                        NightChip(
+                            stringResource(
+                                R.string.quota_per_day_chip,
+                                (dailyBudgetBytes ?: (status.remainingBytes / period.remainingDays)).toReadableSize(),
+                            ),
+                            highlighted = true,
+                        )
+                    }
+                    if (quota.alertEnabled) {
+                        NightChip(stringResource(R.string.quota_alert_title, quota.alertThresholdPercent))
+                    }
+                }
+                if (balance != null) {
+                    Spacer(Modifier.height(10.dp))
+                    Text(
                         stringResource(
-                            R.string.quota_per_day_chip,
-                            (dailyBudgetBytes ?: (status.remainingBytes / period.remainingDays)).toReadableSize(),
+                            R.string.quota_balance_gauge,
+                            balance.remainingBytes.toReadableSize(),
+                            formatDayMonth(balance.atMillis),
                         ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                if (quota.alertEnabled) {
-                    NightChip(stringResource(R.string.quota_alert_title, quota.alertThresholdPercent))
-                }
-            }
-            if (balance != null) {
-                Spacer(Modifier.height(10.dp))
-                Text(
-                    stringResource(
-                        R.string.quota_balance_gauge,
-                        balance.remainingBytes.toReadableSize(),
-                        formatDayMonth(balance.atMillis),
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
             }
         }
     }
 }
 
-/** Puce translucide posée sur le bleu nuit de l'en-tête. */
+/** Pastille de la carte du solde : grise, ou lavande pâle pour le budget par jour. */
 @Composable
-private fun NightChip(text: String) {
+private fun NightChip(text: String, highlighted: Boolean = false) {
     Text(
         text,
-        style = MaterialTheme.typography.labelLarge.numeric(),
-        color = MaterialTheme.colorScheme.onSurface,
+        style = MaterialTheme.typography.labelMedium.numeric(),
+        fontWeight = FontWeight.SemiBold,
+        color = if (highlighted) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
         modifier = Modifier
-            .clip(RoundedCornerShape(10.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .padding(horizontal = 12.dp, vertical = 7.dp),
+            .clip(CircleShape)
+            .background(if (highlighted) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant)
+            .padding(horizontal = 10.dp, vertical = 5.dp),
     )
 }
 
@@ -448,7 +433,7 @@ private fun CycleGridCard(forecast: QuotaForecast) {
                             else -> MaterialTheme.colorScheme.surface
                         }
                         val ink = when {
-                            isToday -> Brand.Accent
+                            isToday -> MaterialTheme.colorScheme.primary
                             over -> MaterialTheme.colorScheme.onTertiaryContainer
                             isFuture -> MaterialTheme.colorScheme.onSurfaceVariant
                             else -> MaterialTheme.colorScheme.onSurface
@@ -458,7 +443,7 @@ private fun CycleGridCard(forecast: QuotaForecast) {
                                 .weight(1f)
                                 .height(56.dp)
                                 .background(background)
-                                .then(if (isToday) Modifier.border(2.dp, Brand.Accent) else Modifier)
+                                .then(if (isToday) Modifier.border(2.dp, MaterialTheme.colorScheme.primary) else Modifier)
                                 .padding(horizontal = 6.dp, vertical = 6.dp),
                             verticalArrangement = Arrangement.SpaceBetween,
                         ) {
