@@ -187,9 +187,6 @@ private fun UsageContent(
                     HeaderIconButton(Icons.Rounded.Settings, stringResource(R.string.usage_settings), onOpenSettings)
                 }
             }
-            state.tethering?.let { tethering ->
-                item { TetheringBanner(tethering.usedBytes, onClick = onOpenTethering) }
-            }
             val usage = state.liveUsage
             when {
                 !state.hasUsageAccess -> item {
@@ -202,7 +199,7 @@ private fun UsageContent(
                 }
                 usage == null -> item { LoadFailedCard(onRetry = { onIntent(UsageIntent.Refresh) }) }
                 else -> dashboard(
-                    state, usage, period, onOpenQuota, onRequestPhonePermission,
+                    state, usage, period, onOpenQuota, onRequestPhonePermission, onOpenTethering,
                     selectedDayMillis = selectedDayMillis,
                     onDayClick = { selectedDayMillis = it.dayStartMillis },
                 )
@@ -222,9 +219,13 @@ private fun androidx.compose.foundation.lazy.LazyListScope.dashboard(
     period: MonthPeriod,
     onOpenQuota: () -> Unit,
     onRequestPhonePermission: () -> Unit,
+    onOpenTethering: () -> Unit,
     selectedDayMillis: Long?,
     onDayClick: (DayUsage) -> Unit,
 ) {
+    // Parcours violet : ce qu'il reste d'abord, puis Wi-Fi vs mobile, le carnet, les économies,
+    // l'alerte appli, les applis gourmandes et enfin le partage de connexion.
+    item { QuotaSummaryCard(state.quotaStatus, period, onClick = onOpenQuota) }
     item {
         if (usage.totalBytes == 0L) {
             EmptyUsageCard()
@@ -243,13 +244,9 @@ private fun androidx.compose.foundation.lazy.LazyListScope.dashboard(
             )
         }
     }
-    val heavyApp = state.heavyApp
-    val quota = state.quota
-    if (heavyApp != null && quota != null) {
-        item { HeavyAppBanner(heavyApp, quota.limitBytes) }
+    item {
+        LedgerCard(state, period, selectedDayMillis, onDayClick)
     }
-    // Ordre de l'ancien tableau de bord : répartition, quota, économies et forfait, puis le carnet.
-    item { QuotaSummaryCard(state.quotaStatus, period, onClick = onOpenQuota) }
     item {
         SavingsAndPlanRow(
             wifiBytes = usage.wifiBytes,
@@ -262,8 +259,10 @@ private fun androidx.compose.foundation.lazy.LazyListScope.dashboard(
             resetMillis = period.nextStartMillis,
         )
     }
-    item {
-        LedgerCard(state, period, selectedDayMillis, onDayClick)
+    val heavyApp = state.heavyApp
+    val quota = state.quota
+    if (heavyApp != null && quota != null) {
+        item { HeavyAppBanner(heavyApp, quota.limitBytes) }
     }
     item {
         DataKeeperCard {
@@ -286,6 +285,9 @@ private fun androidx.compose.foundation.lazy.LazyListScope.dashboard(
                 }
             }
         }
+    }
+    state.tethering?.let { tethering ->
+        item { TetheringBanner(tethering.usedBytes, onClick = onOpenTethering) }
     }
 }
 

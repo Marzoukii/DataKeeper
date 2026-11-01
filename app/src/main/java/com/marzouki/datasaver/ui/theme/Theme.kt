@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 
-// Primaire = accent rouge corail ; secondaire = vert du Wi-Fi ; tertiaire = orange de la data mobile.
+// Primaire = accent violet ; secondaire = sarcelle du Wi-Fi ; tertiaire = lavande de la data mobile.
 internal val LightColorScheme = lightColorScheme(
     primary = LightPrimary,
     onPrimary = LightOnPrimary,
@@ -124,9 +124,9 @@ object DataColors {
     val successContainer: Color
         @Composable @ReadOnlyComposable get() = LocalExtendedColors.current.successContainer
     val today: Color
-        @Composable @ReadOnlyComposable get() = Brand.Accent
+        @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primary
     val todayTint: Color
-        @Composable @ReadOnlyComposable get() = Brand.AccentTint
+        @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primaryContainer
 }
 
 /** Pas de couleurs dynamiques (Android 12+) : le vert, l'orange et le rouge portent un sens. */

@@ -300,8 +300,8 @@ private fun Illustration() {
                         modifier = Modifier.width(36.dp),
                     )
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        IllustrationLine(if (today) Color(0xFF0B6E62) else Brand.Wifi, wifi)
-                        IllustrationLine(if (today) Color(0xFFC9461F) else Color(0xFFFF8466), mobile)
+                        IllustrationLine(if (today) Color(0xFF0B6E66) else Brand.Wifi, wifi)
+                        IllustrationLine(if (today) Color(0xFF6A4FD8) else Color(0xFFB9A6F5), mobile)
                     }
                 }
             }

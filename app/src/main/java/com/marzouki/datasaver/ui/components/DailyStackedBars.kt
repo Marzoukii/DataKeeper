@@ -183,8 +183,8 @@ private fun TodayBudget(usedBytes: Long, budgetBytes: Long) {
 }
 
 // La bande safran reste claire en thème sombre : on y garde les teintes foncées, lisibles dessus.
-private val TodayWifi = Color(0xFF0B6E62)
-private val TodayMobile = Color(0xFFC9461F)
+private val TodayWifi = Color(0xFF0B6E66)
+private val TodayMobile = Color(0xFF6A4FD8)
 
 @Composable
 private fun LedgerCell(value: String, fraction: Float, color: Color, modifier: Modifier = Modifier) {
