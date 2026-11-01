@@ -480,8 +480,8 @@
     <string name="quota_grid_legend_today">Today</string>
     <string name="quota_grid_legend_future">Budget ahead</string>
     <string name="notification_new_sim_title">New SIM: %1$s</string>
-    <string name="notification_new_sim_text">Is your old plan over? Save the new one: it is counted from %1$s, when the SIM changed.</string>
-    <string name="setup_operator_changed_at">New %1$s SIM detected at %2$s: the new plan is counted from that time.</string>
+    <string name="notification_new_sim_text">Is your old plan over? Save the new one to keep tracking your usage.</string>
+    <string name="setup_operator_changed_at">New %1$s SIM detected: enter its plan, it is counted from today.</string>
     <string name="quota_size_title">Plan size</string>
     <string name="quota_size_subtitle">%1$s · tap to change</string>
     <string name="quota_size_subtitle_none">No plan · tap to set one</string>
@@ -489,7 +489,7 @@
     <string name="usage_status_pace">At this pace, your plan runs out around %1$s</string>
     <string name="usage_status_alert">Heads-up: %1$d%% of your plan already used</string>
     <string name="usage_status_exceeded">Plan exceeded by %1$s: switch to Wi‑Fi</string>
-    <string name="usage_status_new_plan">New plan activated at %1$s</string>
+    <string name="usage_status_new_plan">First day of your new plan</string>
     <string name="usage_hero_none">Your plan</string>
     <string name="usage_hero_edit">Edit balance</string>
     <string name="usage_hero_of_short">of %1$s</string>

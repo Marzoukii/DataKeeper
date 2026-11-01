@@ -38,8 +38,8 @@ class PlanCycleTest {
     @Test
     fun `a 30-day pass bought on October 21 resets on November 20, then chains`() {
         val pass = MonthPeriod.pass(nowMillis = day(Calendar.OCTOBER, 23, 9), purchaseMillis = day(Calendar.OCTOBER, 21, 18), validityDays = 30)
-        // Activé à 18 h : ce qui est parti plus tôt ce jour-là reste sur l'ancien forfait.
-        assertEquals(day(Calendar.OCTOBER, 21, 18), pass.startMillis)
+        // Acheté à 18 h : le cycle part quand même de minuit, l'heure n'est pas fiable.
+        assertEquals(day(Calendar.OCTOBER, 21), pass.startMillis)
         assertEquals(day(Calendar.NOVEMBER, 20), pass.nextStartMillis)
         assertEquals(30, pass.totalDays)
         assertEquals(3, pass.currentDay)
@@ -54,14 +54,11 @@ class PlanCycleTest {
     }
 
     @Test
-    fun `a pass activated this afternoon starts at its activation time, never in the future`() {
+    fun `a pass bought this afternoon still counts from midnight`() {
         val pass = MonthPeriod.pass(nowMillis = day(Calendar.NOVEMBER, 1, 17), purchaseMillis = day(Calendar.NOVEMBER, 1, 15), validityDays = 30)
-        assertEquals(day(Calendar.NOVEMBER, 1, 15), pass.startMillis)
+        assertEquals(day(Calendar.NOVEMBER, 1), pass.startMillis)
         assertEquals(1, pass.currentDay)
         assertEquals(30, pass.totalDays)
-
-        val later = MonthPeriod.pass(nowMillis = day(Calendar.NOVEMBER, 1, 15), purchaseMillis = day(Calendar.NOVEMBER, 1, 17), validityDays = 30)
-        assertEquals(day(Calendar.NOVEMBER, 1, 15), later.startMillis)
     }
 
     @Test

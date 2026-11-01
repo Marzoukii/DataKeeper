@@ -284,11 +284,7 @@ private fun SizeStep(state: PlanSetupState, onIntent: (PlanSetupIntent) -> Unit,
         val change = state.operatorChange
         Text(
             if (change != null) {
-                stringResource(
-                    R.string.setup_operator_changed_at,
-                    change.operatorName,
-                    java.text.DateFormat.getTimeInstance(java.text.DateFormat.SHORT).format(java.util.Date(change.atMillis)),
-                )
+                stringResource(R.string.setup_operator_changed_at, change.operatorName)
             } else {
                 stringResource(R.string.setup_body_operator_changed)
             },

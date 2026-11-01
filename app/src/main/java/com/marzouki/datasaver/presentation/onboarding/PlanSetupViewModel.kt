@@ -102,15 +102,17 @@ private fun PlanSetupState.withPlan(plan: SavedPlan): PlanSetupState = copy(
 )
 
 /**
- * Après un changement de SIM, le formulaire arrive prérempli : achat à l'heure du changement (tant
+ * Après un changement de SIM, le formulaire arrive prérempli : achat le jour du changement (tant
  * que le cycle n'a pas été touché) et dernier forfait connu pour cet opérateur (tant que rien n'est saisi).
  */
 private fun PlanSetupState.prefilled(): PlanSetupState {
     if (!operatorChanged) return this
     val change: OperatorChange? = operatorChange
     var state = this
-    if (change != null && !cycleEdited && cycle.purchaseMillis != change.atMillis) {
-        state = state.copy(cycle = cycle.copy(purchaseMillis = change.atMillis))
+    // Jour du changement de SIM, à la journée comme tout forfait.
+    val changeDay = change?.let { com.marzouki.datasaver.presentation.quota.PlanCycleInput.startOfDay(it.atMillis) }
+    if (changeDay != null && !cycleEdited && cycle.purchaseMillis != changeDay) {
+        state = state.copy(cycle = cycle.copy(purchaseMillis = changeDay))
     }
     val lastPlan = savedPlans.firstOrNull()
     if (lastPlan != null && planInput.isBlank()) state = state.withPlan(lastPlan)

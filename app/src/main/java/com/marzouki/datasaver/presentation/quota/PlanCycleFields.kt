@@ -53,12 +53,8 @@ private val VALIDITY_PRESETS = listOf(7, 15, 30)
  * à cette date ([monthly]) pour un abonnement.
  */
 data class PlanCycleInput(
-    /**
-     * Jour d'achat ou de renouvellement. Pour un pass saisi le jour même, l'heure de la saisie sert
-     * d'heure d'activation, sans rien demander : la data mobile consommée avant reste sur l'ancien
-     * forfait. Les autres jours, minuit.
-     */
-    val purchaseMillis: Long = System.currentTimeMillis(),
+    /** Minuit, heure locale, du jour d'achat ou de renouvellement : le forfait se compte à la journée. */
+    val purchaseMillis: Long = startOfDay(System.currentTimeMillis()),
     val validityInput: String = VALIDITY_PRESETS.last().toString(),
     val monthly: Boolean = false,
     /** « Autre » choisi : la validité se tape en jours, même si elle tombe sur une puce. */
@@ -211,22 +207,13 @@ fun PlanCycleFields(
         PurchaseDatePicker(
             selectedMillis = input.purchaseMillis,
             onSelect = { day ->
-                // Aujourd'hui : on garde l'heure déjà choisie, sinon maintenant. Un autre jour : minuit.
-                val purchase = when {
-                    !isToday(day) -> day
-                    isToday(input.purchaseMillis) -> input.purchaseMillis
-                    else -> System.currentTimeMillis()
-                }
-                onChange(input.copy(purchaseMillis = purchase))
+                onChange(input.copy(purchaseMillis = PlanCycleInput.startOfDay(day)))
                 showDatePicker = false
             },
             onDismiss = { showDatePicker = false },
         )
     }
 }
-
-private fun isToday(millis: Long): Boolean =
-    PlanCycleInput.startOfDay(millis) == PlanCycleInput.startOfDay(System.currentTimeMillis())
 
 
 /**

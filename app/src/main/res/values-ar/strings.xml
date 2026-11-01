@@ -515,8 +515,8 @@
     <string name="quota_grid_legend_today">اليوم</string>
     <string name="quota_grid_legend_future">الميزانية القادمة</string>
     <string name="notification_new_sim_title">شريحة جديدة: %1$s</string>
-    <string name="notification_new_sim_text">انتهت باقتك القديمة؟ سجّل الجديدة: تُحتسب ابتداءً من %1$s، ساعة تغيير الشريحة.</string>
-    <string name="setup_operator_changed_at">تم رصد شريحة %1$s جديدة على الساعة %2$s: تُحتسب الباقة الجديدة ابتداءً من هذه الساعة.</string>
+    <string name="notification_new_sim_text">انتهت باقتك القديمة؟ سجّل الجديدة لمواصلة متابعة استهلاكك.</string>
+    <string name="setup_operator_changed_at">تم رصد شريحة %1$s جديدة: أدخل باقتها، تُحتسب ابتداءً من اليوم.</string>
     <string name="quota_size_title">حجم الباقة</string>
     <string name="quota_size_subtitle">%1$s · المس للتغيير</string>
     <string name="quota_size_subtitle_none">لا توجد باقة · المس لتحديد واحدة</string>
@@ -524,7 +524,7 @@
     <string name="usage_status_pace">بهذا النسق، ستنفد باقتك حوالي %1$s</string>
     <string name="usage_status_alert">تنبيه: استُعمل %1$d %% من الباقة</string>
     <string name="usage_status_exceeded">تجاوزت الباقة بـ %1$s: انتقل إلى الواي فاي</string>
-    <string name="usage_status_new_plan">باقة جديدة مفعّلة على الساعة %1$s</string>
+    <string name="usage_status_new_plan">اليوم الأول من باقتك الجديدة</string>
     <string name="usage_hero_none">باقتك</string>
     <string name="usage_hero_edit">تعديل الرصيد</string>
     <string name="usage_hero_of_short">من %1$s</string>

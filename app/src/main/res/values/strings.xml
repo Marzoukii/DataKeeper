@@ -492,8 +492,8 @@
     <string name="quota_grid_legend_today">Aujourd’hui</string>
     <string name="quota_grid_legend_future">Budget à venir</string>
     <string name="notification_new_sim_title">Nouvelle SIM : %1$s</string>
-    <string name="notification_new_sim_text">Ton ancien forfait est terminé ? Enregistre le nouveau : on le compte à partir de %1$s, l’heure du changement de SIM.</string>
-    <string name="setup_operator_changed_at">Nouvelle SIM %1$s détectée à %2$s : le nouveau forfait est compté à partir de cette heure.</string>
+    <string name="notification_new_sim_text">Ton ancien forfait est terminé ? Enregistre le nouveau pour continuer à suivre ta conso.</string>
+    <string name="setup_operator_changed_at">Nouvelle SIM %1$s détectée : saisis son forfait, il est compté à partir d’aujourd’hui.</string>
     <string name="quota_size_title">Taille du forfait</string>
     <string name="quota_size_subtitle">%1$s · touche pour changer</string>
     <string name="quota_size_subtitle_none">Aucun forfait · touche pour en définir un</string>
@@ -501,7 +501,7 @@
     <string name="usage_status_pace">À ce rythme, ton forfait sera épuisé vers le %1$s</string>
     <string name="usage_status_alert">Attention : %1$d %% du forfait déjà utilisé</string>
     <string name="usage_status_exceeded">Forfait dépassé de %1$s : passe en Wi‑Fi</string>
-    <string name="usage_status_new_plan">Nouveau forfait activé à %1$s</string>
+    <string name="usage_status_new_plan">Premier jour de ton nouveau forfait</string>
     <string name="usage_hero_none">Ton forfait</string>
     <string name="usage_hero_edit">Modifier le solde</string>
     <string name="usage_hero_of_short">sur %1$s</string>

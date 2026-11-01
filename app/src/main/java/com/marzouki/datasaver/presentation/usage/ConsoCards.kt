@@ -68,16 +68,13 @@ private const val DAY_MILLIS = 24L * 60 * 60 * 1000
 internal fun StatusLine(status: QuotaStatus?, period: MonthPeriod) {
     if (status == null) return
     val colors = MaterialTheme.colorScheme
-    val newToday = period.currentDay == 1 && period.startMillis > MonthPeriod.startOfLocalDay(period.endMillis)
+    val newToday = period.currentDay == 1
     val perDay = status.usedBytes / period.currentDay.coerceAtLeast(1)
     val emptyAt = if (perDay > 0) period.endMillis + status.remainingBytes / perDay * DAY_MILLIS else Long.MAX_VALUE
     val (dot, text) = when {
         status.isExceeded -> colors.error to stringResource(R.string.usage_status_exceeded, status.exceededBytes.toPlanSize())
         status.isAlertReached -> colors.tertiary to stringResource(R.string.usage_status_alert, (status.usedRatio * 100).roundToInt())
-        newToday -> colors.primary to stringResource(
-            R.string.usage_status_new_plan,
-            DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(period.startMillis)),
-        )
+        newToday -> colors.primary to stringResource(R.string.usage_status_new_plan)
         period.currentDay >= 3 && emptyAt < period.nextStartMillis ->
             colors.tertiary to stringResource(R.string.usage_status_pace, formatDayMonth(emptyAt))
         else -> DataColors.wifi to stringResource(R.string.usage_status_ok, formatDayMonth(period.nextStartMillis))

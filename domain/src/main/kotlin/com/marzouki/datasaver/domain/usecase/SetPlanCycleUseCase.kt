@@ -20,7 +20,9 @@ class SetPlanCycleUseCase @Inject constructor(
             repository.setPlanValidity(null)
             setCycleStartDay(day)
         } else {
-            repository.setPlanValidity(PlanValidity(purchaseMillis, validityDays.coerceIn(1, MonthPeriod.MAX_VALIDITY_DAYS)))
+            // À la journée : l'heure d'achat n'est pas connue avec certitude.
+            val purchaseDay = MonthPeriod.startOfLocalDay(purchaseMillis)
+            repository.setPlanValidity(PlanValidity(purchaseDay, validityDays.coerceIn(1, MonthPeriod.MAX_VALIDITY_DAYS)))
             // Le cycle courant change : l'alerte doit pouvoir se déclencher sur le nouveau.
             repository.setLastAlertedMonth(null)
         }

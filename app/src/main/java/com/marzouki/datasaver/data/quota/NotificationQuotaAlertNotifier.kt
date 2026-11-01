@@ -66,11 +66,10 @@ class NotificationQuotaAlertNotifier @Inject constructor(
     }
 
     override fun notifyOperatorChanged(operatorName: String, atMillis: Long) {
-        val time = java.text.DateFormat.getTimeInstance(java.text.DateFormat.SHORT).format(java.util.Date(atMillis))
         post(
             OPERATOR_NOTIFICATION_ID,
             context.getString(R.string.notification_new_sim_title, operatorName),
-            context.getString(R.string.notification_new_sim_text, time),
+            context.getString(R.string.notification_new_sim_text),
             NotificationCompat.PRIORITY_HIGH,
         )
     }
