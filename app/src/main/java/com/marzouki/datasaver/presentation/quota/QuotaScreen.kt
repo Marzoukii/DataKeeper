@@ -328,7 +328,7 @@ private fun NightChip(text: String, highlighted: Boolean = false) {
 @Composable
 private fun CycleGridCard(forecast: QuotaForecast) {
     val period = forecast.period
-    val days = forecast.measuredDailyBytes
+    val days = forecast.measuredOnPlanBytes
     val todayIndex = days.lastIndex
     val fairShare = forecast.quota.limitBytes / period.totalDays.coerceAtLeast(1)
     val futureBudget = forecast.dailyBudgetBytes
