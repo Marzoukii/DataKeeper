@@ -1,5 +1,7 @@
 package com.marzouki.datasaver.presentation.downloads
 
+import com.marzouki.datasaver.ui.components.SectionTitle
+import androidx.compose.material.icons.rounded.Lightbulb
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -304,7 +306,7 @@ private val SavingTips = listOf(
 @Composable
 private fun SavingTipsCard(modifier: Modifier = Modifier) {
     DataKeeperCard(modifier = modifier) {
-        Text(stringResource(R.string.tips_title), style = MaterialTheme.typography.titleMedium)
+        SectionTitle(stringResource(R.string.tips_title), Icons.Rounded.Lightbulb)
         Spacer(Modifier.height(12.dp))
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             SavingTips.forEach { tip ->

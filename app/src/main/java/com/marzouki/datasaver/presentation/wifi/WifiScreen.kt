@@ -1,5 +1,15 @@
 package com.marzouki.datasaver.presentation.wifi
 
+import com.marzouki.datasaver.ui.theme.Brand
+import com.marzouki.datasaver.ui.components.ScreenHeader
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.Canvas
 import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Context
@@ -144,14 +154,10 @@ private fun WifiContent(
             .padding(horizontal = Spacing.screenHorizontal, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(Spacing.betweenCards),
     ) {
-        Column(Modifier.padding(start = Spacing.titleExtra, top = 12.dp, bottom = 4.dp)) {
-            Text(stringResource(R.string.wifi_title), style = MaterialTheme.typography.headlineSmall)
-            Text(
-                stringResource(R.string.wifi_subtitle),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
+        ScreenHeader(
+            overline = stringResource(R.string.wifi_subtitle),
+            title = stringResource(R.string.wifi_title),
+        )
 
         when (state.availability) {
             null -> Unit
@@ -304,7 +310,7 @@ private fun NetworkRow(network: OpenWifiNetwork, connected: Boolean, onConnect: 
         if (network.portal == WifiPortal.WITH_PORTAL) {
             IconTile(Icons.Rounded.Wifi, colors.tertiaryContainer, DataColors.mobile)
         } else {
-            IconTile(Icons.Rounded.Wifi, colors.primaryContainer, DataColors.wifi)
+            IconTile(Icons.Rounded.Wifi, colors.secondaryContainer, DataColors.wifi)
         }
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -327,7 +333,7 @@ private fun NetworkRow(network: OpenWifiNetwork, connected: Boolean, onConnect: 
         }
         Spacer(Modifier.width(8.dp))
         if (connected) {
-            Text(stringResource(R.string.wifi_connected), style = MaterialTheme.typography.labelLarge, color = colors.primary)
+            Text(stringResource(R.string.wifi_connected), style = MaterialTheme.typography.labelLarge, color = DataColors.wifi)
         } else {
             OutlinedButton(onClick = onConnect, shape = CircleShape) {
                 Text(stringResource(R.string.wifi_connect))
@@ -378,21 +384,60 @@ private fun IconTile(icon: ImageVector, container: Color, tint: Color) {
 /** Ce qui manque pour scanner (permission, Wi-Fi, localisation) et le bouton pour y remédier. */
 @Composable
 private fun NoticeCard(title: String, body: String, button: String, onClick: () -> Unit) {
-    DataKeeperCard(
-        shape = MaterialTheme.shapes.extraLarge,
-        containerColor = MaterialTheme.colorScheme.primaryContainer,
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(title, style = MaterialTheme.typography.titleMedium)
-            Text(body, style = MaterialTheme.typography.bodyMedium)
+    DataKeeperCard(shape = MaterialTheme.shapes.extraLarge) {
+        Column(
+            Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            WifiPinIllustration(Modifier.padding(vertical = 8.dp))
+            Text(title, style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center)
+            Text(
+                body,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
             Button(
                 onClick = onClick,
                 shape = CircleShape,
+                colors = ButtonDefaults.buttonColors(containerColor = Brand.Accent, contentColor = Brand.OnAccent),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp),
+                    .height(52.dp),
             ) { Text(button) }
         }
+    }
+}
+
+/** Illustration des écrans d'attente du Wi-Fi : une épingle bleu nuit sous des ondes menthe. */
+@Composable
+private fun WifiPinIllustration(modifier: Modifier = Modifier) {
+    Canvas(modifier.size(width = 180.dp, height = 140.dp)) {
+        val cx = size.width / 2
+        val stroke = 5.dp.toPx()
+        listOf(0.95f to 0.45f, 0.68f to 0.75f).forEach { (r, alpha) ->
+            val radius = size.width * r / 2
+            drawArc(
+                color = Brand.Wifi.copy(alpha = alpha),
+                startAngle = 200f,
+                sweepAngle = 140f,
+                useCenter = false,
+                topLeft = Offset(cx - radius, size.height * 0.55f - radius),
+                size = Size(radius * 2, radius * 2),
+                style = Stroke(width = stroke, cap = StrokeCap.Round),
+            )
+        }
+        val pinR = size.height * 0.24f
+        val top = size.height * 0.22f
+        val pin = Path().apply {
+            moveTo(cx, size.height * 0.98f)
+            cubicTo(cx - pinR * 1.6f, top + pinR * 1.5f, cx - pinR * 1.3f, top, cx, top)
+            cubicTo(cx + pinR * 1.3f, top, cx + pinR * 1.6f, top + pinR * 1.5f, cx, size.height * 0.98f)
+            close()
+        }
+        drawPath(pin, Brand.Accent)
+        drawCircle(Brand.Accent, radius = pinR * 0.62f, center = Offset(cx, top + pinR * 0.95f))
     }
 }
 

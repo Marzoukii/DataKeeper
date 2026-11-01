@@ -20,4 +20,6 @@ object Spacing {
     val titleExtra = 4.dp
     val betweenCards = 12.dp
     val cardPadding = 20.dp
+    /** Hauteur réservée sous le contenu pour la barre de navigation flottante. */
+    val floatingNavClearance = 96.dp
 }

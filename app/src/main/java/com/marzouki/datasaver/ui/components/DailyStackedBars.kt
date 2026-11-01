@@ -9,10 +9,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,25 +27,19 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.marzouki.datasaver.R
 import com.marzouki.datasaver.domain.model.DayUsage
+import com.marzouki.datasaver.ui.theme.Brand
 import com.marzouki.datasaver.ui.theme.DataColors
-
-private val ChartHeight = 120.dp
-
-/** Part de la colonne du jour occupée par la barre. */
-private const val BarWidthFraction = 0.78f
-private val SegmentGap = 3.dp
-private val MinSegment = 3.dp
-private val MinDayLabelSize = 8.sp
+import com.marzouki.datasaver.ui.theme.numeric
 
 /**
- * Histogramme empilé des derniers jours : Wi-Fi en bas, mobile au-dessus.
- * Le dernier jour (aujourd'hui) a son initiale mise en avant. Avec [onDayClick], chaque jour est
- * touchable et le jour [selectedDayMillis] reste opaque quand les autres s'estompent.
+ * Le carnet des derniers jours, lu comme une imsakia : une ligne par jour, du plus ancien à
+ * aujourd'hui, avec le Wi-Fi et le mobile en colonnes. Aujourd'hui (la dernière ligne) est en bande
+ * safran. Avec [onDayClick], chaque ligne est touchable et le jour [selectedDayMillis] reste opaque
+ * quand les autres s'estompent.
  */
 @Composable
 fun DailyStackedBars(
@@ -52,10 +48,14 @@ fun DailyStackedBars(
     title: String? = null,
     selectedDayMillis: Long? = null,
     onDayClick: ((DayUsage) -> Unit)? = null,
+    /** Budget du jour en data mobile ; affiché sous la ligne d'aujourd'hui quand il est connu. */
+    todayBudgetBytes: Long? = null,
 ) {
-    val max = days.maxOfOrNull { it.totalBytes }?.takeIf { it > 0 } ?: 1L
-    // Un jour sorti de la fenêtre ne doit pas estomper toutes les barres.
+    val maxWifi = days.maxOfOrNull { it.wifiBytes }?.takeIf { it > 0 } ?: 1L
+    val maxMobile = days.maxOfOrNull { it.mobileBytes }?.takeIf { it > 0 } ?: 1L
+    // Un jour sorti de la fenêtre ne doit pas estomper toutes les lignes.
     val selected = selectedDayMillis?.takeIf { millis -> days.any { it.dayStartMillis == millis } }
+    val ruleColor = MaterialTheme.colorScheme.outlineVariant
 
     Column(modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -63,7 +63,7 @@ fun DailyStackedBars(
                 Text(
                     title,
                     style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
             } else {
                 Spacer(Modifier.weight(1f))
@@ -72,86 +72,132 @@ fun DailyStackedBars(
             Spacer(Modifier.width(12.dp))
             LegendItem(DataColors.mobile, stringResource(R.string.usage_mobile))
         }
-        Spacer(Modifier.height(16.dp))
-        Row(Modifier.fillMaxWidth()) {
-            days.forEachIndexed { index, day ->
-                val description = stringResource(
-                    R.string.usage_day_description,
-                    dayName(day.dayStartMillis),
-                    day.wifiBytes.toReadableSize(),
-                    day.mobileBytes.toReadableSize(),
-                )
-                val dimmed = selected != null && selected != day.dayStartMillis
-                Column(
-                    Modifier
-                        .weight(1f)
-                        .then(
-                            if (onDayClick != null) {
-                                Modifier.clickable(role = Role.Button) { onDayClick(day) }
-                            } else {
-                                Modifier
-                            },
-                        )
-                        .alpha(if (dimmed) 0.4f else 1f)
-                        .clearAndSetSemantics { contentDescription = description },
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Column(
-                        Modifier
-                            .height(ChartHeight)
-                            .fillMaxWidth(BarWidthFraction),
-                        verticalArrangement = Arrangement.Bottom,
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        if (day.mobileBytes > 0) {
-                            Bar(DataColors.mobile, segmentHeight(day.mobileBytes, max, day))
-                            if (day.wifiBytes > 0) Spacer(Modifier.height(SegmentGap))
-                        }
-                        if (day.wifiBytes > 0) {
-                            Bar(DataColors.wifi, segmentHeight(day.wifiBytes, max, day))
-                        }
-                        if (day.totalBytes == 0L) {
-                            Bar(MaterialTheme.colorScheme.surfaceVariant, MinSegment)
-                        }
-                    }
-                    Spacer(Modifier.height(8.dp))
-                    val isToday = index == days.lastIndex
-                    val labelStyle = MaterialTheme.typography.labelMedium
-                    // « الأربعاء » déborde d'une colonne étroite : le nom rétrécit plutôt que d'être coupé.
+        Spacer(Modifier.height(12.dp))
+        HorizontalDivider(thickness = 1.dp, color = ruleColor)
+        days.forEachIndexed { index, day ->
+            val isToday = index == days.lastIndex
+            val description = stringResource(
+                R.string.usage_day_description,
+                dayName(day.dayStartMillis),
+                day.wifiBytes.toReadableSize(),
+                day.mobileBytes.toReadableSize(),
+            )
+            val dimmed = selected != null && selected != day.dayStartMillis
+            if (index > 0 && !isToday) {
+                HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
+            }
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .then(if (isToday) Modifier.clip(RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp)).background(Brand.AccentTint.copy(alpha = 0.7f)) else Modifier)
+                    .then(
+                        if (onDayClick != null) {
+                            Modifier.clickable(role = Role.Button) { onDayClick(day) }
+                        } else {
+                            Modifier
+                        },
+                    )
+                    .alpha(if (dimmed) 0.4f else 1f)
+                    .clearAndSetSemantics { contentDescription = description }
+                    .heightIn(min = 56.dp)
+                    .padding(horizontal = 4.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(Modifier.width(52.dp)) {
                     Text(
-                        dayInitial(day.dayStartMillis),
-                        style = labelStyle,
-                        color = if (isToday) MaterialTheme.colorScheme.onSurface
-                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                        dayOfMonth(day.dayStartMillis),
+                        style = MaterialTheme.typography.titleLarge.numeric().copy(fontWeight = FontWeight.Medium),
+                        color = if (isToday) Brand.Accent else MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        if (isToday) stringResource(R.string.usage_today_short) else dayShortName(day.dayStartMillis),
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = if (isToday) FontWeight.SemiBold else FontWeight.Medium,
+                        color = if (isToday) Brand.OnAccentTint else MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
-                        softWrap = false,
-                        autoSize = TextAutoSize.StepBased(
-                            minFontSize = MinDayLabelSize,
-                            maxFontSize = labelStyle.fontSize,
-                        ),
                     )
                 }
+                LedgerCell(
+                    value = day.wifiBytes.toReadableSize(),
+                    fraction = day.wifiBytes.toFloat() / maxWifi,
+                    color = if (isToday) TodayWifi else DataColors.wifi,
+                    modifier = Modifier.weight(1f),
+                )
+                Spacer(Modifier.width(12.dp))
+                LedgerCell(
+                    value = day.mobileBytes.toReadableSize(),
+                    fraction = day.mobileBytes.toFloat() / maxMobile,
+                    color = if (isToday) TodayMobile else DataColors.mobile,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            if (isToday && todayBudgetBytes != null) {
+                TodayBudget(day.mobileBytes, todayBudgetBytes)
             }
         }
+        HorizontalDivider(thickness = 1.dp, color = ruleColor)
     }
 }
 
-/** Hauteur proportionnelle, en réservant l'espace entre les deux segments. */
-private fun segmentHeight(bytes: Long, max: Long, day: DayUsage): Dp {
-    val gap = if (day.wifiBytes > 0 && day.mobileBytes > 0) SegmentGap else 0.dp
-    val available = ChartHeight - gap
-    return (available * (bytes.toFloat() / max)).coerceAtLeast(MinSegment)
-}
-
+/** Sous la ligne d'aujourd'hui, toujours sur la bande safran : le budget du jour et ce qu'il en reste. */
 @Composable
-private fun Bar(color: Color, height: Dp) {
-    Box(
+private fun TodayBudget(usedBytes: Long, budgetBytes: Long) {
+    val over = usedBytes > budgetBytes
+    Column(
         Modifier
             .fillMaxWidth()
-            .height(height)
-            .clip(RoundedCornerShape(4.dp))
-            .background(color),
-    )
+            .clip(RoundedCornerShape(bottomStart = 14.dp, bottomEnd = 14.dp))
+            .background(Brand.AccentTint.copy(alpha = 0.7f))
+            .padding(start = 56.dp, end = 4.dp, bottom = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                stringResource(R.string.budget_title),
+                style = MaterialTheme.typography.labelMedium,
+                color = Brand.OnAccentTint,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                "${usedBytes.toReadableSize()} / ${budgetBytes.toReadableSize()}",
+                style = MaterialTheme.typography.labelMedium.numeric(),
+                color = if (over) TodayMobile else Brand.Accent,
+            )
+        }
+        ThinBar(
+            fraction = if (budgetBytes == 0L) 1f else usedBytes.toFloat() / budgetBytes,
+            color = if (over) TodayMobile else Brand.Accent,
+            trackColor = Brand.AccentSoft,
+            height = 6.dp,
+        )
+        Text(
+            if (over) {
+                stringResource(R.string.budget_over, (usedBytes - budgetBytes).toReadableSize())
+            } else {
+                stringResource(R.string.budget_left, (budgetBytes - usedBytes).toReadableSize())
+            },
+            style = MaterialTheme.typography.bodySmall.numeric(),
+            color = if (over) TodayMobile else Brand.OnAccentTint,
+        )
+    }
+}
+
+// La bande safran reste claire en thème sombre : on y garde les teintes foncées, lisibles dessus.
+private val TodayWifi = Color(0xFF0B6E66)
+private val TodayMobile = Color(0xFF6A4FD8)
+
+@Composable
+private fun LedgerCell(value: String, fraction: Float, color: Color, modifier: Modifier = Modifier) {
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(5.dp)) {
+        Text(value, style = MaterialTheme.typography.bodyMedium.numeric(), fontWeight = FontWeight.SemiBold, color = color)
+        Box(
+            Modifier
+                .fillMaxWidth(fraction.coerceIn(0.04f, 1f))
+                .height(5.dp)
+                .clip(RoundedCornerShape(3.dp))
+                .background(color),
+        )
+    }
 }
 
 @Composable
@@ -167,7 +213,7 @@ private fun LegendItem(color: Color, label: String) {
         Text(
             label,
             style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }

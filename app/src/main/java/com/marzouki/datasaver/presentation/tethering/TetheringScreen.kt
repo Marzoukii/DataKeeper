@@ -1,5 +1,6 @@
 package com.marzouki.datasaver.presentation.tethering
 
+import com.marzouki.datasaver.ui.components.BackHeader
 import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Context
@@ -165,19 +166,12 @@ private fun TetheringContent(
             .padding(horizontal = Spacing.screenHorizontal, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(Spacing.betweenCards),
     ) {
-        Row(Modifier.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = stringResource(R.string.settings_back))
-            }
-            Column {
-                Text(stringResource(R.string.tethering_title), style = MaterialTheme.typography.headlineSmall)
-                Text(
-                    stringResource(R.string.tethering_subtitle),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
+        BackHeader(
+            title = stringResource(R.string.tethering_title),
+            subtitle = stringResource(R.string.tethering_subtitle),
+            backDescription = stringResource(R.string.settings_back),
+            onBack = onBack,
+        )
 
         when (state.active) {
             null -> Unit

@@ -1,5 +1,16 @@
 package com.marzouki.datasaver.presentation.usage
 
+import androidx.compose.ui.draw.shadow
+import com.marzouki.datasaver.ui.theme.Brand
+import com.marzouki.datasaver.ui.components.SavingsCard
+import com.marzouki.datasaver.ui.components.toReadableSizeParts
+import com.marzouki.datasaver.ui.components.heroSurface
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.clickable
+import com.marzouki.datasaver.ui.components.SectionTitle
+import androidx.compose.material.icons.rounded.Apps
+import androidx.compose.material.icons.rounded.CalendarMonth
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.LocalActivity
@@ -166,7 +177,8 @@ private fun UsageContent(
                 ScreenHeader(
                     overline = stringResource(
                         R.string.usage_overline,
-                        formatMonthYear(period.endMillis),
+                        state.operatorName?.let { stringResource(R.string.usage_plan_label_operator, it) }
+                            ?: formatMonthYear(period.endMillis),
                         period.currentDay,
                         period.totalDays,
                     ),
@@ -174,9 +186,6 @@ private fun UsageContent(
                 ) {
                     HeaderIconButton(Icons.Rounded.Settings, stringResource(R.string.usage_settings), onOpenSettings)
                 }
-            }
-            state.tethering?.let { tethering ->
-                item { TetheringBanner(tethering.usedBytes, onClick = onOpenTethering) }
             }
             val usage = state.liveUsage
             when {
@@ -190,7 +199,7 @@ private fun UsageContent(
                 }
                 usage == null -> item { LoadFailedCard(onRetry = { onIntent(UsageIntent.Refresh) }) }
                 else -> dashboard(
-                    state, usage, period, onOpenQuota, onRequestPhonePermission,
+                    state, usage, period, onOpenQuota, onRequestPhonePermission, onOpenTethering,
                     selectedDayMillis = selectedDayMillis,
                     onDayClick = { selectedDayMillis = it.dayStartMillis },
                 )
@@ -210,9 +219,13 @@ private fun androidx.compose.foundation.lazy.LazyListScope.dashboard(
     period: MonthPeriod,
     onOpenQuota: () -> Unit,
     onRequestPhonePermission: () -> Unit,
+    onOpenTethering: () -> Unit,
     selectedDayMillis: Long?,
     onDayClick: (DayUsage) -> Unit,
 ) {
+    // Parcours violet : ce qu'il reste d'abord, puis Wi-Fi vs mobile, le carnet, les économies,
+    // l'alerte appli, les applis gourmandes et enfin le partage de connexion.
+    item { QuotaSummaryCard(state.quotaStatus, period, onClick = onOpenQuota) }
     item {
         if (usage.totalBytes == 0L) {
             EmptyUsageCard()
@@ -231,12 +244,9 @@ private fun androidx.compose.foundation.lazy.LazyListScope.dashboard(
             )
         }
     }
-    val heavyApp = state.heavyApp
-    val quota = state.quota
-    if (heavyApp != null && quota != null) {
-        item { HeavyAppBanner(heavyApp, quota.limitBytes) }
+    item {
+        LedgerCard(state, period, selectedDayMillis, onDayClick)
     }
-    item { QuotaSummaryCard(state.quotaStatus, period, onClick = onOpenQuota) }
     item {
         SavingsAndPlanRow(
             wifiBytes = usage.wifiBytes,
@@ -249,31 +259,14 @@ private fun androidx.compose.foundation.lazy.LazyListScope.dashboard(
             resetMillis = period.nextStartMillis,
         )
     }
-    item {
-        DataKeeperCard {
-            if (state.dailyUsage.any { it.totalBytes > 0 }) {
-                DailyStackedBars(
-                    state.dailyUsage,
-                    title = stringResource(R.string.usage_last_7_days),
-                    selectedDayMillis = selectedDayMillis,
-                    onDayClick = onDayClick,
-                )
-                Spacer(Modifier.height(12.dp))
-                Text(
-                    stringResource(R.string.usage_day_hint),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            } else {
-                Text(stringResource(R.string.usage_last_7_days), style = MaterialTheme.typography.titleMedium)
-                Spacer(Modifier.height(12.dp))
-                AnalyzingBox(stringResource(R.string.usage_analyzing_days))
-            }
-        }
+    val heavyApp = state.heavyApp
+    val quota = state.quota
+    if (heavyApp != null && quota != null) {
+        item { HeavyAppBanner(heavyApp, quota.limitBytes) }
     }
     item {
         DataKeeperCard {
-            Text(stringResource(R.string.usage_top_apps_title), style = MaterialTheme.typography.titleMedium)
+            SectionTitle(stringResource(R.string.usage_top_apps_title), Icons.Rounded.Apps)
             Spacer(Modifier.height(8.dp))
             if (state.topMobileApps.isEmpty()) {
                 Spacer(Modifier.height(4.dp))
@@ -293,6 +286,148 @@ private fun androidx.compose.foundation.lazy.LazyListScope.dashboard(
             }
         }
     }
+    state.tethering?.let { tethering ->
+        item { TetheringBanner(tethering.usedBytes, onClick = onOpenTethering) }
+    }
+}
+
+/**
+ * En-tête de « Ma consommation » : bloc bleu nuit avec ce qu'il reste du forfait en grand, le
+ * nombre de jours restants et le jour du cycle. Le toucher ouvre le quota.
+ */
+@Composable
+private fun UsageHeroHeader(
+    state: UsageState,
+    period: MonthPeriod,
+    onOpenQuota: () -> Unit,
+    onOpenSettings: () -> Unit,
+) {
+    val status = state.quotaStatus
+    val planLabel = state.operatorName?.let { stringResource(R.string.usage_plan_label_operator, it) }
+        ?: formatMonthYear(period.endMillis)
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp, bottom = 4.dp)
+            .shadow(3.dp, RoundedCornerShape(28.dp), ambientColor = Color.Black.copy(alpha = 0.06f), spotColor = Color.Black.copy(alpha = 0.10f))
+            .clip(RoundedCornerShape(28.dp))
+            .heroSurface()
+            .clickable(onClick = onOpenQuota)
+            .padding(start = 20.dp, end = 12.dp, top = 16.dp, bottom = 20.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(R.string.usage_title), style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onSurface)
+                Text(
+                    stringResource(R.string.usage_overline, planLabel, period.currentDay, period.totalDays),
+                    style = MaterialTheme.typography.bodyMedium.numeric(),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            HeaderIconButton(Icons.Rounded.Settings, stringResource(R.string.usage_settings), onOpenSettings)
+        }
+        Spacer(Modifier.height(14.dp))
+        when {
+            status == null -> {
+                Text(stringResource(R.string.quota_summary_none_title), style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface)
+                Text(stringResource(R.string.quota_summary_none_body), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            status.isExceeded -> {
+                Text(
+                    stringResource(
+                        R.string.quota_summary_exceeded,
+                        status.exceededBytes.toReadableSize(),
+                        formatDayMonth(period.nextStartMillis),
+                    ),
+                    style = MaterialTheme.typography.titleLarge.numeric(),
+                    color = Brand.Mobile,
+                )
+            }
+            else -> {
+                val remaining = status.remainingBytes.toReadableSizeParts()
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text(
+                        remaining.value,
+                        style = MaterialTheme.typography.displayMedium.numeric(),
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        "${remaining.unit} ${stringResource(R.string.widget_remaining)}",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(bottom = 8.dp),
+                    )
+                }
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    buildString {
+                        append(
+                            stringResource(
+                                R.string.quota_of_total,
+                                status.quota.limitBytes.toReadableSize(),
+                                (status.usedRatio * 100).roundToInt(),
+                            ),
+                        )
+                        append(" · ")
+                        append(pluralStringResource(R.plurals.widget_days_left, period.remainingDays, period.remainingDays))
+                    },
+                    style = MaterialTheme.typography.bodyMedium.numeric(),
+                    color = Brand.Accent,
+                )
+                Spacer(Modifier.height(12.dp))
+                ThinBar(
+                    fraction = status.usedRatio,
+                    color = Brand.Mobile,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    height = 8.dp,
+                )
+            }
+        }
+    }
+}
+
+/** Le carnet du forfait : les derniers jours en lignes, aujourd'hui en safran avec son budget. */
+@Composable
+private fun LedgerCard(
+    state: UsageState,
+    period: MonthPeriod,
+    selectedDayMillis: Long?,
+    onDayClick: (DayUsage) -> Unit,
+) {
+    DataKeeperCard {
+        if (state.dailyUsage.any { it.totalBytes > 0 }) {
+            DailyStackedBars(
+                state.dailyUsage,
+                title = stringResource(R.string.usage_last_7_days),
+                selectedDayMillis = selectedDayMillis,
+                onDayClick = onDayClick,
+                todayBudgetBytes = todayBudgetBytes(state, period),
+            )
+            Spacer(Modifier.height(12.dp))
+            Text(
+                stringResource(R.string.usage_day_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        } else {
+            SectionTitle(stringResource(R.string.usage_last_7_days), Icons.Rounded.CalendarMonth)
+            Spacer(Modifier.height(12.dp))
+            AnalyzingBox(stringResource(R.string.usage_analyzing_days))
+        }
+    }
+}
+
+/**
+ * Budget du jour, comme sur l'écran Quota : ce qui restait du forfait ce matin, réparti sur les jours
+ * restants aujourd'hui compris. Null sans forfait.
+ */
+private fun todayBudgetBytes(state: UsageState, period: MonthPeriod): Long? {
+    val status = state.quotaStatus ?: return null
+    val todayMobile = state.dailyUsage.lastOrNull()?.mobileBytes ?: 0L
+    val usedBeforeToday = (status.usedBytes - todayMobile).coerceAtLeast(0)
+    val daysLeft = (period.totalDays - period.currentDay + 1).coerceAtLeast(1)
+    return (status.quota.limitBytes - usedBeforeToday).coerceAtLeast(0) / daysLeft
 }
 
 @Composable

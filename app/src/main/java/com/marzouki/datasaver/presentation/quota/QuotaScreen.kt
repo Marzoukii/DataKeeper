@@ -1,5 +1,20 @@
 package com.marzouki.datasaver.presentation.quota
 
+import androidx.compose.ui.draw.shadow
+import androidx.compose.foundation.border
+import com.marzouki.datasaver.ui.theme.Brand
+import com.marzouki.datasaver.ui.components.dayOfMonth
+import com.marzouki.datasaver.ui.components.SectionTitle
+import com.marzouki.datasaver.ui.components.heroSurface
+import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.width
+import com.marzouki.datasaver.ui.components.IconChip
+import androidx.compose.material.icons.rounded.Today
+import androidx.compose.material.icons.rounded.TrendingUp
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -106,7 +121,7 @@ import com.marzouki.datasaver.ui.components.formatUsedOf
 import com.marzouki.datasaver.ui.components.toReadableSize
 import com.marzouki.datasaver.ui.components.toReadableSizeParts
 import com.marzouki.datasaver.ui.theme.DataColors
-import com.marzouki.datasaver.ui.theme.SpaceGrotesk
+import com.marzouki.datasaver.ui.theme.ReadexPro
 import com.marzouki.datasaver.ui.theme.Spacing
 import com.marzouki.datasaver.ui.theme.numeric
 import java.util.Calendar
@@ -167,23 +182,19 @@ private fun QuotaContent(
         contentPadding = PaddingValues(horizontal = Spacing.screenHorizontal, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(Spacing.betweenCards),
     ) {
+        val forecast = state.forecast
         item {
-            ScreenHeader(
-                overline = stringResource(R.string.quota_overline, formatDayMonth(period.nextStartMillis)),
-                title = stringResource(R.string.quota_title),
+            QuotaHeroHeader(
+                state.quota, state.status, period,
+                balance = state.quota?.balanceIn(period),
+                dailyBudgetBytes = forecast?.dailyBudgetBytes,
+                operatorName = state.operatorName,
             )
         }
         if (!state.hasUsageAccess) {
             item { UsageAccessRequiredCard(onGrantClick = { onIntent(QuotaIntent.GrantAccessClicked) }) }
         }
-        val forecast = state.forecast
-        item {
-            QuotaGaugeCard(
-                state.quota, state.status, period,
-                balance = state.quota?.balanceIn(period),
-                dailyBudgetBytes = forecast?.dailyBudgetBytes,
-            )
-        }
+        forecast?.let { item { CycleGridCard(it) } }
         if (forecast != null && state.status?.isExceeded == false) {
             item { DailyBudgetCard(forecast) }
         }
@@ -254,6 +265,227 @@ private fun QuotaContent(
             },
             onDismiss = { showBalanceDialog = false },
         )
+    }
+}
+
+/**
+ * En-tête du quota : bloc bleu nuit avec ce qu'il reste en grand, les jours restants, la barre du
+ * forfait (repère safran au seuil d'alerte) et les repères du jour.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun QuotaHeroHeader(
+    quota: DataQuota?,
+    status: QuotaStatus?,
+    period: MonthPeriod,
+    balance: OperatorBalance?,
+    dailyBudgetBytes: Long?,
+    operatorName: String?,
+) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp, bottom = 4.dp)
+            .shadow(3.dp, RoundedCornerShape(28.dp), ambientColor = Color.Black.copy(alpha = 0.06f), spotColor = Color.Black.copy(alpha = 0.10f))
+            .clip(RoundedCornerShape(28.dp))
+            .heroSurface()
+            .padding(horizontal = 20.dp, vertical = 18.dp),
+    ) {
+        Text(stringResource(R.string.quota_title), style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onSurface)
+        Text(
+            buildString {
+                if (operatorName != null && quota != null) {
+                    append(operatorName).append(' ').append(quota.limitBytes.toReadableSize()).append(" · ")
+                }
+                append(stringResource(R.string.quota_overline, formatDayMonth(period.nextStartMillis)))
+            },
+            style = MaterialTheme.typography.bodyMedium.numeric(),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(14.dp))
+        when {
+            quota == null || status == null -> Text(
+                stringResource(R.string.quota_none),
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            status.isExceeded -> Text(
+                stringResource(R.string.quota_exceeded_chip, status.exceededBytes.toReadableSize()),
+                style = MaterialTheme.typography.displaySmall.numeric(),
+                color = Brand.Mobile,
+            )
+            else -> {
+                val remaining = status.remainingBytes.toReadableSizeParts()
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text(remaining.value, style = MaterialTheme.typography.displayMedium.numeric(), color = MaterialTheme.colorScheme.onSurface)
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        "${remaining.unit} ${stringResource(R.string.widget_remaining)}",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(bottom = 8.dp),
+                    )
+                }
+                Text(
+                    pluralStringResource(R.plurals.widget_days_left, period.remainingDays, period.remainingDays),
+                    style = MaterialTheme.typography.titleSmall.numeric(),
+                    color = Brand.Accent,
+                )
+            }
+        }
+        if (quota != null && status != null) {
+            Spacer(Modifier.height(14.dp))
+            val alertFraction = quota.alertThresholdPercent / 100f
+            Box(Modifier.fillMaxWidth()) {
+                ThinBar(
+                    fraction = status.usedRatio,
+                    color = Brand.Mobile,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    height = 10.dp,
+                )
+                if (quota.alertEnabled) {
+                    Box(
+                        Modifier
+                            .fillMaxWidth(alertFraction)
+                            .height(10.dp),
+                        contentAlignment = Alignment.CenterEnd,
+                    ) {
+                        Box(
+                            Modifier
+                                .width(2.dp)
+                                .height(10.dp)
+                                .background(Brand.Accent),
+                        )
+                    }
+                }
+            }
+            Spacer(Modifier.height(12.dp))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                NightChip(
+                    "${status.usedBytes.toReadableSize()} · " +
+                        stringResource(R.string.percent, (status.usedRatio * 100).roundToInt()),
+                )
+                if (!status.isExceeded) {
+                    NightChip(
+                        stringResource(
+                            R.string.quota_per_day_chip,
+                            (dailyBudgetBytes ?: (status.remainingBytes / period.remainingDays)).toReadableSize(),
+                        ),
+                    )
+                }
+                if (quota.alertEnabled) {
+                    NightChip(stringResource(R.string.quota_alert_title, quota.alertThresholdPercent))
+                }
+            }
+            if (balance != null) {
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    stringResource(
+                        R.string.quota_balance_gauge,
+                        balance.remainingBytes.toReadableSize(),
+                        formatDayMonth(balance.atMillis),
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+/** Puce translucide posée sur le bleu nuit de l'en-tête. */
+@Composable
+private fun NightChip(text: String) {
+    Text(
+        text,
+        style = MaterialTheme.typography.labelLarge.numeric(),
+        color = MaterialTheme.colorScheme.onSurface,
+        modifier = Modifier
+            .clip(RoundedCornerShape(10.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .padding(horizontal = 12.dp, vertical = 7.dp),
+    )
+}
+
+/**
+ * Le forfait jour par jour, comme une imsakia : une case par jour du cycle. Les jours passés portent
+ * leur data mobile (sur fond corail clair au-delà de la part moyenne du forfait), aujourd'hui est en
+ * safran, les jours à venir portent le budget quotidien.
+ */
+@Composable
+private fun CycleGridCard(forecast: QuotaForecast) {
+    val period = forecast.period
+    val days = forecast.measuredDailyBytes
+    val todayIndex = days.lastIndex
+    val fairShare = forecast.quota.limitBytes / period.totalDays.coerceAtLeast(1)
+    val futureBudget = forecast.dailyBudgetBytes
+    val columns = 6
+    DataKeeperCard(contentPadding = 16.dp) {
+        SectionTitle(stringResource(R.string.quota_cycle_grid_title), Icons.Rounded.CalendarMonth)
+        Spacer(Modifier.height(12.dp))
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.outlineVariant),
+            verticalArrangement = Arrangement.spacedBy(1.dp),
+        ) {
+            (0 until period.totalDays).chunked(columns).forEach { week ->
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(1.dp)) {
+                    week.forEach { index ->
+                        val dayMillis = Calendar.getInstance().apply {
+                            timeInMillis = period.startMillis
+                            add(Calendar.DAY_OF_MONTH, index)
+                        }.timeInMillis
+                        val bytes = days.getOrNull(index)
+                        val isToday = index == todayIndex
+                        val isFuture = index > todayIndex
+                        val over = bytes != null && !isToday && bytes > fairShare
+                        val background = when {
+                            isToday -> MaterialTheme.colorScheme.surface
+                            over -> MaterialTheme.colorScheme.tertiaryContainer
+                            isFuture -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+                            else -> MaterialTheme.colorScheme.surface
+                        }
+                        val ink = when {
+                            isToday -> Brand.Accent
+                            over -> MaterialTheme.colorScheme.onTertiaryContainer
+                            isFuture -> MaterialTheme.colorScheme.onSurfaceVariant
+                            else -> MaterialTheme.colorScheme.onSurface
+                        }
+                        Column(
+                            Modifier
+                                .weight(1f)
+                                .height(56.dp)
+                                .background(background)
+                                .then(if (isToday) Modifier.border(2.dp, Brand.Accent) else Modifier)
+                                .padding(horizontal = 6.dp, vertical = 6.dp),
+                            verticalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Text(dayOfMonth(dayMillis), style = MaterialTheme.typography.titleSmall.numeric(), color = ink)
+                            Text(
+                                (if (isFuture) futureBudget else bytes ?: 0L).toReadableSize(),
+                                style = MaterialTheme.typography.labelSmall.numeric(),
+                                fontWeight = if (isToday || over) FontWeight.SemiBold else FontWeight.Normal,
+                                color = ink,
+                                maxLines = 1,
+                                softWrap = false,
+                                autoSize = TextAutoSize.StepBased(minFontSize = 8.sp, maxFontSize = 11.sp),
+                            )
+                        }
+                    }
+                    // Dernière rangée incomplète : des cases vides gardent la grille alignée.
+                    repeat(columns - week.size) {
+                        Box(
+                            Modifier
+                                .weight(1f)
+                                .height(56.dp)
+                                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.4f)),
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -354,6 +586,8 @@ private fun DailyBudgetCard(forecast: QuotaForecast) {
     }
     DataKeeperCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
+            IconChip(Icons.Rounded.Today)
+            Spacer(Modifier.width(10.dp))
             Text(
                 stringResource(R.string.budget_title),
                 style = MaterialTheme.typography.titleMedium,
@@ -405,6 +639,8 @@ private fun ForecastCard(forecast: QuotaForecast) {
 
     DataKeeperCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
+            IconChip(Icons.Rounded.TrendingUp)
+            Spacer(Modifier.width(10.dp))
             Text(
                 stringResource(R.string.forecast_title),
                 style = MaterialTheme.typography.titleMedium,
@@ -418,7 +654,7 @@ private fun ForecastCard(forecast: QuotaForecast) {
                 append(body)
                 val start = body.indexOf(projected)
                 if (start >= 0) {
-                    addStyle(SpanStyle(fontFamily = SpaceGrotesk, fontWeight = FontWeight.Bold), start, start + projected.length)
+                    addStyle(SpanStyle(fontFamily = ReadexPro, fontWeight = FontWeight.Bold), start, start + projected.length)
                 }
             },
             style = MaterialTheme.typography.bodyMedium,
@@ -452,6 +688,8 @@ private fun PlanCard(state: QuotaState, onIntent: (QuotaIntent) -> Unit, onOther
 
     DataKeeperCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
+            IconChip(Icons.Rounded.SimCard)
+            Spacer(Modifier.width(10.dp))
             Text(
                 stringResource(R.string.quota_plan_title),
                 style = MaterialTheme.typography.titleMedium,
@@ -465,7 +703,7 @@ private fun PlanCard(state: QuotaState, onIntent: (QuotaIntent) -> Unit, onOther
                         withStyle(SpanStyle(fontSize = 15.sp)) { append(" ${value.unit}") }
                     }
                 },
-                style = MaterialTheme.typography.titleLarge.copy(fontFamily = SpaceGrotesk, fontSize = 22.sp),
+                style = MaterialTheme.typography.titleLarge.copy(fontFamily = ReadexPro, fontSize = 22.sp),
                 color = MaterialTheme.colorScheme.primary,
             )
         }

@@ -149,6 +149,12 @@ fun dayInitial(millis: Long): String {
 /** "lundi", "Monday", "الإثنين". */
 fun dayName(millis: Long): String = dateFormat("EEEE").format(Date(millis))
 
+/** "lun.", "Mon", "الإثنين" : jour abrégé des lignes du carnet. */
+fun dayShortName(millis: Long): String = dateFormat("EEE").format(Date(millis))
+
+/** "31" : numéro du jour dans le mois, première colonne du carnet. */
+fun dayOfMonth(millis: Long): String = dateFormat("d").format(Date(millis))
+
 /** "31 oct.", "1 nov." : date courte des axes de graphique. */
 fun formatShortDate(millis: Long): String = dateFormat("d MMM").format(Date(millis))
 

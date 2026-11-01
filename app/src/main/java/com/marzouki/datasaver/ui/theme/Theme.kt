@@ -13,16 +13,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 
-// Le secondaire reprend le bleu : chips, onglets et indicateurs restent dans la palette Wi-Fi.
+// Primaire = accent violet ; secondaire = sarcelle du Wi-Fi ; tertiaire = lavande de la data mobile.
 internal val LightColorScheme = lightColorScheme(
     primary = LightPrimary,
     onPrimary = LightOnPrimary,
     primaryContainer = LightPrimaryContainer,
     onPrimaryContainer = LightOnPrimaryContainer,
-    secondary = LightPrimary,
-    onSecondary = LightOnPrimary,
-    secondaryContainer = LightPrimaryContainer,
-    onSecondaryContainer = LightOnPrimaryContainer,
+    secondary = LightSecondary,
+    onSecondary = LightOnSecondary,
+    secondaryContainer = LightSecondaryContainer,
+    onSecondaryContainer = LightOnSecondaryContainer,
     tertiary = LightTertiary,
     onTertiary = LightOnTertiary,
     tertiaryContainer = LightTertiaryContainer,
@@ -53,10 +53,10 @@ internal val DarkColorScheme = darkColorScheme(
     onPrimary = DarkOnPrimary,
     primaryContainer = DarkPrimaryContainer,
     onPrimaryContainer = DarkOnPrimaryContainer,
-    secondary = DarkPrimary,
-    onSecondary = DarkOnPrimary,
-    secondaryContainer = DarkPrimaryContainer,
-    onSecondaryContainer = DarkOnPrimaryContainer,
+    secondary = DarkSecondary,
+    onSecondary = DarkOnSecondary,
+    secondaryContainer = DarkSecondaryContainer,
+    onSecondaryContainer = DarkOnSecondaryContainer,
     tertiary = DarkTertiary,
     onTertiary = DarkOnTertiary,
     tertiaryContainer = DarkTertiaryContainer,
@@ -84,33 +84,58 @@ internal val DarkColorScheme = darkColorScheme(
 
 /** Couleurs hors du schéma Material 3. */
 @Immutable
-data class ExtendedColors(val success: Color, val successContainer: Color)
+data class ExtendedColors(
+    val success: Color,
+    val successContainer: Color,
+    /** Fond des cartes en verre dépoli : translucide, les halos du fond passent au travers. */
+    val glass: Color,
+    /** Liseré clair du verre. */
+    val glassBorder: Color,
+    /** Halos colorés peints derrière le contenu. */
+    val glowStrength: Float,
+)
 
-val LocalExtendedColors = staticCompositionLocalOf { ExtendedColors(LightSuccess, LightSuccessContainer) }
+private val LightExtended = ExtendedColors(
+    success = LightSuccess,
+    successContainer = LightSuccessContainer,
+    glass = LightSurface,
+    glassBorder = LightOutlineVariant,
+    glowStrength = 0f,
+)
+
+private val DarkExtended = ExtendedColors(
+    success = DarkSuccess,
+    successContainer = DarkSuccessContainer,
+    glass = DarkSurface,
+    glassBorder = DarkOutlineVariant,
+    glowStrength = 0f,
+)
+
+val LocalExtendedColors = staticCompositionLocalOf { LightExtended }
 
 /** Alias sémantiques : on parle de Wi-Fi et de mobile, jamais de « primary » ou « tertiary ». */
 object DataColors {
     val wifi: Color
-        @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primary
+        @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.secondary
     val mobile: Color
         @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.tertiary
     val success: Color
         @Composable @ReadOnlyComposable get() = LocalExtendedColors.current.success
     val successContainer: Color
         @Composable @ReadOnlyComposable get() = LocalExtendedColors.current.successContainer
+    val today: Color
+        @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primary
+    val todayTint: Color
+        @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primaryContainer
 }
 
-/** Pas de couleurs dynamiques (Android 12+) : le bleu et l'orange portent un sens. */
+/** Pas de couleurs dynamiques (Android 12+) : le vert, l'orange et le rouge portent un sens. */
 @Composable
 fun DataKeeperTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
-    val extendedColors = if (darkTheme) {
-        ExtendedColors(DarkSuccess, DarkSuccessContainer)
-    } else {
-        ExtendedColors(LightSuccess, LightSuccessContainer)
-    }
+    val extendedColors = if (darkTheme) DarkExtended else LightExtended
     CompositionLocalProvider(LocalExtendedColors provides extendedColors) {
         MaterialTheme(
             colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme,

@@ -4,6 +4,19 @@ import android.os.Build
 import androidx.annotation.StringRes
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import com.marzouki.datasaver.ui.components.glowBackground
+import com.marzouki.datasaver.ui.theme.Brand
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -153,21 +166,25 @@ private fun MainScaffold(requestedTab: String?, onTabRequestHandled: () -> Unit,
         bottomBar = {
             // Réglages et partage de connexion sont des sous-écrans, avec leur flèche retour : pas d'onglets dessous.
             if (currentRoute == AppRoutes.SETTINGS || currentRoute == AppRoutes.TETHERING) return@Scaffold
-            NavigationBar(containerColor = MaterialTheme.colorScheme.surface, tonalElevation = 0.dp) {
-                Destination.entries.forEach { destination ->
-                    NavigationBarItem(
-                        selected = destination == current,
-                        onClick = { navController.navigateToTab(destination) },
-                        icon = { Icon(destination.icon, contentDescription = null) },
-                        label = { Text(stringResource(destination.labelRes)) },
-                        colors = NavigationBarItemDefaults.colors(
-                            indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                            selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                            selectedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        ),
-                    )
+            // Barre blanche pleine largeur, filet clair au-dessus ; l'onglet actif en pastille rose et rouge corail.
+            Column {
+                HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
+                NavigationBar(containerColor = MaterialTheme.colorScheme.surface, tonalElevation = 0.dp) {
+                    Destination.entries.forEach { destination ->
+                        NavigationBarItem(
+                            selected = destination == current,
+                            onClick = { navController.navigateToTab(destination) },
+                            icon = { Icon(destination.icon, contentDescription = null) },
+                            label = { Text(stringResource(destination.labelRes), maxLines = 1) },
+                            colors = NavigationBarItemDefaults.colors(
+                                indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                                selectedIconColor = MaterialTheme.colorScheme.primary,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            ),
+                        )
+                    }
                 }
             }
         },
@@ -175,7 +192,10 @@ private fun MainScaffold(requestedTab: String?, onTabRequestHandled: () -> Unit,
         NavHost(
             navController = navController,
             startDestination = Destination.USAGE.route,
-            modifier = Modifier.padding(innerPadding),
+            modifier = Modifier
+                .fillMaxSize()
+                .glowBackground()
+                .padding(innerPadding),
         ) {
             composable(Destination.USAGE.route) {
                 UsageScreen(
