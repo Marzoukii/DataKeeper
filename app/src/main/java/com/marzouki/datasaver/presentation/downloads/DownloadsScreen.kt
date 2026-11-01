@@ -92,7 +92,7 @@ import com.marzouki.datasaver.domain.enums.DownloadState
 import com.marzouki.datasaver.domain.model.ScheduledDownload
 import com.marzouki.datasaver.presentation.common.CollectEffects
 import com.marzouki.datasaver.ui.components.DataKeeperCard
-import com.marzouki.datasaver.ui.components.DownloadItemCard
+import com.marzouki.datasaver.ui.components.downloadStatusText
 import com.marzouki.datasaver.ui.components.HeaderIconButton
 import com.marzouki.datasaver.ui.components.InfoPill
 import com.marzouki.datasaver.ui.components.PreviewData
