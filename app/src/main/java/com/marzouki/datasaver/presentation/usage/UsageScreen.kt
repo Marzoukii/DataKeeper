@@ -229,9 +229,9 @@ private fun androidx.compose.foundation.lazy.LazyListScope.dashboard(
     val firstDay = period.currentDay == 1
     item { StatusLine(status, period) }
     item { RemainingHero(status, period, onOpenQuota) }
+    // La comparaison Wi-Fi / mobile reste visible dès le premier jour, même presque vide.
     when {
-        firstDay -> item { FirstDayCard() }
-        usage.totalBytes == 0L -> item { EmptyUsageCard() }
+        usage.totalBytes == 0L && !firstDay -> item { EmptyUsageCard() }
         else -> item {
             val operatorMobileBytes = state.operatorMobileBytes
             SplitTiles(
@@ -242,6 +242,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.dashboard(
                 pricePerGb = state.pricePerGb,
                 onShowNetwork = if (state.hasPhonePermission) null else onRequestPhonePermission,
                 onSetPrice = onOpenQuota,
+                firstDay = firstDay,
             )
         }
     }

@@ -185,11 +185,41 @@ internal fun SplitTiles(
     pricePerGb: PricePerGb?,
     onShowNetwork: (() -> Unit)?,
     onSetPrice: () -> Unit,
+    firstDay: Boolean = false,
 ) {
     val total = (wifiBytes + mobileBytes).coerceAtLeast(1L)
     val wifiPercent = (wifiBytes * 100f / total).roundToInt()
     val colors = MaterialTheme.colorScheme
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        // Comparaison d'un coup d'œil : la part du Wi-Fi et celle du mobile sur une même barre.
+        DataKeeperCard(contentPadding = 16.dp) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(stringResource(R.string.usage_split_title), style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+                Text(
+                    stringResource(R.string.usage_split_total, (wifiBytes + mobileBytes).toPlanSize()),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.onSurfaceVariant,
+                )
+            }
+            Spacer(Modifier.height(10.dp))
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .height(14.dp),
+                horizontalArrangement = Arrangement.spacedBy(3.dp),
+            ) {
+                if (wifiBytes + mobileBytes == 0L) {
+                    Box(Modifier.weight(1f).height(14.dp).clip(CircleShape).background(colors.surfaceVariant))
+                } else {
+                    if (wifiBytes > 0) Box(Modifier.weight(wifiBytes.toFloat()).height(14.dp).clip(CircleShape).background(DataColors.wifi))
+                    if (mobileBytes > 0) Box(Modifier.weight(mobileBytes.toFloat()).height(14.dp).clip(CircleShape).background(DataColors.mobile))
+                }
+            }
+            if (firstDay) {
+                Spacer(Modifier.height(8.dp))
+                Text(stringResource(R.string.usage_first_hint), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+            }
+        }
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             UsageTile(
                 icon = Icons.Rounded.Wifi,
