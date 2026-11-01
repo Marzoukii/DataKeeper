@@ -479,4 +479,7 @@
     <string name="quota_grid_legend_over">Over budget</string>
     <string name="quota_grid_legend_today">Today</string>
     <string name="quota_grid_legend_future">Budget ahead</string>
+    <string name="notification_new_sim_title">New SIM: %1$s</string>
+    <string name="notification_new_sim_text">Is your old plan over? Save the new one: it is counted from %1$s, when the SIM changed.</string>
+    <string name="setup_operator_changed_at">New %1$s SIM detected at %2$s: the new plan is counted from that time.</string>
 </resources>

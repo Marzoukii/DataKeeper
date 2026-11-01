@@ -491,4 +491,7 @@
     <string name="quota_grid_legend_over">Au-dessus du budget</string>
     <string name="quota_grid_legend_today">Aujourd’hui</string>
     <string name="quota_grid_legend_future">Budget à venir</string>
+    <string name="notification_new_sim_title">Nouvelle SIM : %1$s</string>
+    <string name="notification_new_sim_text">Ton ancien forfait est terminé ? Enregistre le nouveau : on le compte à partir de %1$s, l’heure du changement de SIM.</string>
+    <string name="setup_operator_changed_at">Nouvelle SIM %1$s détectée à %2$s : le nouveau forfait est compté à partir de cette heure.</string>
 </resources>

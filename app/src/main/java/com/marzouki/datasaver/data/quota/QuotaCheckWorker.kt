@@ -12,6 +12,7 @@ import com.marzouki.datasaver.domain.repository.CrashReporter
 import com.marzouki.datasaver.domain.repository.QuotaMonitorScheduler
 import com.marzouki.datasaver.domain.usecase.CheckQuotaAndAlertUseCase
 import com.marzouki.datasaver.domain.usecase.ClearStaleBalanceUseCase
+import com.marzouki.datasaver.domain.usecase.NotifyOperatorChangeUseCase
 import com.marzouki.datasaver.domain.usecase.ObservePlanStatusUseCase
 import com.marzouki.datasaver.domain.usecase.RemindBalanceRecalibrationUseCase
 import com.marzouki.datasaver.domain.usecase.RemindPlanRenewalUseCase
@@ -33,6 +34,7 @@ class QuotaCheckWorker @AssistedInject constructor(
     private val remindBalanceRecalibration: RemindBalanceRecalibrationUseCase,
     private val remindPlanRenewal: RemindPlanRenewalUseCase,
     private val observePlanStatus: ObservePlanStatusUseCase,
+    private val notifyOperatorChange: NotifyOperatorChangeUseCase,
     private val crashReporter: CrashReporter,
 ): CoroutineWorker(context, params) {
 
@@ -41,7 +43,10 @@ class QuotaCheckWorker @AssistedInject constructor(
             // Nouvelle SIM des données : le forfait enregistré est celui de l'ancienne, ni alerte ni
             // rappel tant que le nouveau n'est pas saisi. Le travail reste planifié et reprend seul
             // une fois le forfait saisi, ou si l'ancienne SIM revient.
-            if (observePlanStatus().first() != PlanStatus.OPERATOR_CHANGED) {
+            if (observePlanStatus().first() == PlanStatus.OPERATOR_CHANGED) {
+                // Une seule notification « Nouvelle SIM », avec l'heure du changement.
+                notifyOperatorChange()
+            } else {
                 // Au nouveau cycle, le solde relevé le mois dernier est oublié (décompte depuis le forfait plein).
                 clearStaleBalance()
                 checkQuotaAndAlert()

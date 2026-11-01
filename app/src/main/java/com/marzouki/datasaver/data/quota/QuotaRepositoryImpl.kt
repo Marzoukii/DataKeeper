@@ -12,6 +12,7 @@ import com.marzouki.datasaver.domain.model.MonthPeriod
 import com.marzouki.datasaver.domain.model.OperatorBalance
 import com.marzouki.datasaver.domain.model.PlanValidity
 import com.marzouki.datasaver.domain.model.PricePerGb
+import com.marzouki.datasaver.domain.model.OperatorChange
 import com.marzouki.datasaver.domain.model.SavedPlan
 import com.marzouki.datasaver.domain.repository.QuotaRepository
 import kotlinx.coroutines.flow.Flow
@@ -141,6 +142,30 @@ class QuotaRepositoryImpl @Inject constructor(
         }
     }
 
+    override val operatorChange: Flow<OperatorChange?> = dataStore.data
+        .map { prefs ->
+            val key = prefs[KEY_SIM_CHANGE_KEY] ?: return@map null
+            val at = prefs[KEY_SIM_CHANGE_AT] ?: return@map null
+            OperatorChange(key, prefs[KEY_SIM_CHANGE_NAME] ?: key, at, prefs[KEY_SIM_CHANGE_NOTIFIED] ?: false)
+        }
+        .distinctUntilChanged()
+
+    override suspend fun setOperatorChange(change: OperatorChange?) {
+        dataStore.edit { prefs ->
+            if (change == null) {
+                prefs.remove(KEY_SIM_CHANGE_KEY)
+                prefs.remove(KEY_SIM_CHANGE_NAME)
+                prefs.remove(KEY_SIM_CHANGE_AT)
+                prefs.remove(KEY_SIM_CHANGE_NOTIFIED)
+            } else {
+                prefs[KEY_SIM_CHANGE_KEY] = change.operatorKey
+                prefs[KEY_SIM_CHANGE_NAME] = change.operatorName
+                prefs[KEY_SIM_CHANGE_AT] = change.atMillis
+                prefs[KEY_SIM_CHANGE_NOTIFIED] = change.notified
+            }
+        }
+    }
+
     override val savedPlans: Flow<List<SavedPlan>> = dataStore.data
         .map { prefs -> prefs[KEY_SAVED_PLANS]?.lineSequence()?.mapNotNull(::decodePlan)?.toList().orEmpty() }
         .distinctUntilChanged()
@@ -194,6 +219,10 @@ class QuotaRepositoryImpl @Inject constructor(
 
     private companion object {
         val KEY_QUOTA_BYTES = longPreferencesKey("mobile_quota_bytes")
+        val KEY_SIM_CHANGE_KEY = stringPreferencesKey("sim_change_operator_key")
+        val KEY_SIM_CHANGE_NAME = stringPreferencesKey("sim_change_operator_name")
+        val KEY_SIM_CHANGE_AT = longPreferencesKey("sim_change_at_millis")
+        val KEY_SIM_CHANGE_NOTIFIED = booleanPreferencesKey("sim_change_notified")
         val KEY_ALERT_ENABLED = booleanPreferencesKey("quota_alert_enabled")
         val KEY_LAST_ALERTED_MONTH = stringPreferencesKey("last_alerted_month")
         val KEY_CYCLE_START_DAY = intPreferencesKey("cycle_start_day")

@@ -21,3 +21,14 @@ data class MobileOperator(val name: String, val mccMnc: String?) {
         }
     }
 }
+
+/**
+ * Nouvelle SIM des données vue pour la première fois à [atMillis] (Ooredoo → Tunisie Telecom) : le
+ * moment sert d'heure d'activation au nouveau forfait. [notified] évite de prévenir deux fois.
+ */
+data class OperatorChange(
+    val operatorKey: String,
+    val operatorName: String,
+    val atMillis: Long,
+    val notified: Boolean = false,
+)

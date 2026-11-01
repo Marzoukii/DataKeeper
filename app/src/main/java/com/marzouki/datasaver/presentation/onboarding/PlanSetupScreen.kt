@@ -281,8 +281,17 @@ private fun SizeStep(state: PlanSetupState, onIntent: (PlanSetupIntent) -> Unit,
         state.operatorName?.let { stringResource(R.string.setup_q_size_body_operator, it) } ?: stringResource(R.string.setup_q_size_body),
     )
     if (state.operatorChanged) {
+        val change = state.operatorChange
         Text(
-            stringResource(R.string.setup_body_operator_changed),
+            if (change != null) {
+                stringResource(
+                    R.string.setup_operator_changed_at,
+                    change.operatorName,
+                    java.text.DateFormat.getTimeInstance(java.text.DateFormat.SHORT).format(java.util.Date(change.atMillis)),
+                )
+            } else {
+                stringResource(R.string.setup_body_operator_changed)
+            },
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.primary,
         )

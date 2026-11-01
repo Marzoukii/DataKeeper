@@ -1,6 +1,7 @@
 package com.marzouki.datasaver.presentation.onboarding
 
 import com.marzouki.datasaver.domain.enums.PlanStatus
+import com.marzouki.datasaver.domain.model.OperatorChange
 import com.marzouki.datasaver.domain.model.PricePerGb
 import com.marzouki.datasaver.domain.model.SavedPlan
 import com.marzouki.datasaver.presentation.quota.PlanCycleInput
@@ -25,6 +26,10 @@ data class PlanSetupState(
     val operatorName: String? = null,
     /** Nouvelle SIM des données : le forfait saisi pour l'ancienne ne vaut plus. */
     val operatorChanged: Boolean = false,
+    /** Nouvelle SIM et heure où elle a été vue : sert d'heure d'activation au forfait saisi. */
+    val operatorChange: OperatorChange? = null,
+    /** Jour d'achat ou validité touchés à la main : l'heure du changement de SIM ne les écrase plus. */
+    val cycleEdited: Boolean = false,
     /** Forfaits déjà saisis pour cet opérateur, proposés en un appui. */
     val savedPlans: List<SavedPlan> = emptyList(),
     /** Erreurs affichées seulement après un premier essai de validation. */
