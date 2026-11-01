@@ -91,6 +91,10 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.StrokeCap
+import com.marzouki.datasaver.ui.components.toPlanSize
 import com.marzouki.datasaver.R
 import com.marzouki.datasaver.domain.enums.ForecastOutlook
 import com.marzouki.datasaver.domain.model.DataQuota
@@ -195,11 +199,13 @@ private fun QuotaContent(
         if (!state.hasUsageAccess) {
             item { UsageAccessRequiredCard(onGrantClick = { onIntent(QuotaIntent.GrantAccessClicked) }) }
         }
-        forecast?.let { item { CycleGridCard(it) } }
+        // Aujourd'hui d'abord (budget du jour), puis les jours du forfait, puis la fin de cycle.
         if (forecast != null && state.status?.isExceeded == false) {
             item { DailyBudgetCard(forecast) }
         }
-        forecast?.let { item { ForecastCard(it) } }
+        forecast?.let { item { CycleGridCard(it) } }
+        // Une courbe sur un seul jour ne dit rien : la prévision arrive dès le 2e jour.
+        forecast?.takeIf { it.period.currentDay >= 2 }?.let { item { ForecastCard(it) } }
         // Taille du forfait et suppression du quota dans les réglages : le reste est déjà sur Conso.
         item {
             SettingsCard(
@@ -270,10 +276,7 @@ private fun QuotaContent(
     }
 }
 
-/**
- * En-tête du quota : titre et ligne de contexte posés sur le fond, puis la carte du solde (reste en
- * grand, jours restants, jauge avec repère d'alerte, pastilles utilisé / par jour / alerte).
- */
+/** En-tête du quota : titre et ligne de contexte (opérateur, forfait, ce qu'il reste) posés sur le fond. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun QuotaHeroHeader(
@@ -284,99 +287,22 @@ private fun QuotaHeroHeader(
     dailyBudgetBytes: Long?,
     operatorName: String?,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.betweenCards)) {
-        ScreenHeader(
-            overline = buildString {
-                if (operatorName != null && quota != null) {
-                    append(operatorName).append(' ').append(quota.limitBytes.toReadableSize()).append(" · ")
-                }
-                append(stringResource(R.string.quota_overline, formatDayMonth(period.nextStartMillis)))
-            },
-            title = stringResource(R.string.quota_title),
-        )
-        DataKeeperCard(shape = RoundedCornerShape(24.dp), contentPadding = 20.dp) {
-            when {
-                quota == null || status == null -> Text(
-                    stringResource(R.string.quota_none),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                status.isExceeded -> Text(
-                    stringResource(R.string.quota_exceeded_chip, status.exceededBytes.toReadableSize()),
-                    style = MaterialTheme.typography.displaySmall.numeric(),
-                    color = MaterialTheme.colorScheme.error,
-                )
-                else -> Row(verticalAlignment = Alignment.Bottom) {
-                    Text(
-                        status.remainingBytes.toReadableSize(),
-                        style = MaterialTheme.typography.displaySmall.numeric().copy(fontSize = 48.sp, lineHeight = 52.sp),
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        stringResource(R.string.widget_remaining) + " · " +
-                            pluralStringResource(R.plurals.days, period.remainingDays, period.remainingDays),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(bottom = 8.dp),
-                    )
-                }
-            }
-            if (quota != null && status != null) {
-                Spacer(Modifier.height(14.dp))
-                val alertFraction = quota.alertThresholdPercent / 100f
-                Box(Modifier.fillMaxWidth().height(20.dp), contentAlignment = Alignment.CenterStart) {
-                    ThinBar(
-                        fraction = status.usedRatio.coerceIn(0f, 1f),
-                        color = if (status.isExceeded) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-                        trackColor = MaterialTheme.colorScheme.primaryContainer,
-                        height = 12.dp,
-                    )
-                    if (quota.alertEnabled) {
-                        Box(Modifier.fillMaxWidth(alertFraction), contentAlignment = Alignment.CenterEnd) {
-                            Box(
-                                Modifier
-                                    .width(2.dp)
-                                    .height(20.dp)
-                                    .clip(RoundedCornerShape(1.dp))
-                                    .background(MaterialTheme.colorScheme.onSurface),
-                            )
-                        }
-                    }
-                }
-                Spacer(Modifier.height(12.dp))
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    NightChip(
-                        stringResource(R.string.usage_hero_used, status.usedBytes.toReadableSize(), (status.usedRatio * 100).roundToInt()),
-                    )
-                    if (!status.isExceeded) {
-                        NightChip(
-                            stringResource(
-                                R.string.quota_per_day_chip,
-                                (dailyBudgetBytes ?: (status.remainingBytes / period.remainingDays)).toReadableSize(),
-                            ),
-                            highlighted = true,
-                        )
-                    }
-                    if (quota.alertEnabled) {
-                        NightChip(stringResource(R.string.quota_alert_title, quota.alertThresholdPercent))
-                    }
-                }
-                if (balance != null) {
-                    Spacer(Modifier.height(10.dp))
-                    Text(
-                        stringResource(
-                            R.string.quota_balance_gauge,
-                            balance.remainingBytes.toReadableSize(),
-                            formatDayMonth(balance.atMillis),
-                        ),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-        }
+    // Le solde a sa grande carte sur Conso : ici, un simple rappel dans la ligne de contexte.
+    val remainingText = when {
+        status == null -> null
+        status.isExceeded -> stringResource(R.string.quota_overline_exceeded, status.exceededBytes.toPlanSize())
+        else -> stringResource(R.string.quota_overline_remaining, status.remainingBytes.toPlanSize())
     }
+    ScreenHeader(
+        overline = buildString {
+            if (operatorName != null && quota != null) {
+                append(operatorName).append(' ').append(quota.limitBytes.toReadableSize()).append(" · ")
+            }
+            append(remainingText ?: stringResource(R.string.quota_overline, formatDayMonth(period.nextStartMillis)))
+        },
+        title = stringResource(R.string.quota_title),
+        overlineColor = if (status?.isExceeded == true) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+    )
 }
 
 /** Pastille de la carte du solde : grise, ou lavande pâle pour le budget par jour. */
@@ -408,7 +334,11 @@ private fun CycleGridCard(forecast: QuotaForecast) {
     val futureBudget = forecast.dailyBudgetBytes
     val columns = 6
     DataKeeperCard(contentPadding = 16.dp) {
-        SectionTitle(stringResource(R.string.quota_cycle_grid_title), Icons.Rounded.CalendarMonth)
+        SectionTitle(
+            stringResource(R.string.quota_cycle_grid_title),
+            Icons.Rounded.CalendarMonth,
+            subtitle = stringResource(R.string.quota_grid_subtitle, futureBudget.toPlanSize()),
+        )
         Spacer(Modifier.height(12.dp))
         val cellShape = RoundedCornerShape(12.dp)
         Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -589,38 +519,48 @@ private fun DailyBudgetCard(forecast: QuotaForecast) {
     val budget = forecast.dailyBudgetBytes
     val ratio = if (budget > 0) today.toFloat() / budget else 1f
     val over = today > budget
-    val color = when {
-        over -> MaterialTheme.colorScheme.error
-        ratio * 100 >= forecast.quota.alertThresholdPercent -> DataColors.mobile
-        else -> DataColors.wifi
-    }
-    DataKeeperCard {
+    val colors = MaterialTheme.colorScheme
+    val arc = if (over) colors.error else colors.primary
+    val track = colors.primaryContainer
+    val percent = (ratio * 100).roundToInt()
+    DataKeeperCard(shape = RoundedCornerShape(24.dp), contentPadding = 20.dp) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconChip(Icons.Rounded.Today)
-            Spacer(Modifier.width(10.dp))
-            Text(
-                stringResource(R.string.budget_title),
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.weight(1f),
-            )
-            Text(
-                stringResource(R.string.budget_today_of, formatUsedOf(today, budget)),
-                style = MaterialTheme.typography.titleSmall.numeric(),
-                color = if (over) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
-            )
+            Box(Modifier.size(108.dp), contentAlignment = Alignment.Center) {
+                Canvas(Modifier.fillMaxSize()) {
+                    val stroke = 12.dp.toPx()
+                    val inset = stroke / 2
+                    val arcSize = androidx.compose.ui.geometry.Size(size.width - stroke, size.height - stroke)
+                    val topLeft = androidx.compose.ui.geometry.Offset(inset, inset)
+                    drawArc(track, -90f, 360f, false, topLeft, arcSize, style = Stroke(stroke))
+                    drawArc(arc, -90f, 360f * ratio.coerceIn(0.01f, 1f), false, topLeft, arcSize, style = Stroke(stroke, cap = StrokeCap.Round))
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(stringResource(R.string.percent, percent), style = MaterialTheme.typography.titleLarge.numeric(), color = colors.onSurface)
+                    Text(stringResource(R.string.budget_of_day), style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
+                }
+            }
+            Spacer(Modifier.width(18.dp))
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(stringResource(R.string.budget_title), style = MaterialTheme.typography.labelLarge, color = colors.onSurfaceVariant)
+                Text(
+                    today.toPlanSize(),
+                    style = MaterialTheme.typography.headlineSmall.numeric(),
+                    color = if (over) colors.error else colors.onSurface,
+                )
+                Text(stringResource(R.string.budget_of, budget.toPlanSize()), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+                Text(
+                    if (over) {
+                        stringResource(R.string.budget_over_short, (today - budget).toPlanSize())
+                    } else {
+                        stringResource(R.string.budget_left_short, (budget - today).toPlanSize())
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (over) colors.error else colors.primary,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+            }
         }
-        Spacer(Modifier.height(12.dp))
-        ThinBar(ratio, color, height = 10.dp)
-        Spacer(Modifier.height(8.dp))
-        Text(
-            if (over) {
-                stringResource(R.string.budget_over, (today - budget).toReadableSize())
-            } else {
-                stringResource(R.string.budget_left, (budget - today).toReadableSize())
-            },
-            style = MaterialTheme.typography.bodySmall,
-            color = if (over) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
-        )
     }
 }
 
@@ -648,16 +588,9 @@ private fun ForecastCard(forecast: QuotaForecast) {
     }
 
     DataKeeperCard {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            IconChip(Icons.Rounded.TrendingUp)
-            Spacer(Modifier.width(10.dp))
-            Text(
-                stringResource(R.string.forecast_title),
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.weight(1f),
-            )
-            InfoPill(stringResource(badgeRes), badgeColor)
-        }
+        SectionTitle(stringResource(R.string.forecast_title), Icons.Rounded.TrendingUp)
+        Spacer(Modifier.height(10.dp))
+        Row { InfoPill(stringResource(badgeRes), badgeColor) }
         Spacer(Modifier.height(8.dp))
         Text(
             buildAnnotatedString {

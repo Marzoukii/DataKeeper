@@ -7,6 +7,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
@@ -27,9 +29,9 @@ private val ChartHeight = 132.dp
 private val LabelGap = 4.dp
 
 /**
- * Courbe de la data mobile cumulée depuis le début du cycle (trait plein, aire orange), prolongée
- * en pointillés jusqu'à la [projectedBytes] de fin de cycle. Le forfait est la ligne rouge en tirets,
- * le seuil d'alerte la ligne pointillée grise.
+ * Courbe de la data mobile cumulée depuis le début du cycle (trait violet, aire en dégradé), prolongée
+ * en pointillés jusqu'à la [projectedBytes] de fin de cycle. Le forfait est la ligne en tirets sous
+ * une bande lavande, le seuil d'alerte la ligne pointillée grise.
  */
 @Composable
 fun ForecastChart(
@@ -45,7 +47,7 @@ fun ForecastChart(
 ) {
     val measurer = rememberTextMeasurer()
     val colors = MaterialTheme.colorScheme
-    val mobile = DataColors.mobile
+    val accent = colors.primary
     val labelStyle = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp, color = colors.onSurfaceVariant)
     val todayStyle = labelStyle.copy(color = colors.onSurface)
     val limitText = stringResource(R.string.forecast_chart_limit, limitBytes.toReadableSize())
@@ -76,8 +78,10 @@ fun ForecastChart(
 
         // Forfait et seuil d'alerte.
         val limitY = y(limitBytes)
+        // Au-dessus du forfait : bande lavande, plus douce qu'un trait rouge.
+        drawRect(colors.tertiaryContainer, Offset(0f, 0f), Size(size.width, limitY.coerceAtLeast(0f)))
         drawLine(
-            colors.error, Offset(0f, limitY), Offset(size.width, limitY),
+            accent.copy(alpha = 0.7f), Offset(0f, limitY), Offset(size.width, limitY),
             strokeWidth = 1.5.dp.toPx(), pathEffect = dashes(4f, 4f),
         )
         drawText(limitLabel, topLeft = Offset(0f, limitY - limitLabel.size.height - gap / 2))
@@ -101,19 +105,19 @@ fun ForecastChart(
             lineTo(todayPoint.x, bottom)
             close()
         }
-        drawPath(area, colors.tertiaryContainer)
+        drawPath(area, Brush.verticalGradient(listOf(accent.copy(alpha = 0.35f), accent.copy(alpha = 0f)), startY = top, endY = bottom))
         drawPath(
-            line, mobile,
+            line, accent,
             style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round),
         )
 
         // Projection jusqu'à la fin du cycle.
         drawLine(
-            mobile, todayPoint, Offset(size.width, y(projectedBytes)),
+            accent, todayPoint, Offset(size.width, y(projectedBytes)),
             strokeWidth = 3.dp.toPx(), cap = StrokeCap.Round, pathEffect = dashes(2f, 6f),
         )
         drawCircle(colors.surface, radius = 7.dp.toPx(), center = todayPoint)
-        drawCircle(mobile, radius = 5.dp.toPx(), center = todayPoint)
+        drawCircle(accent, radius = 5.dp.toPx(), center = todayPoint)
 
         drawLine(colors.outlineVariant, Offset(0f, bottom), Offset(size.width, bottom), strokeWidth = 1.dp.toPx())
 

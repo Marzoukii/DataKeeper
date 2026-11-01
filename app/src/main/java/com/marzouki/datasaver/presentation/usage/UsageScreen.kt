@@ -223,72 +223,68 @@ private fun androidx.compose.foundation.lazy.LazyListScope.dashboard(
     selectedDayMillis: Long?,
     onDayClick: (DayUsage) -> Unit,
 ) {
-    // Parcours violet : ce qu'il reste d'abord, puis Wi-Fi vs mobile, le carnet, les économies,
-    // l'alerte appli, les applis gourmandes et enfin le partage de connexion.
-    item {
-        QuotaSummaryCard(
-            state.quotaStatus,
-            period,
-            onClick = onOpenQuota,
-            todayMobileBytes = todayPlanMobileBytes(state, period),
-            todayBudgetBytes = todayBudgetBytes(state, period),
-        )
-    }
-    item {
-        if (usage.totalBytes == 0L) {
-            EmptyUsageCard()
-        } else {
+    // Parcours moderne, sans doublons : Conso dit où en est le forfait et où part la data ; le budget
+    // du jour, la grille des jours et la prévision sont sur Quota.
+    val status = state.quotaStatus
+    val firstDay = period.currentDay == 1
+    item { StatusLine(status, period) }
+    item { RemainingHero(status, period, onOpenQuota) }
+    when {
+        firstDay -> item { FirstDayCard() }
+        usage.totalBytes == 0L -> item { EmptyUsageCard() }
+        else -> item {
             val operatorMobileBytes = state.operatorMobileBytes
-            UsageSplitCard(
+            SplitTiles(
                 wifiBytes = usage.wifiBytes,
                 mobileBytes = operatorMobileBytes ?: usage.mobileBytes,
-                mobileNote = operatorMobileBytes?.let {
-                    state.operatorName?.let { name -> stringResource(R.string.usage_mobile_from_balance_operator, name) }
-                        ?: stringResource(R.string.usage_mobile_from_balance)
-                },
-                operatorName = state.operatorName,
-                networkLabel = state.networkGeneration?.label,
+                mobileNote = state.operatorName,
+                generation = state.networkGeneration,
+                pricePerGb = state.pricePerGb,
                 onShowNetwork = if (state.hasPhonePermission) null else onRequestPhonePermission,
+                onSetPrice = onOpenQuota,
             )
         }
     }
     item {
         LedgerCard(state, period, selectedDayMillis, onDayClick)
     }
-    item {
-        SavingsAndPlanRow(
-            wifiBytes = usage.wifiBytes,
-            pricePerGb = state.pricePerGb,
-            status = state.quotaStatus,
-            quota = state.quota,
-            balance = state.quota?.balanceIn(period),
-            onOpenQuota = onOpenQuota,
-            operatorName = state.operatorName,
-            resetMillis = period.nextStartMillis,
-        )
-    }
-    val heavyApp = state.heavyApp
-    val quota = state.quota
-    if (heavyApp != null && quota != null) {
-        item { HeavyAppBanner(heavyApp, quota.limitBytes) }
-    }
-    item {
-        DataKeeperCard {
-            SectionTitle(stringResource(R.string.usage_top_apps_title), Icons.Rounded.Apps)
-            Spacer(Modifier.height(8.dp))
-            if (state.topMobileApps.isEmpty()) {
-                Spacer(Modifier.height(4.dp))
-                AnalyzingBox(stringResource(R.string.usage_analyzing_apps))
-            } else {
-                val mobileTotal = usage.mobileBytes.coerceAtLeast(1L).toFloat()
-                Column {
-                    state.topMobileApps.forEach { app ->
-                        AppUsageRow(
-                            icon = rememberAppIcon(app.packageName),
-                            name = app.displayName(),
-                            bytes = app.mobileBytes,
-                            fraction = app.mobileBytes / mobileTotal,
-                        )
+    if (!firstDay) {
+        item {
+            DataKeeperCard {
+                SectionTitle(
+                    stringResource(R.string.usage_top_apps_title),
+                    Icons.Rounded.Apps,
+                    subtitle = stringResource(R.string.usage_top_apps_subtitle),
+                )
+                val heavyApp = state.heavyApp
+                val quota = state.quota
+                if (heavyApp != null && quota != null) {
+                    Text(
+                        stringResource(
+                            R.string.usage_heavy_hint,
+                            heavyApp.displayName(),
+                            (heavyApp.mobileBytes * 100 / quota.limitBytes.coerceAtLeast(1)).toInt(),
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(top = 8.dp),
+                    )
+                }
+                Spacer(Modifier.height(8.dp))
+                if (state.topMobileApps.isEmpty()) {
+                    Spacer(Modifier.height(4.dp))
+                    AnalyzingBox(stringResource(R.string.usage_analyzing_apps))
+                } else {
+                    val mobileTotal = usage.mobileBytes.coerceAtLeast(1L).toFloat()
+                    Column {
+                        state.topMobileApps.forEach { app ->
+                            AppUsageRow(
+                                icon = rememberAppIcon(app.packageName),
+                                name = app.displayName(),
+                                bytes = app.mobileBytes,
+                                fraction = app.mobileBytes / mobileTotal,
+                            )
+                        }
                     }
                 }
             }
@@ -407,11 +403,9 @@ private fun LedgerCard(
         if (state.dailyUsage.any { it.totalBytes > 0 }) {
             DailyStackedBars(
                 state.dailyUsage,
-                title = stringResource(R.string.usage_last_7_days),
+                title = stringResource(R.string.usage_ledger_title),
                 selectedDayMillis = selectedDayMillis,
                 onDayClick = onDayClick,
-                todayBudgetBytes = todayBudgetBytes(state, period),
-                todayPlanBytes = todayPlanMobileBytes(state, period),
             )
             Spacer(Modifier.height(12.dp))
             Text(
