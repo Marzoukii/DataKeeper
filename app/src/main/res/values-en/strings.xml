@@ -502,7 +502,7 @@
     <string name="usage_savings_sub">%1$s × %2$s per GB</string>
     <string name="usage_savings_none">Add your plan price to put a figure on it</string>
     <string name="usage_first_title">Your stats are on their way</string>
-    <string name="usage_first_body">Wi‑Fi, mobile and data-hungry apps fill in during the day. Check back tonight for a first summary.</string>
+    <string name="usage_first_body">Wi‑Fi, mobile and data-hungry apps fill in during the day. Check back in a few hours for a first summary.</string>
     <string name="usage_top_apps_subtitle">On mobile data, during this plan</string>
     <string name="usage_heavy_hint">%1$s uses %2$d%% of your plan: open it on Wi‑Fi instead</string>
     <string name="usage_ledger_title">The log</string>

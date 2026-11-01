@@ -514,7 +514,7 @@
     <string name="usage_savings_sub">%1$s × %2$s le Go</string>
     <string name="usage_savings_none">Indique le prix de ton forfait pour le chiffrer</string>
     <string name="usage_first_title">Tes statistiques arrivent</string>
-    <string name="usage_first_body">Wi‑Fi, mobile et applis gourmandes se remplissent au fil de la journée. Repasse ce soir pour un premier bilan.</string>
+    <string name="usage_first_body">Wi‑Fi, mobile et applis gourmandes se remplissent au fil de la journée. Repasse dans quelques heures pour un premier bilan.</string>
     <string name="usage_top_apps_subtitle">En données mobiles, sur ce forfait</string>
     <string name="usage_heavy_hint">%1$s pèse %2$d %% de ton forfait : ouvre-la plutôt en Wi‑Fi</string>
     <string name="usage_ledger_title">Le carnet</string>

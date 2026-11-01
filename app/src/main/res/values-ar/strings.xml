@@ -537,7 +537,7 @@
     <string name="usage_savings_sub">%1$s × %2$s للجيغا</string>
     <string name="usage_savings_none">أدخل سعر باقتك لحساب التوفير</string>
     <string name="usage_first_title">إحصاءاتك في الطريق</string>
-    <string name="usage_first_body">الواي فاي والجوال والتطبيقات الأكثر استهلاكًا تمتلئ خلال اليوم. عد مساءً لأول حصيلة.</string>
+    <string name="usage_first_body">الواي فاي والجوال والتطبيقات الأكثر استهلاكًا تمتلئ خلال اليوم. عد بعد بضع ساعات لأول حصيلة.</string>
     <string name="usage_top_apps_subtitle">على بيانات الجوال، خلال هذه الباقة</string>
     <string name="usage_heavy_hint">%1$s يستهلك %2$d %% من باقتك: افتحه بالواي فاي</string>
     <string name="usage_ledger_title">السجل</string>
