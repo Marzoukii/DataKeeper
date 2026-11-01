@@ -99,7 +99,6 @@ import com.marzouki.datasaver.ui.components.PreviewData
 import com.marzouki.datasaver.ui.components.PreviewSurface
 import com.marzouki.datasaver.ui.components.ScreenHeader
 import com.marzouki.datasaver.ui.components.ScreenPreviews
-import com.marzouki.datasaver.ui.components.downloadStatusText
 import com.marzouki.datasaver.ui.components.isFinished
 import com.marzouki.datasaver.ui.components.toReadableSize
 import com.marzouki.datasaver.ui.theme.Spacing
