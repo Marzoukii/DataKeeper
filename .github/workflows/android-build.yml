@@ -80,10 +80,10 @@ jobs:
           name: datakeeper-debug-apk
           path: app/build/outputs/apk/debug/*.apk
 
-      # Pour tester sur téléphone : l'APK debug de chaque branche design/ est publié dans une
-      # pré-version GitHub, téléchargeable directement depuis le navigateur du téléphone.
+      # Pour tester sur téléphone : l'APK debug de develop et de chaque branche design/ est publié
+      # dans une pré-version GitHub, téléchargeable directement depuis le navigateur du téléphone.
       - name: Publier l'APK debug en pré-version
-        if: github.event_name == 'push' && startsWith(github.ref_name, 'design/')
+        if: github.event_name == 'push' && (github.ref_name == 'develop' || startsWith(github.ref_name, 'design/'))
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
