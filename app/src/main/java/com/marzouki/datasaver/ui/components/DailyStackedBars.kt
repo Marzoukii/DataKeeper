@@ -89,7 +89,7 @@ fun DailyStackedBars(
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .then(if (isToday) Modifier.clip(RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp)).background(Brand.AccentTint.copy(alpha = 0.7f)) else Modifier)
+                    .then(if (isToday) Modifier.clip(RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp)).background(MaterialTheme.colorScheme.primaryContainer) else Modifier)
                     .then(
                         if (onDayClick != null) {
                             Modifier.clickable(role = Role.Button) { onDayClick(day) }
@@ -107,27 +107,27 @@ fun DailyStackedBars(
                     Text(
                         dayOfMonth(day.dayStartMillis),
                         style = MaterialTheme.typography.titleLarge.numeric().copy(fontWeight = FontWeight.Medium),
-                        color = if (isToday) Brand.Accent else MaterialTheme.colorScheme.onSurface,
+                        color = if (isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                     )
                     Text(
                         if (isToday) stringResource(R.string.usage_today_short) else dayShortName(day.dayStartMillis),
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = if (isToday) FontWeight.SemiBold else FontWeight.Medium,
-                        color = if (isToday) Brand.OnAccentTint else MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = if (isToday) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                     )
                 }
                 LedgerCell(
                     value = day.wifiBytes.toReadableSize(),
                     fraction = day.wifiBytes.toFloat() / maxWifi,
-                    color = if (isToday) TodayWifi else DataColors.wifi,
+                    color = DataColors.wifi,
                     modifier = Modifier.weight(1f),
                 )
                 Spacer(Modifier.width(12.dp))
                 LedgerCell(
                     value = day.mobileBytes.toReadableSize(),
                     fraction = day.mobileBytes.toFloat() / maxMobile,
-                    color = if (isToday) TodayMobile else DataColors.mobile,
+                    color = DataColors.mobile,
                     modifier = Modifier.weight(1f),
                 )
             }
@@ -139,7 +139,7 @@ fun DailyStackedBars(
     }
 }
 
-/** Sous la ligne d'aujourd'hui, toujours sur la bande safran : le budget du jour et ce qu'il en reste. */
+/** Sous la ligne d'aujourd'hui, toujours sur la bande lavande pâle : le budget du jour et ce qu'il en reste. */
 @Composable
 private fun TodayBudget(usedBytes: Long, budgetBytes: Long) {
     val over = usedBytes > budgetBytes
@@ -147,7 +147,7 @@ private fun TodayBudget(usedBytes: Long, budgetBytes: Long) {
         Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(bottomStart = 14.dp, bottomEnd = 14.dp))
-            .background(Brand.AccentTint.copy(alpha = 0.7f))
+            .background(MaterialTheme.colorScheme.primaryContainer)
             .padding(start = 56.dp, end = 4.dp, bottom = 12.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
@@ -155,19 +155,19 @@ private fun TodayBudget(usedBytes: Long, budgetBytes: Long) {
             Text(
                 stringResource(R.string.budget_title),
                 style = MaterialTheme.typography.labelMedium,
-                color = Brand.OnAccentTint,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.weight(1f),
             )
             Text(
                 "${usedBytes.toReadableSize()} / ${budgetBytes.toReadableSize()}",
                 style = MaterialTheme.typography.labelMedium.numeric(),
-                color = if (over) TodayMobile else Brand.Accent,
+                color = if (over) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
             )
         }
         ThinBar(
             fraction = if (budgetBytes == 0L) 1f else usedBytes.toFloat() / budgetBytes,
-            color = if (over) TodayMobile else Brand.Accent,
-            trackColor = Brand.AccentSoft,
+            color = if (over) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+            trackColor = MaterialTheme.colorScheme.surface,
             height = 6.dp,
         )
         Text(
@@ -177,19 +177,16 @@ private fun TodayBudget(usedBytes: Long, budgetBytes: Long) {
                 stringResource(R.string.budget_left, (budgetBytes - usedBytes).toReadableSize())
             },
             style = MaterialTheme.typography.bodySmall.numeric(),
-            color = if (over) TodayMobile else Brand.OnAccentTint,
+            color = if (over) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onPrimaryContainer,
         )
     }
 }
 
-// La bande safran reste claire en thème sombre : on y garde les teintes foncées, lisibles dessus.
-private val TodayWifi = Color(0xFF0B6E66)
-private val TodayMobile = Color(0xFF6A4FD8)
 
 @Composable
 private fun LedgerCell(value: String, fraction: Float, color: Color, modifier: Modifier = Modifier) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(5.dp)) {
-        Text(value, style = MaterialTheme.typography.bodyMedium.numeric(), fontWeight = FontWeight.SemiBold, color = color)
+        Text(value, style = MaterialTheme.typography.bodyMedium.numeric(), fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
         Box(
             Modifier
                 .fillMaxWidth(fraction.coerceIn(0.04f, 1f))

@@ -225,7 +225,15 @@ private fun androidx.compose.foundation.lazy.LazyListScope.dashboard(
 ) {
     // Parcours violet : ce qu'il reste d'abord, puis Wi-Fi vs mobile, le carnet, les économies,
     // l'alerte appli, les applis gourmandes et enfin le partage de connexion.
-    item { QuotaSummaryCard(state.quotaStatus, period, onClick = onOpenQuota) }
+    item {
+        QuotaSummaryCard(
+            state.quotaStatus,
+            period,
+            onClick = onOpenQuota,
+            todayMobileBytes = state.dailyUsage.lastOrNull()?.mobileBytes,
+            todayBudgetBytes = todayBudgetBytes(state, period),
+        )
+    }
     item {
         if (usage.totalBytes == 0L) {
             EmptyUsageCard()

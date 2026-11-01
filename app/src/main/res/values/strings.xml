@@ -452,4 +452,40 @@
     <string name="usage_tethering_body">%1$s consommés par tes appareils</string>
     <string name="notification_tethering_title">Partage de connexion : %1$s consommés</string>
     <string name="notification_tethering_text">Tes appareils connectés ont dépassé %1$s. Coupe le partage pour préserver ton forfait.</string>
+    <string name="speed_test_last_at">Dernier test · %1$s</string>
+    <string name="speed_test_note">Débits en Mbps, ping en ms. Sur données mobiles, un test consomme jusqu’à %1$s de ton forfait.</string>
+    <string name="speed_test_scale_slow">Lent</string>
+    <string name="speed_test_scale_fair">Correct</string>
+    <string name="speed_test_scale_good">Bon</string>
+    <string name="speed_test_scale_excellent">Excellent</string>
+    <string name="speed_test_date">Date</string>
+    <string name="speed_test_down">Down</string>
+    <string name="speed_test_up">Up</string>
+    <plurals name="speed_test_history_count">
+        <item quantity="one">%1$d précédent</item>
+        <item quantity="many">%1$d précédents</item>
+        <item quantity="other">%1$d précédents</item>
+    </plurals>
+    <plurals name="wifi_area_count">
+        <item quantity="one">Autour de toi · %1$d réseau</item>
+        <item quantity="many">Autour de toi · %1$d réseaux</item>
+        <item quantity="other">Autour de toi · %1$d réseaux</item>
+    </plurals>
+    <string name="wifi_no_ads_count">%1$d sans pub</string>
+    <string name="wifi_nearest_label">LE PLUS PROCHE</string>
+    <string name="downloads_active">Actif</string>
+    <string name="downloads_stat_mobile">de données mobiles utilisés</string>
+    <string name="downloads_stat_saved_money">d’économie sur ton forfait</string>
+    <string name="downloads_stat_saved_data">épargnés à ton forfait</string>
+    <string name="usage_hero_left">Il te reste</string>
+    <string name="usage_hero_exceeded">Quota dépassé de</string>
+    <string name="usage_hero_remaining_suffix">restants</string>
+    <string name="usage_hero_of">sur %1$s · %2$s · expire le %3$s</string>
+    <string name="usage_hero_used">%1$s utilisés · %2$d %%</string>
+    <string name="usage_hero_alert">Alerte à %1$d %%</string>
+    <string name="usage_hero_today">Aujourd’hui</string>
+    <string name="usage_hero_today_of">sur %1$s</string>
+    <string name="usage_hero_budget">Budget par jour</string>
+    <string name="usage_hero_budget_value">≈ %1$s</string>
+    <string name="usage_hero_until">jusqu’au %1$s</string>
 </resources>

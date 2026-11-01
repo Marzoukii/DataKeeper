@@ -69,12 +69,30 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.marzouki.datasaver.R
+import com.marzouki.datasaver.ui.theme.DataColors
+import com.marzouki.datasaver.ui.components.formatDinarsRounded
+import com.marzouki.datasaver.ui.components.ThinBar
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.shadow
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material.icons.rounded.Schedule
+import androidx.compose.material.icons.rounded.Savings
+import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Description
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.clickable
 import com.marzouki.datasaver.domain.enums.DownloadSchedule
 import com.marzouki.datasaver.domain.enums.DownloadState
 import com.marzouki.datasaver.domain.model.ScheduledDownload
 import com.marzouki.datasaver.presentation.common.CollectEffects
 import com.marzouki.datasaver.ui.components.DataKeeperCard
-import com.marzouki.datasaver.ui.components.DownloadItemCard
+import com.marzouki.datasaver.ui.components.downloadStatusText
 import com.marzouki.datasaver.ui.components.HeaderIconButton
 import com.marzouki.datasaver.ui.components.InfoPill
 import com.marzouki.datasaver.ui.components.PreviewData
@@ -128,55 +146,30 @@ private fun DownloadsContent(
     val available = state.downloads.filter { it.state == DownloadState.SUCCEEDED }
     val shown = if (selectedTab == TAB_PENDING) pending else available
     val listState = rememberLazyListState()
-    val fabExpanded by remember { derivedStateOf { listState.firstVisibleItemIndex == 0 } }
 
     Box(modifier.fillMaxSize()) {
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize(),
-            // Le bas laisse la place au bouton flottant.
-            contentPadding = PaddingValues(start = Spacing.screenHorizontal, end = Spacing.screenHorizontal, top = 8.dp, bottom = 96.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(start = Spacing.screenHorizontal, end = Spacing.screenHorizontal, top = 8.dp, bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(Spacing.betweenCards),
         ) {
             item {
                 ScreenHeader(
                     overline = stringResource(R.string.downloads_overline),
                     title = stringResource(R.string.downloads_title),
                 ) {
-                    if (state.downloads.any { it.state.isFinished }) {
-                        HeaderIconButton(
-                            Icons.Rounded.DeleteSweep,
-                            stringResource(R.string.downloads_clear_finished),
-                        ) { onIntent(DownloadsIntent.ClearFinished) }
-                    }
-                }
-            }
-            item { WifiStatusCard(state.isOnWifi, pending, available, Modifier.padding(top = 4.dp)) }
-            item {
-                SingleChoiceSegmentedButtonRow(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                ) {
-                    val colors = SegmentedButtonDefaults.colors(
-                        activeContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                        activeContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                        inactiveContainerColor = MaterialTheme.colorScheme.surface,
+                    HeaderIconButton(
+                        Icons.Rounded.Add,
+                        stringResource(R.string.downloads_add_link),
+                        onClick = { onShowAddSheet(true) },
+                        primary = true,
                     )
-                    SegmentedButton(
-                        selected = selectedTab == TAB_PENDING,
-                        onClick = { selectedTab = TAB_PENDING },
-                        shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
-                        colors = colors,
-                    ) { Text(stringResource(R.string.downloads_tab_pending, pending.size)) }
-                    SegmentedButton(
-                        selected = selectedTab == TAB_AVAILABLE,
-                        onClick = { selectedTab = TAB_AVAILABLE },
-                        shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
-                        colors = colors,
-                    ) { Text(stringResource(R.string.downloads_tab_available, available.size)) }
                 }
             }
+            item { WifiStatusBanner(state.isOnWifi, pending, Modifier.padding(top = 4.dp)) }
+            item { StatsRow(state, available) }
+            item { SegmentedTabs(selectedTab, pending.size, available.size, onSelect = { selectedTab = it }) }
             if (shown.isEmpty()) {
                 item {
                     Text(
@@ -193,28 +186,31 @@ private fun DownloadsContent(
                     )
                 }
             }
-            items(shown, key = { it.id }) { download ->
-                DownloadItemCard(
-                    item = download,
-                    onCancel = { onIntent(DownloadsIntent.Cancel(download.id)) },
-                    modifier = Modifier.animateItem(),
-                )
+            if (shown.isNotEmpty()) {
+                item {
+                    DataKeeperCard(contentPadding = 0.dp) {
+                        shown.forEachIndexed { index, download ->
+                            if (index > 0) {
+                                HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
+                            }
+                            DownloadRow(download, onCancel = { onIntent(DownloadsIntent.Cancel(download.id)) })
+                        }
+                    }
+                }
             }
-            item { SavingTipsCard(Modifier.padding(top = 8.dp)) }
+            item { SavingTipsCard(Modifier.padding(top = 4.dp)) }
+            if (state.downloads.any { it.state.isFinished }) {
+                item {
+                    TextButton(
+                        onClick = { onIntent(DownloadsIntent.ClearFinished) },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(stringResource(R.string.downloads_clear_finished), style = MaterialTheme.typography.labelLarge)
+                    }
+                }
+            }
         }
 
-        ExtendedFloatingActionButton(
-            onClick = { onShowAddSheet(true) },
-            expanded = fabExpanded,
-            icon = { Icon(Icons.Rounded.Add, contentDescription = null) },
-            text = { Text(stringResource(R.string.downloads_add_link), style = MaterialTheme.typography.labelLarge) },
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            shape = RoundedCornerShape(16.dp),
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp),
-        )
     }
 
     if (showAddSheet) {
@@ -222,69 +218,213 @@ private fun DownloadsContent(
     }
 }
 
-/** Carte d'état : pleine en bleu sur Wi-Fi, neutre en attente du Wi-Fi. */
+/** Bandeau d'état : sarcelle pâle en Wi-Fi (« Actif »), gris en attente du Wi-Fi ; résumé de la file. */
 @Composable
-private fun WifiStatusCard(
-    isOnWifi: Boolean,
-    pending: List<ScheduledDownload>,
-    available: List<ScheduledDownload>,
-    modifier: Modifier = Modifier,
-) {
+private fun WifiStatusBanner(isOnWifi: Boolean, pending: List<ScheduledDownload>, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
-    val container = if (isOnWifi) colors.primary else colors.surfaceVariant
-    val content = if (isOnWifi) colors.onPrimary else colors.onSurface
+    val container = if (isOnWifi) colors.secondaryContainer else colors.surfaceVariant
+    val content = if (isOnWifi) colors.onSecondaryContainer else colors.onSurface
     val running = pending.count { it.state == DownloadState.RUNNING }
     val waiting = pending.count { it.state == DownloadState.WAITING_FOR_WIFI }
     val queuedBytes = pending.sumOf { it.totalBytes ?: 0L }
-    val savedBytes = available.sumOf { it.totalBytes ?: 0L }
-
-    DataKeeperCard(
-        modifier = modifier,
-        shape = MaterialTheme.shapes.extraLarge,
-        containerColor = container,
-        contentColor = content,
+    Row(
+        modifier
+            .fillMaxWidth()
+            .clip(MaterialTheme.shapes.large)
+            .background(container)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            Modifier
+                .size(44.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(colors.surface),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                if (isOnWifi) Icons.Rounded.Wifi else Icons.Rounded.WifiOff,
+                contentDescription = null,
+                tint = if (isOnWifi) DataColors.wifi else colors.onSurfaceVariant,
+            )
+        }
+        Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text(
+                stringResource(if (isOnWifi) R.string.downloads_wifi_connected else R.string.downloads_wifi_waiting),
+                style = MaterialTheme.typography.titleSmall,
+                color = content,
+            )
+            Text(
+                if (running + waiting == 0) {
+                    stringResource(R.string.downloads_queue_empty)
+                } else {
+                    stringResource(R.string.downloads_queue_summary, running, waiting, queuedBytes.toReadableSize())
+                },
+                style = MaterialTheme.typography.bodySmall.numeric(),
+                color = content,
+            )
+        }
+        if (isOnWifi) {
+            Text(
+                stringResource(R.string.downloads_active),
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = colors.onSecondary,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(DataColors.wifi)
+                    .padding(horizontal = 10.dp, vertical = 4.dp),
+            )
+        }
+    }
+}
+
+/** Deux cartes : la data mobile utilisée par les téléchargements (0 Mo) et ce qu'ils ont épargné. */
+@Composable
+private fun StatsRow(state: DownloadsState, available: List<ScheduledDownload>) {
+    val savedBytes = available.sumOf { it.totalBytes ?: 0L }
+    val price = state.pricePerGb
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        StatCard(
+            icon = Icons.Rounded.Download,
+            iconContainer = MaterialTheme.colorScheme.surfaceVariant,
+            iconContent = MaterialTheme.colorScheme.onSurface,
+            value = 0L.toReadableSize(),
+            valueColor = MaterialTheme.colorScheme.onSurface,
+            label = stringResource(R.string.downloads_stat_mobile),
+        )
+        StatCard(
+            icon = Icons.Rounded.Savings,
+            iconContainer = MaterialTheme.colorScheme.secondaryContainer,
+            iconContent = DataColors.wifi,
+            value = if (price != null) formatDinarsRounded(price.costMillimes(savedBytes)) else savedBytes.toReadableSize(),
+            valueColor = DataColors.wifi,
+            label = stringResource(if (price != null) R.string.downloads_stat_saved_money else R.string.downloads_stat_saved_data),
+        )
+    }
+}
+
+@Composable
+private fun RowScope.StatCard(
+    icon: ImageVector,
+    iconContainer: Color,
+    iconContent: Color,
+    value: String,
+    valueColor: Color,
+    label: String,
+) {
+    DataKeeperCard(modifier = Modifier.weight(1f), contentPadding = 16.dp) {
+        Box(
+            Modifier
+                .size(36.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(iconContainer),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(icon, contentDescription = null, tint = iconContent, modifier = Modifier.size(18.dp))
+        }
+        Spacer(Modifier.height(10.dp))
+        Text(value, style = MaterialTheme.typography.headlineSmall.numeric(), color = valueColor, maxLines = 1)
+        Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+/** Onglets « À télécharger » / « Disponibles » en pilule grise, l'onglet actif en carte blanche. */
+@Composable
+private fun SegmentedTabs(selected: Int, pendingCount: Int, availableCount: Int, onSelect: (Int) -> Unit) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .padding(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        listOf(
+            TAB_PENDING to stringResource(R.string.downloads_tab_pending, pendingCount),
+            TAB_AVAILABLE to stringResource(R.string.downloads_tab_available, availableCount),
+        ).forEach { (tab, label) ->
+            val active = tab == selected
             Box(
                 Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(content.copy(alpha = 0.16f)),
+                    .weight(1f)
+                    .height(40.dp)
+                    .then(
+                        if (active) {
+                            Modifier.shadow(2.dp, RoundedCornerShape(12.dp), ambientColor = Color.Black.copy(alpha = 0.06f), spotColor = Color.Black.copy(alpha = 0.08f))
+                        } else {
+                            Modifier
+                        },
+                    )
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(if (active) MaterialTheme.colorScheme.surface else Color.Transparent)
+                    .selectable(selected = active, role = Role.Tab, onClick = { onSelect(tab) }),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(if (isOnWifi) Icons.Rounded.Wifi else Icons.Rounded.WifiOff, contentDescription = null)
-            }
-            Spacer(Modifier.width(16.dp))
-            Column(Modifier.weight(1f)) {
                 Text(
-                    stringResource(if (isOnWifi) R.string.downloads_wifi_connected else R.string.downloads_wifi_waiting),
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                Text(
-                    if (running + waiting == 0) {
-                        stringResource(R.string.downloads_queue_empty)
-                    } else {
-                        stringResource(R.string.downloads_queue_summary, running, waiting, queuedBytes.toReadableSize())
-                    },
-                    style = MaterialTheme.typography.bodyMedium.numeric(),
-                    color = content.copy(alpha = 0.85f),
+                    label,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = if (active) FontWeight.SemiBold else FontWeight.Medium,
+                    color = if (active) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
-        Spacer(Modifier.height(16.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                stringResource(if (isOnWifi) R.string.downloads_mobile_used else R.string.downloads_wifi_waiting_body),
-                style = MaterialTheme.typography.bodySmall,
-                color = content.copy(alpha = 0.85f),
-                modifier = Modifier.weight(1f),
+    }
+}
+
+/** Ligne de la file : pastille fichier, nom, état et taille, barre de progression, bouton annuler. */
+@Composable
+private fun DownloadRow(download: ScheduledDownload, onCancel: () -> Unit) {
+    val running = download.state == DownloadState.RUNNING
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            Modifier
+                .size(40.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(if (running) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                Icons.Rounded.Description,
+                contentDescription = null,
+                tint = if (running) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(20.dp),
             )
-            if (savedBytes > 0) {
-                Spacer(Modifier.width(12.dp))
-                InfoPill(
-                    stringResource(R.string.downloads_savings, savedBytes.toReadableSize()),
-                    containerColor = content.copy(alpha = 0.16f),
-                    contentColor = content,
+        }
+        Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(download.fileName, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(
+                listOfNotNull(downloadStatusText(download), download.totalBytes?.toReadableSize()).joinToString(" · "),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            val progress = download.progress
+            if (running && progress != null) {
+                ThinBar(progress / 100f, MaterialTheme.colorScheme.primary, trackColor = MaterialTheme.colorScheme.primaryContainer, height = 6.dp)
+            }
+        }
+        if (!download.state.isFinished) {
+            Spacer(Modifier.width(8.dp))
+            Box(
+                Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .clickable(role = Role.Button, onClickLabel = stringResource(R.string.action_cancel), onClick = onCancel),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    if (running) Icons.Rounded.Close else Icons.Rounded.Schedule,
+                    contentDescription = stringResource(R.string.action_cancel),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(18.dp),
                 )
             }
         }
@@ -302,38 +442,40 @@ private val SavingTips = listOf(
     SavingTip(Icons.Rounded.DataSaverOn, R.string.tip_data_saver_title, R.string.tip_data_saver_body),
 )
 
-/** Astuces pour économiser la data mobile, sous la liste des téléchargements. */
+/** Astuces numérotées pour économiser la data mobile, sous la file des téléchargements. */
 @Composable
 private fun SavingTipsCard(modifier: Modifier = Modifier) {
-    DataKeeperCard(modifier = modifier) {
-        SectionTitle(stringResource(R.string.tips_title), Icons.Rounded.Lightbulb)
-        Spacer(Modifier.height(12.dp))
-        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            SavingTips.forEach { tip ->
-                Row {
-                    Box(
-                        Modifier
-                            .size(36.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(MaterialTheme.colorScheme.secondaryContainer),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Icon(
-                            tip.icon,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                            modifier = Modifier.size(20.dp),
-                        )
-                    }
-                    Spacer(Modifier.width(12.dp))
-                    Column(Modifier.weight(1f)) {
-                        Text(stringResource(tip.title), style = MaterialTheme.typography.titleSmall)
-                        Text(
-                            stringResource(tip.body),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+    DataKeeperCard(modifier = modifier, contentPadding = 18.dp) {
+        SectionTitle(
+            stringResource(R.string.tips_title),
+            Icons.Rounded.Lightbulb,
+        )
+        Spacer(Modifier.height(6.dp))
+        SavingTips.forEachIndexed { index, tip ->
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            Row(Modifier.padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    Modifier
+                        .size(24.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        (index + 1).toString(),
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Spacer(Modifier.width(10.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(stringResource(tip.title), style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        stringResource(tip.body),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
         }

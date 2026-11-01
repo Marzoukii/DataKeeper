@@ -442,4 +442,38 @@
     <string name="usage_tethering_body">%1$s used by your devices</string>
     <string name="notification_tethering_title">Hotspot: %1$s used</string>
     <string name="notification_tethering_text">Your connected devices went over %1$s. Turn off the hotspot to save your plan.</string>
+    <string name="speed_test_last_at">Last test · %1$s</string>
+    <string name="speed_test_note">Speeds in Mbps, ping in ms. On mobile data, a test uses up to %1$s of your plan.</string>
+    <string name="speed_test_scale_slow">Slow</string>
+    <string name="speed_test_scale_fair">Fair</string>
+    <string name="speed_test_scale_good">Good</string>
+    <string name="speed_test_scale_excellent">Excellent</string>
+    <string name="speed_test_date">Date</string>
+    <string name="speed_test_down">Down</string>
+    <string name="speed_test_up">Up</string>
+    <plurals name="speed_test_history_count">
+        <item quantity="one">%1$d earlier</item>
+        <item quantity="other">%1$d earlier</item>
+    </plurals>
+    <plurals name="wifi_area_count">
+        <item quantity="one">Around you · %1$d network</item>
+        <item quantity="other">Around you · %1$d networks</item>
+    </plurals>
+    <string name="wifi_no_ads_count">%1$d ad-free</string>
+    <string name="wifi_nearest_label">NEAREST</string>
+    <string name="downloads_active">Active</string>
+    <string name="downloads_stat_mobile">of mobile data used</string>
+    <string name="downloads_stat_saved_money">saved on your plan</string>
+    <string name="downloads_stat_saved_data">spared from your plan</string>
+    <string name="usage_hero_left">You have left</string>
+    <string name="usage_hero_exceeded">Plan exceeded by</string>
+    <string name="usage_hero_remaining_suffix">left</string>
+    <string name="usage_hero_of">of %1$s · %2$s · expires %3$s</string>
+    <string name="usage_hero_used">%1$s used · %2$d%%</string>
+    <string name="usage_hero_alert">Alert at %1$d%%</string>
+    <string name="usage_hero_today">Today</string>
+    <string name="usage_hero_today_of">of %1$s</string>
+    <string name="usage_hero_budget">Daily budget</string>
+    <string name="usage_hero_budget_value">≈ %1$s</string>
+    <string name="usage_hero_until">until %1$s</string>
 </resources>
