@@ -511,4 +511,7 @@
     <string name="usage_hero_budget">الميزانية اليومية</string>
     <string name="usage_hero_budget_value">≈ %1$s</string>
     <string name="usage_hero_until">حتى %1$s</string>
+    <string name="quota_grid_legend_over">فوق الميزانية</string>
+    <string name="quota_grid_legend_today">اليوم</string>
+    <string name="quota_grid_legend_future">الميزانية القادمة</string>
 </resources>

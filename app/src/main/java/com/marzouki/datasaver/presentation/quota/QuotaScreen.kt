@@ -394,8 +394,8 @@ private fun NightChip(text: String, highlighted: Boolean = false) {
 
 /**
  * Le forfait jour par jour, comme une imsakia : une case par jour du cycle. Les jours passés portent
- * leur data mobile (sur fond corail clair au-delà de la part moyenne du forfait), aujourd'hui est en
- * safran, les jours à venir portent le budget quotidien.
+ * leur data mobile (sur fond lavande au-delà de la part moyenne du forfait), aujourd'hui est encadré
+ * de violet, les jours à venir, à peine tracés, portent le budget quotidien.
  */
 @Composable
 private fun CycleGridCard(forecast: QuotaForecast) {
@@ -408,15 +408,10 @@ private fun CycleGridCard(forecast: QuotaForecast) {
     DataKeeperCard(contentPadding = 16.dp) {
         SectionTitle(stringResource(R.string.quota_cycle_grid_title), Icons.Rounded.CalendarMonth)
         Spacer(Modifier.height(12.dp))
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.outlineVariant),
-            verticalArrangement = Arrangement.spacedBy(1.dp),
-        ) {
+        val cellShape = RoundedCornerShape(12.dp)
+        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             (0 until period.totalDays).chunked(columns).forEach { week ->
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(1.dp)) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     week.forEach { index ->
                         val dayMillis = Calendar.getInstance().apply {
                             timeInMillis = period.startMillis
@@ -429,8 +424,8 @@ private fun CycleGridCard(forecast: QuotaForecast) {
                         val background = when {
                             isToday -> MaterialTheme.colorScheme.surface
                             over -> MaterialTheme.colorScheme.tertiaryContainer
-                            isFuture -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
-                            else -> MaterialTheme.colorScheme.surface
+                            isFuture -> Color.Transparent
+                            else -> MaterialTheme.colorScheme.surfaceVariant
                         }
                         val ink = when {
                             isToday -> MaterialTheme.colorScheme.primary
@@ -438,37 +433,65 @@ private fun CycleGridCard(forecast: QuotaForecast) {
                             isFuture -> MaterialTheme.colorScheme.onSurfaceVariant
                             else -> MaterialTheme.colorScheme.onSurface
                         }
+                        val border = when {
+                            isToday -> Modifier.border(2.dp, MaterialTheme.colorScheme.primary, cellShape)
+                            isFuture -> Modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, cellShape)
+                            else -> Modifier
+                        }
                         Column(
                             Modifier
                                 .weight(1f)
-                                .height(56.dp)
+                                .height(54.dp)
+                                .clip(cellShape)
                                 .background(background)
-                                .then(if (isToday) Modifier.border(2.dp, MaterialTheme.colorScheme.primary) else Modifier)
-                                .padding(horizontal = 6.dp, vertical = 6.dp),
-                            verticalArrangement = Arrangement.SpaceBetween,
+                                .then(border)
+                                .padding(horizontal = 4.dp, vertical = 6.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
                         ) {
-                            Text(dayOfMonth(dayMillis), style = MaterialTheme.typography.titleSmall.numeric(), color = ink)
+                            Text(
+                                dayOfMonth(dayMillis),
+                                style = MaterialTheme.typography.labelSmall.numeric(),
+                                fontWeight = FontWeight.Medium,
+                                color = if (isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
                             Text(
                                 (if (isFuture) futureBudget else bytes ?: 0L).toReadableSize(),
-                                style = MaterialTheme.typography.labelSmall.numeric(),
-                                fontWeight = if (isToday || over) FontWeight.SemiBold else FontWeight.Normal,
+                                style = MaterialTheme.typography.labelMedium.numeric(),
+                                fontWeight = FontWeight.SemiBold,
                                 color = ink,
                                 maxLines = 1,
                                 softWrap = false,
-                                autoSize = TextAutoSize.StepBased(minFontSize = 8.sp, maxFontSize = 11.sp),
+                                autoSize = TextAutoSize.StepBased(minFontSize = 8.sp, maxFontSize = 13.sp),
                             )
                         }
                     }
                     // Dernière rangée incomplète : des cases vides gardent la grille alignée.
                     repeat(columns - week.size) {
-                        Box(
-                            Modifier
-                                .weight(1f)
-                                .height(56.dp)
-                                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.4f)),
-                        )
+                        Spacer(Modifier.weight(1f).height(54.dp))
                     }
                 }
+            }
+        }
+        Spacer(Modifier.height(12.dp))
+        GridLegend()
+    }
+}
+
+/** Légende de la grille : au-dessus du budget, aujourd'hui, budget à venir. */
+@Composable
+private fun GridLegend() {
+    val swatch = RoundedCornerShape(4.dp)
+    Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically) {
+        listOf(
+            Modifier.background(MaterialTheme.colorScheme.tertiaryContainer, swatch) to R.string.quota_grid_legend_over,
+            Modifier.border(2.dp, MaterialTheme.colorScheme.primary, swatch) to R.string.quota_grid_legend_today,
+            Modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, swatch) to R.string.quota_grid_legend_future,
+        ).forEach { (look, label) ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.size(12.dp).then(look))
+                Spacer(Modifier.width(6.dp))
+                Text(stringResource(label), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }

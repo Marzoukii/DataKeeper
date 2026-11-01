@@ -488,4 +488,7 @@
     <string name="usage_hero_budget">Budget par jour</string>
     <string name="usage_hero_budget_value">≈ %1$s</string>
     <string name="usage_hero_until">jusqu’au %1$s</string>
+    <string name="quota_grid_legend_over">Au-dessus du budget</string>
+    <string name="quota_grid_legend_today">Aujourd’hui</string>
+    <string name="quota_grid_legend_future">Budget à venir</string>
 </resources>

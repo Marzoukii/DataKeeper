@@ -476,4 +476,7 @@
     <string name="usage_hero_budget">Daily budget</string>
     <string name="usage_hero_budget_value">≈ %1$s</string>
     <string name="usage_hero_until">until %1$s</string>
+    <string name="quota_grid_legend_over">Over budget</string>
+    <string name="quota_grid_legend_today">Today</string>
+    <string name="quota_grid_legend_future">Budget ahead</string>
 </resources>
