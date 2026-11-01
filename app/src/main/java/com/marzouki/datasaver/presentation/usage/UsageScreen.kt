@@ -230,7 +230,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.dashboard(
             state.quotaStatus,
             period,
             onClick = onOpenQuota,
-            todayMobileBytes = state.dailyUsage.lastOrNull()?.mobileBytes,
+            todayMobileBytes = todayPlanMobileBytes(state, period),
             todayBudgetBytes = todayBudgetBytes(state, period),
         )
     }
@@ -411,6 +411,7 @@ private fun LedgerCard(
                 selectedDayMillis = selectedDayMillis,
                 onDayClick = onDayClick,
                 todayBudgetBytes = todayBudgetBytes(state, period),
+                todayPlanBytes = todayPlanMobileBytes(state, period),
             )
             Spacer(Modifier.height(12.dp))
             Text(
@@ -427,12 +428,23 @@ private fun LedgerCard(
 }
 
 /**
+ * Data mobile d'aujourd'hui décomptée du forfait en cours. Pour un pass activé aujourd'hui, seulement
+ * ce qui est passé depuis l'activation : le reste de la journée était sur l'ancien forfait.
+ */
+private fun todayPlanMobileBytes(state: UsageState, period: MonthPeriod): Long? {
+    val today = state.dailyUsage.lastOrNull() ?: return null
+    if (period.startMillis <= today.dayStartMillis) return today.mobileBytes
+    val sinceActivation = state.liveUsage?.mobileBytes ?: return today.mobileBytes
+    return sinceActivation.coerceAtMost(today.mobileBytes)
+}
+
+/**
  * Budget du jour, comme sur l'écran Quota : ce qui restait du forfait ce matin, réparti sur les jours
  * restants aujourd'hui compris. Null sans forfait.
  */
 private fun todayBudgetBytes(state: UsageState, period: MonthPeriod): Long? {
     val status = state.quotaStatus ?: return null
-    val todayMobile = state.dailyUsage.lastOrNull()?.mobileBytes ?: 0L
+    val todayMobile = todayPlanMobileBytes(state, period) ?: 0L
     val usedBeforeToday = (status.usedBytes - todayMobile).coerceAtLeast(0)
     val daysLeft = (period.totalDays - period.currentDay + 1).coerceAtLeast(1)
     return (status.quota.limitBytes - usedBeforeToday).coerceAtLeast(0) / daysLeft

@@ -167,7 +167,16 @@ class QuotaViewModel @Inject constructor(
             }
             // Un point par jour écoulé du cycle : du premier jour à aujourd'hui.
             getDailyUsage(days = period.currentDay, nowMillis = period.endMillis).onSuccess { days ->
-                val daily = days.map { it.mobileBytes }
+                val daily = days.map { it.mobileBytes }.let { measured ->
+                    // Pass activé en cours de journée : son premier jour ne compte que depuis l'activation.
+                    val first = days.firstOrNull()
+                    if (first != null && mobile != null && period.startMillis > first.dayStartMillis) {
+                        val firstDay = (mobile - measured.drop(1).sum()).coerceIn(0L, measured.first())
+                        listOf(firstDay) + measured.drop(1)
+                    } else {
+                        measured
+                    }
+                }
                 val balance = quota?.balanceIn(period)
                 // La courbe doit finir sur le même total que la jauge.
                 val aligned = if (balance != null && used != null) {
