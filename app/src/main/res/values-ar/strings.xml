@@ -517,4 +517,7 @@
     <string name="notification_new_sim_title">شريحة جديدة: %1$s</string>
     <string name="notification_new_sim_text">انتهت باقتك القديمة؟ سجّل الجديدة: تُحتسب ابتداءً من %1$s، ساعة تغيير الشريحة.</string>
     <string name="setup_operator_changed_at">تم رصد شريحة %1$s جديدة على الساعة %2$s: تُحتسب الباقة الجديدة ابتداءً من هذه الساعة.</string>
+    <string name="quota_size_title">حجم الباقة</string>
+    <string name="quota_size_subtitle">%1$s · المس للتغيير</string>
+    <string name="quota_size_subtitle_none">لا توجد باقة · المس لتحديد واحدة</string>
 </resources>

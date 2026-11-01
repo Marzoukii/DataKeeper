@@ -44,6 +44,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.CalendarMonth
+import androidx.compose.material.icons.rounded.DataUsage
 import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.Payments
 import androidx.compose.material.icons.rounded.SimCard
@@ -199,11 +200,12 @@ private fun QuotaContent(
             item { DailyBudgetCard(forecast) }
         }
         forecast?.let { item { ForecastCard(it) } }
-        item { PlanCard(state, onIntent, onOtherClick = { showOtherDialog = true }) }
+        // Taille du forfait et suppression du quota dans les réglages : le reste est déjà sur Conso.
         item {
             SettingsCard(
                 state,
                 onIntent,
+                onSizeClick = { showOtherDialog = true },
                 onCycleClick = { showCycleDialog = true },
                 onPriceClick = { showPriceDialog = true },
                 onBalanceClick = {
@@ -687,90 +689,11 @@ private fun ForecastCard(forecast: QuotaForecast) {
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun PlanCard(state: QuotaState, onIntent: (QuotaIntent) -> Unit, onOtherClick: () -> Unit) {
-    val inputBytes = QuotaViewModel.parseGigabytes(state.input)
-    val currentGb = (inputBytes ?: state.quota?.limitBytes)?.let { it / BYTES_PER_GB }
-    val sliderDescription = stringResource(R.string.quota_slider_description)
-
-    DataKeeperCard {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            IconChip(Icons.Rounded.SimCard)
-            Spacer(Modifier.width(10.dp))
-            Text(
-                stringResource(R.string.quota_plan_title),
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.weight(1f),
-            )
-            val value = currentGb?.let { (it * BYTES_PER_GB).toLong().toReadableSizeParts() }
-            Text(
-                buildAnnotatedString {
-                    append(value?.value ?: stringResource(R.string.quota_no_value))
-                    if (value != null) {
-                        withStyle(SpanStyle(fontSize = 15.sp)) { append(" ${value.unit}") }
-                    }
-                },
-                style = MaterialTheme.typography.titleLarge.copy(fontFamily = ReadexPro, fontSize = 22.sp),
-                color = MaterialTheme.colorScheme.primary,
-            )
-        }
-        Slider(
-            value = (currentGb ?: DEFAULT_GB).coerceIn(SLIDER_MIN_GB, SLIDER_MAX_GB),
-            onValueChange = { onIntent(QuotaIntent.InputChanged(it.roundToInt().toString())) },
-            onValueChangeFinished = { onIntent(QuotaIntent.Save) },
-            valueRange = SLIDER_MIN_GB..SLIDER_MAX_GB,
-            steps = (SLIDER_MAX_GB - SLIDER_MIN_GB).toInt() - 1,
-            colors = SliderDefaults.colors(
-                thumbColor = MaterialTheme.colorScheme.primary,
-                activeTrackColor = MaterialTheme.colorScheme.primary,
-                inactiveTrackColor = MaterialTheme.colorScheme.primaryContainer,
-                activeTickColor = MaterialTheme.colorScheme.primary.copy(alpha = 0f),
-                inactiveTickColor = MaterialTheme.colorScheme.primary.copy(alpha = 0f),
-            ),
-            modifier = Modifier
-                .padding(vertical = 4.dp)
-                .semantics { contentDescription = sliderDescription },
-        )
-        val chipColors = FilterChipDefaults.filterChipColors(
-            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        )
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            PRESETS_GB.forEach { gb ->
-                FilterChip(
-                    selected = inputBytes == gb * BYTES_PER_GB.toLong(),
-                    onClick = {
-                        onIntent(QuotaIntent.PresetSelected(gb))
-                        onIntent(QuotaIntent.Save)
-                    },
-                    label = { Text(stringResource(R.string.quota_preset, gb), style = MaterialTheme.typography.labelLarge.numeric()) },
-                    shape = CircleShape,
-                    colors = chipColors,
-                )
-            }
-            FilterChip(
-                selected = inputBytes != null && PRESETS_GB.none { inputBytes == it * BYTES_PER_GB.toLong() },
-                onClick = onOtherClick,
-                label = { Text(stringResource(R.string.quota_preset_other), style = MaterialTheme.typography.labelLarge) },
-                shape = CircleShape,
-                colors = chipColors,
-            )
-        }
-        if (state.quota != null) {
-            TextButton(
-                onClick = { onIntent(QuotaIntent.RemoveQuota) },
-                shape = CircleShape,
-                modifier = Modifier.padding(top = 4.dp),
-            ) { Text(stringResource(R.string.quota_remove)) }
-        }
-    }
-}
-
 @Composable
 private fun SettingsCard(
     state: QuotaState,
     onIntent: (QuotaIntent) -> Unit,
+    onSizeClick: () -> Unit,
     onCycleClick: () -> Unit,
     onPriceClick: () -> Unit,
     onBalanceClick: () -> Unit,
@@ -780,6 +703,22 @@ private fun SettingsCard(
     val operator = state.operatorName
     DataKeeperCard(contentPadding = 0.dp) {
         Spacer(Modifier.height(4.dp))
+        SettingRow(
+            icon = Icons.Rounded.DataUsage,
+            title = stringResource(R.string.quota_size_title),
+            subtitle = quota?.let { stringResource(R.string.quota_size_subtitle, it.limitBytes.toReadableSize()) }
+                ?: stringResource(R.string.quota_size_subtitle_none),
+            iconContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            iconTint = MaterialTheme.colorScheme.onPrimaryContainer,
+            onClick = onSizeClick,
+        ) {
+            Icon(
+                Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                contentDescription = stringResource(R.string.quota_size_title),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        SettingDivider()
         val balance = quota?.balanceIn(state.displayPeriod)
         SettingRow(
             icon = Icons.Rounded.SimCard,
@@ -880,7 +819,16 @@ private fun SettingsCard(
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        Spacer(Modifier.height(4.dp))
+        if (quota != null) {
+            SettingDivider()
+            TextButton(
+                onClick = { onIntent(QuotaIntent.RemoveQuota) },
+                shape = CircleShape,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            ) { Text(stringResource(R.string.quota_remove), color = MaterialTheme.colorScheme.error) }
+        } else {
+            Spacer(Modifier.height(4.dp))
+        }
     }
 }
 

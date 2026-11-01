@@ -494,4 +494,7 @@
     <string name="notification_new_sim_title">Nouvelle SIM : %1$s</string>
     <string name="notification_new_sim_text">Ton ancien forfait est terminé ? Enregistre le nouveau : on le compte à partir de %1$s, l’heure du changement de SIM.</string>
     <string name="setup_operator_changed_at">Nouvelle SIM %1$s détectée à %2$s : le nouveau forfait est compté à partir de cette heure.</string>
+    <string name="quota_size_title">Taille du forfait</string>
+    <string name="quota_size_subtitle">%1$s · touche pour changer</string>
+    <string name="quota_size_subtitle_none">Aucun forfait · touche pour en définir un</string>
 </resources>

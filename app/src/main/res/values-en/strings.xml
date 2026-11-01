@@ -482,4 +482,7 @@
     <string name="notification_new_sim_title">New SIM: %1$s</string>
     <string name="notification_new_sim_text">Is your old plan over? Save the new one: it is counted from %1$s, when the SIM changed.</string>
     <string name="setup_operator_changed_at">New %1$s SIM detected at %2$s: the new plan is counted from that time.</string>
+    <string name="quota_size_title">Plan size</string>
+    <string name="quota_size_subtitle">%1$s · tap to change</string>
+    <string name="quota_size_subtitle_none">No plan · tap to set one</string>
 </resources>
