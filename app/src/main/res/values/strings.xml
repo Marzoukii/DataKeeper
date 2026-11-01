@@ -371,7 +371,8 @@
     <string name="speed_test_upload">Upload</string>
     <string name="speed_test_ping">Ping</string>
     <string name="speed_test_ping_ms">Ping · ms</string>
-    <string name="speed_test_server">Serveur %1$s</string>
+    <string name="speed_test_server">Serveur de test : %1$s</string>
+    <string name="speed_test_your_network">Ton réseau : %1$s</string>
     <string name="speed_test_wifi_title">Connecté en Wi‑Fi</string>
     <string name="speed_test_wifi_body">Le test n’utilise pas ton forfait mobile</string>
     <string name="speed_test_mobile_title">Sur données mobiles</string>

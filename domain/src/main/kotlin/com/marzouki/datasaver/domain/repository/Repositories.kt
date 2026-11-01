@@ -170,10 +170,11 @@ interface SpeedTestRepository {
 
     /**
      * Mesure ping, téléchargement puis envoi ; le flux se termine une fois l'envoi mesuré.
-     * [maxBytesPerPhase] arrête chaque sens plus tôt une fois ce volume transféré.
+     * [maxBytesPerPhase] arrête chaque sens plus tôt une fois ce volume transféré ;
+     * [operatorName], l'opérateur des données mobiles, fait préférer ses serveurs de mesure.
      * @throws java.io.IOException si le réseau ou le serveur de mesure fait défaut.
      */
-    fun measure(maxBytesPerPhase: Long?): Flow<SpeedTestProgress>
+    fun measure(maxBytesPerPhase: Long?, operatorName: String? = null): Flow<SpeedTestProgress>
 }
 
 /** Planifie la vérification périodique du quota en arrière-plan. */

@@ -388,7 +388,8 @@
     <string name="speed_test_upload">رفع</string>
     <string name="speed_test_ping">استجابة</string>
     <string name="speed_test_ping_ms">استجابة · م.ث</string>
-    <string name="speed_test_server">الخادم %1$s</string>
+    <string name="speed_test_server">خادم الاختبار: %1$s</string>
+    <string name="speed_test_your_network">شبكتك: %1$s</string>
     <string name="speed_test_wifi_title">متصل بالـWifi</string>
     <string name="speed_test_wifi_body">لا يستعمل الاختبار باقتك للـdonnées mobiles</string>
     <string name="speed_test_mobile_title">على الـdonnées mobiles</string>
