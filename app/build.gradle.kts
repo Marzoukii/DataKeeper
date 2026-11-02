@@ -25,8 +25,8 @@ android {
         applicationId = "com.marzouki.datasaver"
         minSdk = 24
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -45,8 +45,9 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.findByName("release")
+            // R8 : réduit, obscurcit et optimise le code (règles maison dans src/main/keepRules).
             optimization {
-                enable = false
+                enable = true
             }
         }
     }

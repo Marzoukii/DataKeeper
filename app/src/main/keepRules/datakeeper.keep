@@ -1,0 +1,11 @@
+# Règles R8 propres à DataKeeper.
+# Les bibliothèques (Hilt, WorkManager, Glance, DataStore, Compose, Firebase)
+# apportent déjà leurs propres règles : ici, seulement ce qu'elles ne couvrent pas.
+
+# Crashlytics : garder les numéros de ligne pour des traces lisibles
+# (le fichier de correspondance est envoyé à Firebase à chaque build release).
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
+
+# Garder les exceptions maison telles quelles dans les rapports de plantage.
+-keep public class * extends java.lang.Exception
