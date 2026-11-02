@@ -231,8 +231,9 @@ internal fun SplitTiles(
             )
             UsageTile(
                 icon = Icons.Rounded.SignalCellularAlt,
-                label = stringResource(R.string.usage_tile_mobile, 100 - wifiPercent) + (generation?.let { " · ${it.label}" } ?: ""),
+                label = stringResource(R.string.usage_tile_mobile, 100 - wifiPercent),
                 value = mobileBytes.toPlanSize(),
+                badge = generation?.label,
                 sub = mobileNote ?: stringResource(R.string.usage_tile_mobile_sub),
                 container = colors.tertiaryContainer,
                 content = colors.onTertiaryContainer,
@@ -277,7 +278,15 @@ internal fun SplitTiles(
 }
 
 @Composable
-private fun RowScope.UsageTile(icon: ImageVector, label: String, value: String, sub: String, container: Color, content: Color) {
+private fun RowScope.UsageTile(
+    icon: ImageVector,
+    label: String,
+    value: String,
+    sub: String,
+    container: Color,
+    content: Color,
+    badge: String? = null,
+) {
     Column(
         Modifier
             .weight(1f)
@@ -291,7 +300,23 @@ private fun RowScope.UsageTile(icon: ImageVector, label: String, value: String, 
             Spacer(Modifier.width(6.dp))
             Text(label, style = MaterialTheme.typography.labelLarge, color = content, maxLines = 1)
         }
-        Text(value, style = MaterialTheme.typography.headlineSmall.numeric(), color = content, maxLines = 1)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(value, style = MaterialTheme.typography.headlineSmall.numeric(), color = content, maxLines = 1)
+            // Réseau en cours (4G, 5G) : une pastille pleine, lisible d'un coup d'œil.
+            if (badge != null) {
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    badge,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    maxLines = 1,
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(content)
+                        .padding(horizontal = 8.dp, vertical = 2.dp),
+                )
+            }
+        }
         Text(sub, style = MaterialTheme.typography.labelMedium, color = content, maxLines = 2)
     }
 }

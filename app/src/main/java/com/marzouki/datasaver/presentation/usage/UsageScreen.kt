@@ -12,6 +12,7 @@ import com.marzouki.datasaver.ui.components.SectionTitle
 import androidx.compose.material.icons.rounded.Apps
 import androidx.compose.material.icons.rounded.CalendarMonth
 import android.Manifest
+import android.os.SystemClock
 import android.content.pm.PackageManager
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -50,6 +51,8 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -116,9 +119,14 @@ fun UsageScreen(
     val activity = LocalActivity.current
     // Après un second refus, Android n'affiche plus la demande : on ouvre alors les infos de l'appli.
     var phonePermissionBlocked by rememberSaveable { mutableStateOf(false) }
+    var phonePermissionAskedAt by remember { mutableLongStateOf(0L) }
     val phonePermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         phonePermissionBlocked = !granted && activity != null &&
             !ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.READ_PHONE_STATE)
+        // Refus immédiat, sans fenêtre affichée (déjà refusée deux fois) : le clic ne doit pas rester
+        // sans effet, on ouvre directement les infos de l'appli.
+        val noDialogShown = SystemClock.elapsedRealtime() - phonePermissionAskedAt < NO_DIALOG_MILLIS
+        if (phonePermissionBlocked && noDialogShown) openAppDetailsSettings(context)
         viewModel.onIntent(UsageIntent.PhonePermissionResult)
     }
 
@@ -141,6 +149,7 @@ fun UsageScreen(
             if (phonePermissionBlocked) {
                 openAppDetailsSettings(context)
             } else {
+                phonePermissionAskedAt = SystemClock.elapsedRealtime()
                 phonePermissionLauncher.launch(Manifest.permission.READ_PHONE_STATE)
             }
         },
@@ -635,3 +644,6 @@ private fun UsageContentEmptyPreview() {
         )
     }
 }
+
+/** En dessous de ce délai, le refus vient d'Android sans fenêtre affichée. */
+private const val NO_DIALOG_MILLIS = 400L
