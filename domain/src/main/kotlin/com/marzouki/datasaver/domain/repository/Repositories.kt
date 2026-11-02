@@ -11,6 +11,7 @@ import com.marzouki.datasaver.domain.model.DataUsage
 import com.marzouki.datasaver.domain.model.DayUsage
 import com.marzouki.datasaver.domain.model.MobileOperator
 import com.marzouki.datasaver.domain.model.MonthPeriod
+import com.marzouki.datasaver.domain.model.OperatorChange
 import com.marzouki.datasaver.domain.model.PlanValidity
 import com.marzouki.datasaver.domain.model.PricePerGb
 import com.marzouki.datasaver.domain.model.QuotaStatus
@@ -22,6 +23,7 @@ import com.marzouki.datasaver.domain.model.TetheringAlert
 import com.marzouki.datasaver.domain.model.TetheringSession
 import com.marzouki.datasaver.domain.model.WifiScan
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
 interface UsageRepository {
     fun hasUsageAccess(): Boolean
@@ -96,6 +98,9 @@ interface QuotaRepository {
     /** Forfaits déjà saisis, tous opérateurs confondus, du plus récent au plus ancien. */
     val savedPlans: Flow<List<SavedPlan>>
     suspend fun setSavedPlans(plans: List<SavedPlan>)
+    /** Nouvelle SIM des données repérée, en attente de son forfait ; null tant que la SIM du forfait est en place. */
+    val operatorChange: Flow<OperatorChange?> get() = flowOf(null)
+    suspend fun setOperatorChange(change: OperatorChange?) {}
 }
 
 interface DownloadRepository {
@@ -165,10 +170,11 @@ interface SpeedTestRepository {
 
     /**
      * Mesure ping, téléchargement puis envoi ; le flux se termine une fois l'envoi mesuré.
-     * [maxBytesPerPhase] arrête chaque sens plus tôt une fois ce volume transféré.
+     * [maxBytesPerPhase] arrête chaque sens plus tôt une fois ce volume transféré ;
+     * [operatorName], l'opérateur des données mobiles, fait préférer ses serveurs de mesure.
      * @throws java.io.IOException si le réseau ou le serveur de mesure fait défaut.
      */
-    fun measure(maxBytesPerPhase: Long?): Flow<SpeedTestProgress>
+    fun measure(maxBytesPerPhase: Long?, operatorName: String? = null): Flow<SpeedTestProgress>
 }
 
 /** Planifie la vérification périodique du quota en arrière-plan. */
@@ -188,6 +194,9 @@ interface QuotaAlertNotifier {
 
     /** Prévient que les appareils connectés au partage ont consommé [usedBytes], au-delà de [thresholdBytes]. */
     fun notifyTetheringThreshold(usedBytes: Long, thresholdBytes: Long)
+
+    /** Prévient qu'une nouvelle SIM ([operatorName]) fournit la data depuis [atMillis] : son forfait est à saisir. */
+    fun notifyOperatorChanged(operatorName: String, atMillis: Long) {}
 }
 
 /** Remonte les erreurs rattrapées qui méritent d'être corrigées, sans donnée personnelle. */

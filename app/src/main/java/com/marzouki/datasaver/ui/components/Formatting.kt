@@ -87,6 +87,19 @@ fun Long.toReadableSizeParts(): ReadableSize {
 
 fun Long.toReadableSize(): String = toReadableSizeParts().toString()
 
+/**
+ * Taille à l'échelle d'un forfait : jamais d'octets ni de ko, qui n'ont pas de sens face à des Go.
+ * "< 1 Mo" pour un reliquat, "—" pour rien du tout, sinon comme [toReadableSize].
+ */
+fun Long.toPlanSize(): String {
+    val units = AppLanguage.current().sizeUnits
+    return when {
+        this <= 0L -> "—"
+        this < 1_000_000L -> "<$NBSP" + "1$NBSP${units[2]}"
+        else -> toReadableSize()
+    }
+}
+
 /** "3,2 / 5 Go" quand les unités sont identiques, sinon "800 Mo / 5 Go". */
 fun formatUsedOf(usedBytes: Long, limitBytes: Long): String {
     val used = usedBytes.toReadableSizeParts()

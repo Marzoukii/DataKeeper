@@ -62,8 +62,11 @@ class UsageViewModel @Inject constructor(
         observeQuota()
             .onEach { quota -> setState { copy(quota = quota) } }
             // Le décompte du forfait dépend du quota : la première valeur est lue par le Refresh de l'écran.
+            // Un nouveau forfait ou un nouveau solde change aussi le cycle (pass, heure d'activation) :
+            // on relit tout, cycle compris, sinon le solde saisi tombe hors de l'ancien cycle et le reste
+            // affiché ignore la data déjà partie jusqu'au prochain rafraîchissement.
             .drop(1)
-            .onEach { refreshQuota() },
+            .onEach { refresh() },
         observePricePerGb().onEach { price -> setState { copy(pricePerGb = price) } },
         // Suit la SIM des données en direct : carte changée ou data basculée sur l'autre SIM.
         observeDataOperator().onEach { operator -> setState { copy(operatorName = operator?.name) } },
@@ -154,14 +157,6 @@ class UsageViewModel @Inject constructor(
                     quotaUsedBytes = quotaUsedResult.getOrElse { quotaUsedBytes },
                 )
             }
-        }
-    }
-
-    private fun refreshQuota() {
-        val period = currentState.period ?: return
-        if (!hasUsageAccess()) return
-        viewModelScope.launch {
-            getQuotaUsedBytes(period).onSuccess { used -> setState { copy(quotaUsedBytes = used) } }
         }
     }
 }

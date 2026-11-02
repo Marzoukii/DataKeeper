@@ -53,7 +53,7 @@ private val VALIDITY_PRESETS = listOf(7, 15, 30)
  * à cette date ([monthly]) pour un abonnement.
  */
 data class PlanCycleInput(
-    /** Minuit, heure locale, du jour d'achat ou de renouvellement. */
+    /** Minuit, heure locale, du jour d'achat ou de renouvellement : le forfait se compte à la journée. */
     val purchaseMillis: Long = startOfDay(System.currentTimeMillis()),
     val validityInput: String = VALIDITY_PRESETS.last().toString(),
     val monthly: Boolean = false,
@@ -206,14 +206,15 @@ fun PlanCycleFields(
     if (showDatePicker) {
         PurchaseDatePicker(
             selectedMillis = input.purchaseMillis,
-            onSelect = {
-                onChange(input.copy(purchaseMillis = it))
+            onSelect = { day ->
+                onChange(input.copy(purchaseMillis = PlanCycleInput.startOfDay(day)))
                 showDatePicker = false
             },
             onDismiss = { showDatePicker = false },
         )
     }
 }
+
 
 /**
  * Le sélecteur de Material raisonne en jours UTC : on y convertit le jour local, et inversement,

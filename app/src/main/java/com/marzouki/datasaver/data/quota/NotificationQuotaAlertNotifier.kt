@@ -65,6 +65,15 @@ class NotificationQuotaAlertNotifier @Inject constructor(
         )
     }
 
+    override fun notifyOperatorChanged(operatorName: String, atMillis: Long) {
+        post(
+            OPERATOR_NOTIFICATION_ID,
+            context.getString(R.string.notification_new_sim_title, operatorName),
+            context.getString(R.string.notification_new_sim_text),
+            NotificationCompat.PRIORITY_HIGH,
+        )
+    }
+
     /** Publie sur le canal des alertes de quota ; rien sans la permission de notifier (Android 13+). */
     private fun post(id: Int, title: String, text: String, priority: Int) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
@@ -102,6 +111,7 @@ class NotificationQuotaAlertNotifier @Inject constructor(
         const val RECALIBRATE_NOTIFICATION_ID = 81
         const val RENEWAL_NOTIFICATION_ID = 82
         const val TETHERING_NOTIFICATION_ID = 83
+        const val OPERATOR_NOTIFICATION_ID = 84
         const val DAY_MILLIS = 24L * 60 * 60 * 1000
     }
 }

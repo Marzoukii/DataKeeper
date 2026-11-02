@@ -22,6 +22,15 @@ data class QuotaForecast(
      */
     val measuredDailyBytes: List<Long> = dailyMobileBytes,
 ) {
+    /**
+     * Mesure d'Android ramenée au forfait : le premier jour, Android compte toute la journée, y
+     * compris la data de l'ancien forfait ce matin-là ; on n'en garde pas plus que ce que le forfait
+     * a réellement décompté ce jour-là (25 Go recalés à 22 Go : 3 Go, pas les 5 Go de la journée).
+     */
+    val measuredOnPlanBytes: List<Long> = measuredDailyBytes.mapIndexed { index, measured ->
+        if (index == 0) minOf(measured, dailyMobileBytes.firstOrNull() ?: measured) else measured
+    }
+
     /** Data mobile cumulée à la fin de chaque jour écoulé. */
     val cumulativeBytes: List<Long> = dailyMobileBytes.runningReduce { total, day -> total + day }
 
@@ -40,11 +49,11 @@ data class QuotaForecast(
     val projectedBytes: Long
         get() {
             val daysAfterToday = (period.totalDays - elapsedDays).coerceAtLeast(0)
-            return usedBytes + measuredDailyBytes.sum() * daysAfterToday / measuredDailyBytes.size.coerceAtLeast(1)
+            return usedBytes + measuredOnPlanBytes.sum() * daysAfterToday / measuredOnPlanBytes.size.coerceAtLeast(1)
         }
 
-    /** Data mobile mesurée aujourd'hui. */
-    val todayBytes: Long get() = measuredDailyBytes.lastOrNull() ?: 0L
+    /** Data mobile d'aujourd'hui comptée sur le forfait. */
+    val todayBytes: Long get() = measuredOnPlanBytes.lastOrNull() ?: 0L
 
     /** Forfait décompté avant aujourd'hui. */
     private val usedBeforeTodayBytes: Long get() = (usedBytes - todayBytes).coerceAtLeast(0)

@@ -6,6 +6,7 @@ import com.marzouki.datasaver.domain.model.DataQuota
 import com.marzouki.datasaver.domain.usecase.CompletePlanSetupUseCase
 import com.marzouki.datasaver.domain.usecase.ForgetSavedPlanUseCase
 import com.marzouki.datasaver.domain.usecase.ObserveDataOperatorUseCase
+import com.marzouki.datasaver.domain.usecase.ObserveOperatorChangeUseCase
 import com.marzouki.datasaver.domain.usecase.ObservePlanStatusUseCase
 import com.marzouki.datasaver.domain.usecase.ObserveSavedPlansUseCase
 import com.marzouki.datasaver.domain.usecase.RememberPlanUseCase
@@ -56,6 +57,7 @@ class PlanSetupViewModelTest {
             ),
             skipPlanSetup = SkipPlanSetupUseCase(quotas, operators, setQuota),
             forgetSavedPlan = ForgetSavedPlanUseCase(quotas),
+            observeOperatorChange = ObserveOperatorChangeUseCase(quotas),
         )
     }
 

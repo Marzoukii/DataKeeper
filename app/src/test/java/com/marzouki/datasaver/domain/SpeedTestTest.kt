@@ -75,6 +75,7 @@ class SpeedTestTest {
         val events = RunSpeedTestUseCase(repository, Clock { 5_000L })(onWifi = false, "Ooredoo", NetworkGeneration.G4).toList()
 
         assertEquals(RunSpeedTestUseCase.MOBILE_MAX_BYTES_PER_PHASE, repository.requestedMaxBytes)
+        assertEquals("Ooredoo", repository.requestedOperator)
         val finished = events.last() as SpeedTestEvent.Finished
         assertEquals(SpeedTestResult(50.0, 10.0, 20, 5_000L, false, "Ooredoo", NetworkGeneration.G4, server), finished.result)
         assertEquals(listOf(finished.result), repository.history.value)
@@ -86,6 +87,7 @@ class SpeedTestTest {
         val events = RunSpeedTestUseCase(repository, Clock { 5_000L })(onWifi = true, "Ooredoo", NetworkGeneration.G4).toList()
 
         assertEquals(null, repository.requestedMaxBytes)
+        assertEquals(null, repository.requestedOperator)
         val result = (events.last() as SpeedTestEvent.Finished).result
         assertEquals(null, result.operatorName)
         assertEquals(null, result.generation)
@@ -94,13 +96,15 @@ class SpeedTestTest {
     private class FakeSpeedTestRepository : SpeedTestRepository {
         override val history = MutableStateFlow<List<SpeedTestResult>>(emptyList())
         var requestedMaxBytes: Long? = -1L
+        var requestedOperator: String? = null
 
         override suspend fun addToHistory(result: SpeedTestResult) {
             history.value = listOf(result) + history.value
         }
 
-        override fun measure(maxBytesPerPhase: Long?): Flow<SpeedTestProgress> {
+        override fun measure(maxBytesPerPhase: Long?, operatorName: String?): Flow<SpeedTestProgress> {
             requestedMaxBytes = maxBytesPerPhase
+            requestedOperator = operatorName
             return flowOf(
                 SpeedTestProgress(SpeedTestPhase.PING, 0f),
                 SpeedTestProgress(SpeedTestPhase.DOWNLOAD, 0.1f, pingMs = 20, server = server),

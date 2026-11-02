@@ -1,15 +1,24 @@
 package com.marzouki.datasaver.data.speedtest
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.location.LocationManager
+import androidx.core.content.ContextCompat
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.marzouki.datasaver.di.IoDispatcher
 import com.marzouki.datasaver.domain.enums.SpeedTestPhase
+import com.marzouki.datasaver.domain.model.GeoPoint
+import com.marzouki.datasaver.domain.model.SpeedTestCandidate
+import com.marzouki.datasaver.domain.model.SpeedTestServerPicker
 import com.marzouki.datasaver.domain.model.SpeedTestProgress
 import com.marzouki.datasaver.domain.model.SpeedTestResult
 import com.marzouki.datasaver.domain.model.SpeedTestServer
 import com.marzouki.datasaver.domain.repository.SpeedTestRepository
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -30,13 +39,15 @@ import javax.inject.Inject
 import kotlin.random.Random
 
 /**
- * Test de débit sur le serveur Speedtest le plus proche : la liste speedtest.net propose les
- * serveurs voisins d'après l'adresse IP (opérateurs, Agence Tunisienne d'Internet…), et le
- * plus réactif d'entre eux est retenu. Chaque sens dure quelques secondes sur plusieurs
+ * Test de débit sur un serveur Speedtest proche : speedtest.net propose des serveurs voisins
+ * d'après l'adresse IP, souvent mal située ; la position de l'appareil, quand elle est connue,
+ * corrige la distance, et les serveurs de l'opérateur des données passent devant
+ * (voir [SpeedTestServerPicker]). Chaque sens dure quelques secondes sur plusieurs
  * connexions parallèles ; le débit retenu ignore la première seconde, le temps que TCP
  * prenne sa vitesse de croisière.
  */
 class SpeedTestRepositoryImpl @Inject constructor(
+    @param:ApplicationContext private val context: Context,
     private val dataStore: DataStore<Preferences>,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : SpeedTestRepository {
@@ -52,9 +63,9 @@ class SpeedTestRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun measure(maxBytesPerPhase: Long?): Flow<SpeedTestProgress> = channelFlow {
+    override fun measure(maxBytesPerPhase: Long?, operatorName: String?): Flow<SpeedTestProgress> = channelFlow {
         send(SpeedTestProgress(SpeedTestPhase.PING, fraction = 0f))
-        val server = closestServer()
+        val server = closestServer(operatorName)
         send(SpeedTestProgress(SpeedTestPhase.PING, PING_SHARE / 2, server = server.info))
         val ping = measurePing(server.baseUrl)
         val afterPing = SpeedTestProgress(SpeedTestPhase.DOWNLOAD, PING_SHARE, pingMs = ping, server = server.info)
@@ -86,21 +97,37 @@ class SpeedTestRepositoryImpl @Inject constructor(
 
     private class Candidate(val info: SpeedTestServer, val baseUrl: String)
 
-    /** Parmi les serveurs les plus proches selon speedtest.net, celui qui répond le plus vite. */
-    private fun closestServer(): Candidate {
+    /** Serveur proche, de préférence celui de l'opérateur, tant qu'il répond presque aussi vite que le meilleur. */
+    private fun closestServer(operatorName: String?): Candidate {
         val candidates = fetchServers()
         if (candidates.isEmpty()) throw IOException("Aucun serveur de mesure à proximité")
-        return candidates.take(LATENCY_CANDIDATES)
+        val measured = SpeedTestServerPicker.order(candidates, deviceLocation(), operatorName)
             .mapNotNull { candidate ->
+                val baseUrl = "https://${candidate.host}"
                 // Première requête pour la connexion (DNS, TLS), la seconde pour la latence.
-                runCatching { hello(candidate.baseUrl); candidate to hello(candidate.baseUrl) }.getOrNull()
+                runCatching { hello(baseUrl); Candidate(candidate.server, baseUrl) to hello(baseUrl) }.getOrNull()
             }
-            .minByOrNull { (_, latency) -> latency }
-            ?.first
-            ?: throw IOException("Aucun serveur de mesure joignable")
+        return SpeedTestServerPicker.choose(measured) ?: throw IOException("Aucun serveur de mesure joignable")
     }
 
-    private fun fetchServers(): List<Candidate> {
+    /** Dernière position connue de l'appareil, si la localisation est autorisée et récente. */
+    private fun deviceLocation(): GeoPoint? {
+        val granted = listOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
+            .any { ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED }
+        if (!granted) return null
+        val manager = context.getSystemService(LocationManager::class.java) ?: return null
+        val location = try {
+            manager.getProviders(true)
+                .mapNotNull { manager.getLastKnownLocation(it) }
+                .maxByOrNull { it.time }
+        } catch (_: SecurityException) {
+            null
+        } ?: return null
+        if (System.currentTimeMillis() - location.time > LOCATION_MAX_AGE_MS) return null
+        return GeoPoint(location.latitude, location.longitude)
+    }
+
+    private fun fetchServers(): List<SpeedTestCandidate> {
         val connection = open(SERVERS_URL)
         val body = try {
             connection.checkSuccess()
@@ -112,9 +139,12 @@ class SpeedTestRepositoryImpl @Inject constructor(
             val servers = JSONArray(body)
             List(servers.length()) { servers.getJSONObject(it) }.mapNotNull { server ->
                 val host = server.optString("host").takeIf { it.isNotBlank() } ?: return@mapNotNull null
-                Candidate(
-                    info = SpeedTestServer(sponsor = server.optString("sponsor").trim(), name = server.optString("name").trim()),
-                    baseUrl = "https://$host",
+                SpeedTestCandidate(
+                    server = SpeedTestServer(sponsor = server.optString("sponsor").trim(), name = server.optString("name").trim()),
+                    host = host,
+                    latitude = server.optString("lat").toDoubleOrNull(),
+                    longitude = server.optString("lon").toDoubleOrNull(),
+                    apiDistanceKm = server.optString("distance").toDoubleOrNull(),
                 )
             }
         } catch (e: JSONException) {
@@ -244,9 +274,12 @@ class SpeedTestRepositoryImpl @Inject constructor(
         if (millis <= 0) 0.0 else bytes * 8.0 / (millis * 1_000.0)
 
     private companion object {
-        /** Serveurs voisins de l'appareil d'après son adresse IP, joignables en HTTPS. */
-        const val SERVERS_URL = "https://www.speedtest.net/api/js/servers?engine=js&limit=10&https_functional=true"
-        const val LATENCY_CANDIDATES = 5
+        /**
+         * Serveurs voisins d'après l'adresse IP, joignables en HTTPS ; assez nombreux pour couvrir
+         * le pays quand l'IP est située dans une autre ville.
+         */
+        const val SERVERS_URL = "https://www.speedtest.net/api/js/servers?engine=js&limit=30&https_functional=true"
+        const val LOCATION_MAX_AGE_MS = 7 * 24 * 3_600_000L
         const val PING_SAMPLES = 5
         const val CONNECTIONS = 4
         const val DOWNLOAD_DURATION_MS = 8_000L

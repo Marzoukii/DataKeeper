@@ -34,7 +34,9 @@ data class MonthPeriod(
     /** Cycle complet qui précède celui-ci, de son premier jour jusqu'à la remise à zéro. */
     fun previous(): MonthPeriod {
         val previous = if (validityDays != null) {
-            pass(startMillis - 1, purchaseMillis = startMillis, validityDays = validityDays)
+            // Depuis minuit du premier jour : un pass activé en cours de journée commence à son heure d'achat.
+            val dayStart = startOfLocalDay(startMillis)
+            pass(dayStart - 1, purchaseMillis = dayStart, validityDays = validityDays)
         } else {
             val startDay = Calendar.getInstance().apply { timeInMillis = startMillis }.get(Calendar.DAY_OF_MONTH)
             current(startMillis - 1, startDay)
@@ -53,6 +55,9 @@ data class MonthPeriod(
          * Cycle d'un pass de [validityDays] jours acheté le jour de [purchaseMillis] : du 21 octobre
          * pour 30 jours, remise à zéro le 20 novembre. Au-delà, les cycles s'enchaînent avec la même
          * durée, comme si le pass était racheté à chaque fin.
+         *
+         * Toujours à la journée, de minuit à minuit : l'heure d'achat n'est pas connue (forfait pris
+         * le matin, appli installée le soir), la deviner fausserait le décompte.
          */
         fun pass(nowMillis: Long, purchaseMillis: Long, validityDays: Int): MonthPeriod {
             val days = validityDays.coerceIn(1, MAX_VALIDITY_DAYS)
@@ -67,12 +72,13 @@ data class MonthPeriod(
                 add(Calendar.DAY_OF_MONTH, Math.floorDiv(elapsed, days) * days)
             }
             val next = (start.clone() as Calendar).apply { add(Calendar.DAY_OF_MONTH, days) }
+            val startMillis = start.timeInMillis
             val key = String.format(
                 Locale.ROOT, "%04d-%02d-%02d+%d",
                 start.get(Calendar.YEAR), start.get(Calendar.MONTH) + 1, start.get(Calendar.DAY_OF_MONTH), days,
             )
             return MonthPeriod(
-                startMillis = start.timeInMillis,
+                startMillis = startMillis,
                 endMillis = nowMillis,
                 key = key,
                 nextStartMillis = next.timeInMillis,
@@ -105,6 +111,15 @@ data class MonthPeriod(
                 nextStartMillis = next.timeInMillis,
             )
         }
+
+        /** Minuit, heure locale, du jour de [millis]. */
+        fun startOfLocalDay(millis: Long): Long = Calendar.getInstance().apply {
+            timeInMillis = millis
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
 
         // Jour calendaire local : insensible aux changements d'heure.
         private fun localEpochDay(millis: Long): Int =

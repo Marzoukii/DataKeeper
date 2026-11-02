@@ -230,6 +230,12 @@ private fun ResultCard(result: SpeedTestResult?, fresh: Boolean, nowMillis: Long
                     color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
                 )
+                Text(
+                    stringResource(R.string.speed_test_your_network, result.networkLabel()),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center,
+                )
                 result.server?.label?.let {
                     Text(
                         stringResource(R.string.speed_test_server, it),

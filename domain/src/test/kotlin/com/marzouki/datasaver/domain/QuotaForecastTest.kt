@@ -94,4 +94,20 @@ class QuotaForecastTest {
     fun `operator balance read on the first day adjusts that day without going negative`() {
         assertEquals(listOf(0, 100 * mb), alignDailyToUsed(listOf(900 * mb, 100 * mb), 50 * mb, fromDayIndex = 0))
     }
+
+    @Test
+    fun `first day of a plan only counts what the plan lost, not the whole day`() {
+        // Forfait de 25 Go pris aujourd'hui, recalé à 22 Go : 3 Go sur le forfait, alors qu'Android
+        // mesure 5,1 Go sur la journée (dont l'ancien forfait ce matin).
+        val now = Calendar.getInstance().apply { set(2026, Calendar.NOVEMBER, 1, 23, 30) }.timeInMillis
+        val cycle = MonthPeriod.pass(now, now, validityDays = 30)
+        val forecast = QuotaForecast(
+            DataQuota(25_000 * mb),
+            cycle,
+            dailyMobileBytes = listOf(3_000 * mb),
+            measuredDailyBytes = listOf(5_100 * mb),
+        )
+        assertEquals(3_000 * mb, forecast.todayBytes)
+        assertEquals(listOf(3_000 * mb), forecast.measuredOnPlanBytes)
+    }
 }

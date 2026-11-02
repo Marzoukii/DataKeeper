@@ -4,7 +4,10 @@ import androidx.lifecycle.viewModelScope
 import com.marzouki.datasaver.domain.enums.PlanStatus
 import com.marzouki.datasaver.domain.usecase.CompletePlanSetupUseCase
 import com.marzouki.datasaver.domain.usecase.ForgetSavedPlanUseCase
+import com.marzouki.datasaver.domain.model.OperatorChange
+import com.marzouki.datasaver.domain.model.SavedPlan
 import com.marzouki.datasaver.domain.usecase.ObserveDataOperatorUseCase
+import com.marzouki.datasaver.domain.usecase.ObserveOperatorChangeUseCase
 import com.marzouki.datasaver.domain.usecase.ObservePlanStatusUseCase
 import com.marzouki.datasaver.domain.usecase.ObserveSavedPlansUseCase
 import com.marzouki.datasaver.domain.usecase.SkipPlanSetupUseCase
@@ -25,20 +28,27 @@ class PlanSetupViewModel @Inject constructor(
     private val completePlanSetup: CompletePlanSetupUseCase,
     private val skipPlanSetup: SkipPlanSetupUseCase,
     private val forgetSavedPlan: ForgetSavedPlanUseCase,
+    private val observeOperatorChange: ObserveOperatorChangeUseCase,
 ) : MviViewModel<PlanSetupState, PlanSetupIntent, Nothing>(PlanSetupState()) {
 
     override fun observe(): List<Flow<*>> = listOf(
         // La SIM peut encore changer pendant la saisie : le titre suit l'opérateur du moment.
         observeDataOperator().onEach { operator -> setState { copy(operatorName = operator?.name) } },
         // Suit lui aussi la SIM : sur une carte Tunisie Telecom, jamais les forfaits Ooredoo.
-        observeSavedPlans().onEach { plans -> setState { copy(savedPlans = plans) } },
+        observeSavedPlans().onEach { plans -> setState { copy(savedPlans = plans).prefilled() } },
+        // Nouvelle SIM : le forfait part de l'heure où elle a été vue, pas de celle de la saisie.
+        observeOperatorChange().onEach { change -> setState { copy(operatorChange = change).prefilled() } },
         observePlanStatus().onEach { status ->
             setState {
                 // Le ViewModel survit au tableau de bord : un changement de SIM ultérieur repart
                 // d'un formulaire vierge, pas des chiffres (ni du « enregistrement… ») de l'ancienne.
                 val reset = planStatus == PlanStatus.CONFIGURED && status != PlanStatus.CONFIGURED
-                val form = if (reset) PlanSetupState(operatorName = operatorName, savedPlans = savedPlans) else this
-                form.copy(planStatus = status, operatorChanged = status == PlanStatus.OPERATOR_CHANGED)
+                val form = if (reset) {
+                    PlanSetupState(operatorName = operatorName, savedPlans = savedPlans, operatorChange = operatorChange)
+                } else {
+                    this
+                }
+                form.copy(planStatus = status, operatorChanged = status == PlanStatus.OPERATOR_CHANGED).prefilled()
             }
         },
     )
@@ -50,20 +60,8 @@ class PlanSetupViewModel @Inject constructor(
             PlanSetupIntent.CustomPlanSelected -> setState { copy(customPlan = true) }
             is PlanSetupIntent.RemainingChanged -> setState { copy(remainingInput = intent.value) }
             is PlanSetupIntent.PriceChanged -> setState { copy(priceInput = intent.value) }
-            is PlanSetupIntent.CycleChanged -> setState { copy(cycle = intent.cycle) }
-            is PlanSetupIntent.SavedPlanSelected -> setState {
-                val plan = intent.plan
-                copy(
-                    planInput = QuotaViewModel.bytesToInput(plan.limitBytes),
-                    customPlan = false,
-                    priceInput = plan.priceMillimes?.let(QuotaViewModel::millimesToInput).orEmpty(),
-                    cycle = cycle.copy(
-                        validityInput = plan.validityDays?.toString() ?: cycle.validityInput,
-                        monthly = plan.validityDays == null,
-                        customValidity = false,
-                    ),
-                )
-            }
+            is PlanSetupIntent.CycleChanged -> setState { copy(cycle = intent.cycle, cycleEdited = true) }
+            is PlanSetupIntent.SavedPlanSelected -> setState { withPlan(intent.plan) }
             is PlanSetupIntent.SavedPlanForgotten -> viewModelScope.launch { forgetSavedPlan(intent.plan) }
             PlanSetupIntent.Submit -> submit()
             PlanSetupIntent.Skip -> viewModelScope.launch { skipPlanSetup() }
@@ -89,4 +87,34 @@ class PlanSetupViewModel @Inject constructor(
             )
         }
     }
+}
+
+/** Taille, prix et validité d'un forfait déjà utilisé ; le jour d'achat reste celui du formulaire. */
+private fun PlanSetupState.withPlan(plan: SavedPlan): PlanSetupState = copy(
+    planInput = QuotaViewModel.bytesToInput(plan.limitBytes),
+    customPlan = false,
+    priceInput = plan.priceMillimes?.let(QuotaViewModel::millimesToInput).orEmpty(),
+    cycle = cycle.copy(
+        validityInput = plan.validityDays?.toString() ?: cycle.validityInput,
+        monthly = plan.validityDays == null,
+        customValidity = false,
+    ),
+)
+
+/**
+ * Après un changement de SIM, le formulaire arrive prérempli : achat le jour du changement (tant
+ * que le cycle n'a pas été touché) et dernier forfait connu pour cet opérateur (tant que rien n'est saisi).
+ */
+private fun PlanSetupState.prefilled(): PlanSetupState {
+    if (!operatorChanged) return this
+    val change: OperatorChange? = operatorChange
+    var state = this
+    // Jour du changement de SIM, à la journée comme tout forfait.
+    val changeDay = change?.let { com.marzouki.datasaver.presentation.quota.PlanCycleInput.startOfDay(it.atMillis) }
+    if (changeDay != null && !cycleEdited && cycle.purchaseMillis != changeDay) {
+        state = state.copy(cycle = cycle.copy(purchaseMillis = changeDay))
+    }
+    val lastPlan = savedPlans.firstOrNull()
+    if (lastPlan != null && planInput.isBlank()) state = state.withPlan(lastPlan)
+    return state
 }

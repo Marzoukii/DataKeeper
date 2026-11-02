@@ -26,7 +26,10 @@ class RunSpeedTestUseCase @Inject constructor(
         generation: NetworkGeneration?,
     ): Flow<SpeedTestEvent> = flow {
         var last: SpeedTestProgress? = null
-        repository.measure(maxBytesPerPhase = if (onWifi) null else MOBILE_MAX_BYTES_PER_PHASE).collect {
+        repository.measure(
+            maxBytesPerPhase = if (onWifi) null else MOBILE_MAX_BYTES_PER_PHASE,
+            operatorName = operatorName.takeUnless { onWifi },
+        ).collect {
             last = it
             emit(SpeedTestEvent.Progress(it))
         }

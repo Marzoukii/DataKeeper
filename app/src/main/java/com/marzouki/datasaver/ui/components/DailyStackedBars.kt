@@ -50,6 +50,11 @@ fun DailyStackedBars(
     onDayClick: ((DayUsage) -> Unit)? = null,
     /** Budget du jour en data mobile ; affiché sous la ligne d'aujourd'hui quand il est connu. */
     todayBudgetBytes: Long? = null,
+    /**
+     * Data mobile d'aujourd'hui comptée sur le forfait en cours, face au budget ; null pour toute la
+     * journée. Plus petite quand un nouveau pass a été activé en cours de journée.
+     */
+    todayPlanBytes: Long? = null,
 ) {
     val maxWifi = days.maxOfOrNull { it.wifiBytes }?.takeIf { it > 0 } ?: 1L
     val maxMobile = days.maxOfOrNull { it.mobileBytes }?.takeIf { it > 0 } ?: 1L
@@ -132,7 +137,7 @@ fun DailyStackedBars(
                 )
             }
             if (isToday && todayBudgetBytes != null) {
-                TodayBudget(day.mobileBytes, todayBudgetBytes)
+                TodayBudget(todayPlanBytes ?: day.mobileBytes, todayBudgetBytes)
             }
         }
         HorizontalDivider(thickness = 1.dp, color = ruleColor)

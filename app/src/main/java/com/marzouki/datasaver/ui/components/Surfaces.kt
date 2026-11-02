@@ -43,6 +43,10 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.clickable
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.text.style.TextOverflow
 import com.marzouki.datasaver.ui.theme.Brand
 import com.marzouki.datasaver.ui.theme.LocalExtendedColors
 import com.marzouki.datasaver.ui.theme.Spacing
@@ -211,19 +215,61 @@ fun IconChip(
     }
 }
 
-/** Titre de section précédé de sa pastille d'icône. */
+/**
+ * Titre de section précédé de sa pastille d'icône, toujours sur une ligne ; le détail ([subtitle])
+ * passe dessous plutôt qu'à côté, pour ne jamais couper le titre en deux.
+ */
 @Composable
-fun SectionTitle(text: String, icon: ImageVector, modifier: Modifier = Modifier, action: (@Composable () -> Unit)? = null) {
-    Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        IconChip(icon)
-        Spacer(Modifier.width(10.dp))
-        Text(
-            text,
-            style = MaterialTheme.typography.titleMedium.copy(fontSize = MaterialTheme.typography.titleLarge.fontSize * 0.82f),
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f),
-        )
-        action?.invoke()
+fun SectionTitle(
+    text: String,
+    icon: ImageVector,
+    modifier: Modifier = Modifier,
+    subtitle: String? = null,
+    action: (@Composable () -> Unit)? = null,
+) {
+    Column(modifier.fillMaxWidth()) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            IconChip(icon, size = 30.dp)
+            Spacer(Modifier.width(10.dp))
+            Text(
+                text,
+                style = MaterialTheme.typography.titleMedium.copy(fontSize = MaterialTheme.typography.titleLarge.fontSize * 0.78f),
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+            action?.invoke()
+        }
+        if (subtitle != null) {
+            Text(
+                subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp),
+            )
+        }
+    }
+}
+
+/** Dégradé violet des grandes cartes (solde, partage) : identique en clair et en sombre. */
+val HeroGradient: Brush = Brush.linearGradient(listOf(Color(0xFF4A2DBF), Color(0xFF6A4FE0), Color(0xFF8B73F2)))
+
+/** Grande carte en dégradé violet, texte blanc : le chiffre principal d'un écran. */
+@Composable
+fun HeroCard(modifier: Modifier = Modifier, onClick: (() -> Unit)? = null, content: @Composable ColumnScope.() -> Unit) {
+    val shape = RoundedCornerShape(28.dp)
+    Column(
+        modifier
+            .fillMaxWidth()
+            .shadow(14.dp, shape, ambientColor = Color(0xFF4A2DBF), spotColor = Color(0xFF4A2DBF))
+            .clip(shape)
+            .background(HeroGradient)
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .padding(22.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        CompositionLocalProvider(LocalContentColor provides Color.White, content = { content() })
     }
 }
 
