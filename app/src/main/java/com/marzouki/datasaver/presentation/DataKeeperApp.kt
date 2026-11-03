@@ -40,9 +40,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -189,34 +191,39 @@ private fun MainScaffold(requestedTab: String?, onTabRequestHandled: () -> Unit,
             }
         },
     ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = Destination.USAGE.route,
-            modifier = Modifier
-                .fillMaxSize()
-                .glowBackground()
-                .padding(innerPadding),
-        ) {
-            composable(Destination.USAGE.route) {
-                UsageScreen(
-                    snackbarHostState,
-                    onOpenQuota = { navController.navigateToTab(Destination.QUOTA) },
-                    onOpenSettings = { navController.navigate(AppRoutes.SETTINGS) { launchSingleTop = true } },
-                    onOpenTethering = { navController.navigate(AppRoutes.TETHERING) { launchSingleTop = true } },
-                )
+        // La langue change sans recréer l'activité (configChanges) : les écrans sont recomposés pour que
+        // tailles, dates et montants, formatés hors ressources, passent eux aussi dans la nouvelle langue.
+        // Le navController est au-dessus : on reste sur le même écran.
+        key(LocalConfiguration.current.locales) {
+            NavHost(
+                navController = navController,
+                startDestination = Destination.USAGE.route,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .glowBackground()
+                    .padding(innerPadding),
+            ) {
+                composable(Destination.USAGE.route) {
+                    UsageScreen(
+                        snackbarHostState,
+                        onOpenQuota = { navController.navigateToTab(Destination.QUOTA) },
+                        onOpenSettings = { navController.navigate(AppRoutes.SETTINGS) { launchSingleTop = true } },
+                        onOpenTethering = { navController.navigate(AppRoutes.TETHERING) { launchSingleTop = true } },
+                    )
+                }
+                composable(AppRoutes.SETTINGS) {
+                    SettingsScreen(onBack = { navController.popBackStack() })
+                }
+                composable(AppRoutes.TETHERING) {
+                    TetheringScreen(onBack = { navController.popBackStack() })
+                }
+                composable(Destination.QUOTA.route) {
+                    QuotaScreen(snackbarHostState)
+                }
+                composable(Destination.DOWNLOADS.route) { DownloadsScreen(snackbarHostState) }
+                composable(Destination.SPEED_TEST.route) { SpeedTestScreen(snackbarHostState) }
+                composable(Destination.WIFI.route) { WifiScreen() }
             }
-            composable(AppRoutes.SETTINGS) {
-                SettingsScreen(onBack = { navController.popBackStack() })
-            }
-            composable(AppRoutes.TETHERING) {
-                TetheringScreen(onBack = { navController.popBackStack() })
-            }
-            composable(Destination.QUOTA.route) {
-                QuotaScreen(snackbarHostState)
-            }
-            composable(Destination.DOWNLOADS.route) { DownloadsScreen(snackbarHostState) }
-            composable(Destination.SPEED_TEST.route) { SpeedTestScreen(snackbarHostState) }
-            composable(Destination.WIFI.route) { WifiScreen() }
         }
     }
 }
