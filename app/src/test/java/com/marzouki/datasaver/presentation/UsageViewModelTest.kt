@@ -17,6 +17,10 @@ import com.marzouki.datasaver.domain.usecase.ObserveDataOperatorUseCase
 import com.marzouki.datasaver.domain.usecase.ObserveHotspotActiveUseCase
 import com.marzouki.datasaver.domain.usecase.ObservePricePerGbUseCase
 import com.marzouki.datasaver.domain.usecase.ObserveQuotaUseCase
+import com.marzouki.datasaver.domain.usecase.ObserveOperatorBalanceReadingUseCase
+import com.marzouki.datasaver.domain.usecase.ApplyOperatorBalanceReadingUseCase
+import com.marzouki.datasaver.domain.usecase.DismissOperatorBalanceReadingUseCase
+import com.marzouki.datasaver.domain.usecase.SetOperatorBalanceUseCase
 import com.marzouki.datasaver.presentation.usage.UsageIntent
 import com.marzouki.datasaver.presentation.usage.UsageViewModel
 import kotlinx.coroutines.launch
@@ -56,6 +60,9 @@ class UsageViewModelTest {
         observeHotspotActive = ObserveHotspotActiveUseCase(tethering),
         getTetheringUsage = GetTetheringUsageUseCase(tethering, clock),
         getMobileCounter = GetMobileCounterUseCase(tethering),
+        observeOperatorBalanceReading = ObserveOperatorBalanceReadingUseCase(quotas),
+        applyOperatorBalanceReading = ApplyOperatorBalanceReadingUseCase(quotas, SetOperatorBalanceUseCase(quotas, clock)),
+        dismissOperatorBalanceReading = DismissOperatorBalanceReadingUseCase(quotas),
     )
 
     @Test
