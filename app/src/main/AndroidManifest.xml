@@ -48,8 +48,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.DataKeeper">
+        <!-- configChanges : changer de langue ne recrée pas l'activité (sinon écran noir un instant),
+             Compose se recompose dans la nouvelle langue. -->
         <activity
             android:name=".MainActivity"
+            android:configChanges="locale|layoutDirection"
             android:exported="true"
             android:launchMode="singleTop"
             android:theme="@style/Theme.DataKeeper"
