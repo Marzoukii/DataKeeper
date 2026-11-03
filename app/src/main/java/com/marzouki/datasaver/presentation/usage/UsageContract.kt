@@ -6,6 +6,7 @@ import com.marzouki.datasaver.domain.model.DataUsage
 import com.marzouki.datasaver.domain.model.DayUsage
 import com.marzouki.datasaver.domain.model.LiveMobileUsage
 import com.marzouki.datasaver.domain.model.MonthPeriod
+import com.marzouki.datasaver.domain.model.OperatorBalanceReading
 import com.marzouki.datasaver.domain.model.PricePerGb
 import com.marzouki.datasaver.domain.model.QuotaStatus
 import com.marzouki.datasaver.domain.model.TetheringUsage
@@ -35,6 +36,8 @@ data class UsageState(
     val tethering: TetheringUsage? = null,
     /** Data mobile mesurée en direct depuis la dernière lecture de l'historique d'Android. */
     val liveMobile: LiveMobileUsage? = null,
+    /** Solde détecté dans une notification d'opérateur, en attente de confirmation ; null si aucun. */
+    val balanceReading: OperatorBalanceReading? = null,
 ) {
     private val liveExtraBytes: Long get() = liveMobile?.extraBytes ?: 0L
 
@@ -67,6 +70,12 @@ sealed interface UsageIntent {
     data object GrantAccessClicked : UsageIntent
     /** Retour de la demande de permission « Téléphone ». */
     data object PhonePermissionResult : UsageIntent
+
+    /** Confirme le solde détecté dans une notification d'opérateur : recale le forfait. */
+    data object ApplyBalanceReading : UsageIntent
+
+    /** Écarte le solde détecté sans recaler. */
+    data object DismissBalanceReading : UsageIntent
 }
 
 sealed interface UsageEffect {

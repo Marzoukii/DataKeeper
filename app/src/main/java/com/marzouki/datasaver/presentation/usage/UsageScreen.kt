@@ -41,6 +41,11 @@ import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.WifiTethering
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.TextButton
+import androidx.compose.material.icons.rounded.Sms
+import com.marzouki.datasaver.domain.model.OperatorBalanceReading
+import com.marzouki.datasaver.ui.components.IconChip
+import com.marzouki.datasaver.ui.components.toPlanSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -194,6 +199,16 @@ private fun UsageContent(
                     title = stringResource(R.string.usage_title),
                 ) {
                     HeaderIconButton(Icons.Rounded.Settings, stringResource(R.string.usage_settings), onOpenSettings)
+                }
+            }
+            // Solde lu dans une notification de l'opérateur : proposé à la confirmation, en haut.
+            state.balanceReading?.let { reading ->
+                item {
+                    BalanceReadingCard(
+                        reading = reading,
+                        onApply = { onIntent(UsageIntent.ApplyBalanceReading) },
+                        onDismiss = { onIntent(UsageIntent.DismissBalanceReading) },
+                    )
                 }
             }
             val usage = state.liveUsage
@@ -599,6 +614,44 @@ private fun LoadFailedCard(onRetry: () -> Unit) {
         Text(stringResource(R.string.usage_load_failed), style = MaterialTheme.typography.titleMedium)
         Spacer(Modifier.height(12.dp))
         FilledTonalButton(onClick = onRetry, shape = CircleShape) { Text(stringResource(R.string.action_retry)) }
+    }
+}
+
+/**
+ * Solde repéré dans une notification de l'opérateur (« Ooredoo · 19 Go »), proposé à la confirmation :
+ * « Mettre à jour » recale le forfait, « Ignorer » l'écarte.
+ */
+@Composable
+private fun BalanceReadingCard(reading: OperatorBalanceReading, onApply: () -> Unit, onDismiss: () -> Unit) {
+    val colors = MaterialTheme.colorScheme
+    DataKeeperCard(shape = MaterialTheme.shapes.extraLarge, containerColor = colors.primaryContainer, contentPadding = 16.dp) {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconChip(Icons.Rounded.Sms, size = 40.dp, containerColor = colors.primary, contentColor = colors.onPrimary)
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        stringResource(R.string.sms_balance_title),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = colors.onPrimaryContainer,
+                    )
+                    Text(
+                        reading.operatorName?.let { stringResource(R.string.sms_balance_from, it, reading.remainingBytes.toPlanSize()) }
+                            ?: stringResource(R.string.sms_balance_amount, reading.remainingBytes.toPlanSize()),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = colors.onPrimaryContainer,
+                    )
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FilledTonalButton(onClick = onApply, shape = CircleShape) {
+                    Text(stringResource(R.string.sms_balance_apply))
+                }
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.sms_balance_dismiss))
+                }
+            }
+        }
     }
 }
 

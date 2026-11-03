@@ -16,6 +16,9 @@ import com.marzouki.datasaver.domain.usecase.ObserveDataOperatorUseCase
 import com.marzouki.datasaver.domain.usecase.ObserveHotspotActiveUseCase
 import com.marzouki.datasaver.domain.usecase.ObservePricePerGbUseCase
 import com.marzouki.datasaver.domain.usecase.ObserveQuotaUseCase
+import com.marzouki.datasaver.domain.usecase.ObserveOperatorBalanceReadingUseCase
+import com.marzouki.datasaver.domain.usecase.ApplyOperatorBalanceReadingUseCase
+import com.marzouki.datasaver.domain.usecase.DismissOperatorBalanceReadingUseCase
 import com.marzouki.datasaver.presentation.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -48,6 +51,9 @@ class UsageViewModel @Inject constructor(
     private val observeHotspotActive: ObserveHotspotActiveUseCase,
     private val getTetheringUsage: GetTetheringUsageUseCase,
     private val getMobileCounter: GetMobileCounterUseCase,
+    private val observeOperatorBalanceReading: ObserveOperatorBalanceReadingUseCase,
+    private val applyOperatorBalanceReading: ApplyOperatorBalanceReadingUseCase,
+    private val dismissOperatorBalanceReading: DismissOperatorBalanceReadingUseCase,
 ) : MviViewModel<UsageState, UsageIntent, UsageEffect>(
     UsageState(hasPhonePermission = hasPhoneStatePermission()),
 ) {
@@ -68,6 +74,8 @@ class UsageViewModel @Inject constructor(
             .drop(1)
             .onEach { refresh() },
         observePricePerGb().onEach { price -> setState { copy(pricePerGb = price) } },
+        // Solde détecté dans une notification d'opérateur, proposé à la confirmation.
+        observeOperatorBalanceReading().onEach { reading -> setState { copy(balanceReading = reading) } },
         // Suit la SIM des données en direct : carte changée ou data basculée sur l'autre SIM.
         observeDataOperator().onEach { operator -> setState { copy(operatorName = operator?.name) } },
         // Carte du partage de connexion : affichée dès qu'il s'allume, sa conso relue toutes les 5 s.
@@ -115,6 +123,8 @@ class UsageViewModel @Inject constructor(
             }
             UsageIntent.GrantAccessClicked -> sendEffect(UsageEffect.OpenUsageAccessSettings)
             UsageIntent.PhonePermissionResult -> setState { copy(hasPhonePermission = hasPhoneStatePermission()) }
+            UsageIntent.ApplyBalanceReading -> viewModelScope.launch { applyOperatorBalanceReading() }
+            UsageIntent.DismissBalanceReading -> viewModelScope.launch { dismissOperatorBalanceReading() }
         }
     }
 

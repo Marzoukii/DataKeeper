@@ -11,6 +11,7 @@ import com.marzouki.datasaver.domain.model.DataUsage
 import com.marzouki.datasaver.domain.model.DayUsage
 import com.marzouki.datasaver.domain.model.MobileOperator
 import com.marzouki.datasaver.domain.model.MonthPeriod
+import com.marzouki.datasaver.domain.model.OperatorBalanceReading
 import com.marzouki.datasaver.domain.model.OperatorChange
 import com.marzouki.datasaver.domain.model.PlanValidity
 import com.marzouki.datasaver.domain.model.PricePerGb
@@ -101,6 +102,9 @@ interface QuotaRepository {
     /** Nouvelle SIM des données repérée, en attente de son forfait ; null tant que la SIM du forfait est en place. */
     val operatorChange: Flow<OperatorChange?> get() = flowOf(null)
     suspend fun setOperatorChange(change: OperatorChange?) {}
+    /** Solde détecté dans une notification d'opérateur, en attente de confirmation ; null si aucun. */
+    val operatorBalanceReading: Flow<OperatorBalanceReading?> get() = flowOf(null)
+    suspend fun setOperatorBalanceReading(reading: OperatorBalanceReading?) {}
 }
 
 interface DownloadRepository {

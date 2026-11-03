@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import androidx.core.app.NotificationManagerCompat
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -58,6 +59,19 @@ fun openAppDetailsSettings(context: Context) {
         Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
             .setData(Uri.fromParts("package", context.packageName, null)),
     )
+}
+
+/** Vrai si l'utilisateur a accordé à DataKeeper l'accès aux notifications (lecture du solde par SMS). */
+fun hasNotificationAccess(context: Context): Boolean =
+    NotificationManagerCompat.getEnabledListenerPackages(context).contains(context.packageName)
+
+/** Ouvre l'écran système "Accès aux notifications" pour que l'utilisateur y active DataKeeper. */
+fun openNotificationAccessSettings(context: Context) {
+    try {
+        context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+    } catch (_: ActivityNotFoundException) {
+        openAppDetailsSettings(context)
+    }
 }
 
 @Composable

@@ -35,8 +35,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.clickable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.LifecycleResumeEffect
+import com.marzouki.datasaver.presentation.common.hasNotificationAccess
+import com.marzouki.datasaver.presentation.common.openNotificationAccessSettings
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -136,6 +142,9 @@ private fun SettingsContent(
             }
         }
 
+        SectionLabel(R.string.sms_balance_section)
+        BalanceAccessRow()
+
         SectionLabel(R.string.settings_about)
         DataKeeperCard(contentPadding = 0.dp) {
             Row(
@@ -147,6 +156,39 @@ private fun SettingsContent(
             ) {
                 Text(stringResource(R.string.settings_version), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
                 Text(version, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+    }
+}
+
+/**
+ * Accès aux notifications pour lire le solde que l'opérateur envoie par SMS. L'état est relu au
+ * retour des réglages système ; le toucher ouvre l'écran Android où l'utilisateur active DataKeeper.
+ */
+@Composable
+private fun BalanceAccessRow() {
+    val context = LocalContext.current
+    var granted by remember { mutableStateOf(hasNotificationAccess(context)) }
+    LifecycleResumeEffect(Unit) {
+        granted = hasNotificationAccess(context)
+        onPauseOrDispose { }
+    }
+    DataKeeperCard(contentPadding = 0.dp) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .clickable { openNotificationAccessSettings(context) }
+                .heightIn(min = 64.dp)
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(R.string.sms_balance_access_title), style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    stringResource(if (granted) R.string.sms_balance_access_on else R.string.sms_balance_access_off),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }

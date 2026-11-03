@@ -551,4 +551,15 @@
     <string name="quota_grid_subtitle">بيانات الجوال يوميًا · الميزانية ≈ %1$s</string>
     <string name="usage_split_total">المجموع %1$s</string>
     <string name="usage_first_hint">اليوم الأول: تمتلئ الأرقام خلال اليوم.</string>
+    <!-- Lecture passive du solde depuis les SMS/notifications de l'opérateur -->
+    <string name="sms_balance_service_label">قراءة الرصيد من الرسائل</string>
+    <string name="sms_balance_title">تم رصد رصيد</string>
+    <string name="sms_balance_from">من %1$s: يتبقى لديك %2$s</string>
+    <string name="sms_balance_amount">يتبقى لديك %1$s</string>
+    <string name="sms_balance_apply">تحديث</string>
+    <string name="sms_balance_dismiss">تجاهل</string>
+    <string name="sms_balance_section">الرصيد التلقائي</string>
+    <string name="sms_balance_access_title">اقرأ رصيدي من المشغّل</string>
+    <string name="sms_balance_access_on">مفعّل · يقرأ الرصيد من رسائل مشغّلك</string>
+    <string name="sms_balance_access_off">غير مفعّل · المس للسماح بقراءة الإشعارات</string>
 </resources>

@@ -528,4 +528,15 @@
     <string name="quota_grid_subtitle">Data mobile par jour · budget ≈ %1$s</string>
     <string name="usage_split_total">Total %1$s</string>
     <string name="usage_first_hint">Premier jour : les chiffres se remplissent au fil de la journée.</string>
+    <!-- Lecture passive du solde depuis les SMS/notifications de l'opérateur -->
+    <string name="sms_balance_service_label">Lecture du solde par SMS</string>
+    <string name="sms_balance_title">Solde détecté</string>
+    <string name="sms_balance_from">Depuis %1$s : il te reste %2$s</string>
+    <string name="sms_balance_amount">Il te reste %1$s</string>
+    <string name="sms_balance_apply">Mettre à jour</string>
+    <string name="sms_balance_dismiss">Ignorer</string>
+    <string name="sms_balance_section">Solde automatique</string>
+    <string name="sms_balance_access_title">Lire mon solde depuis l\'opérateur</string>
+    <string name="sms_balance_access_on">Activé · lit le solde dans les SMS de ton opérateur</string>
+    <string name="sms_balance_access_off">Désactivé · touche pour autoriser la lecture des notifications</string>
 </resources>

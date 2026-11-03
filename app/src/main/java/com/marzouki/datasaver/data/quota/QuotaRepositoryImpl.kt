@@ -12,6 +12,7 @@ import com.marzouki.datasaver.domain.model.MonthPeriod
 import com.marzouki.datasaver.domain.model.OperatorBalance
 import com.marzouki.datasaver.domain.model.PlanValidity
 import com.marzouki.datasaver.domain.model.PricePerGb
+import com.marzouki.datasaver.domain.model.OperatorBalanceReading
 import com.marzouki.datasaver.domain.model.OperatorChange
 import com.marzouki.datasaver.domain.model.SavedPlan
 import com.marzouki.datasaver.domain.repository.QuotaRepository
@@ -166,6 +167,28 @@ class QuotaRepositoryImpl @Inject constructor(
         }
     }
 
+    override val operatorBalanceReading: Flow<OperatorBalanceReading?> = dataStore.data
+        .map { prefs ->
+            val bytes = prefs[KEY_SMS_BALANCE_BYTES] ?: return@map null
+            val at = prefs[KEY_SMS_BALANCE_AT] ?: return@map null
+            OperatorBalanceReading(bytes, prefs[KEY_SMS_BALANCE_OPERATOR], at)
+        }
+        .distinctUntilChanged()
+
+    override suspend fun setOperatorBalanceReading(reading: OperatorBalanceReading?) {
+        dataStore.edit { prefs ->
+            if (reading == null) {
+                prefs.remove(KEY_SMS_BALANCE_BYTES)
+                prefs.remove(KEY_SMS_BALANCE_OPERATOR)
+                prefs.remove(KEY_SMS_BALANCE_AT)
+            } else {
+                prefs[KEY_SMS_BALANCE_BYTES] = reading.remainingBytes
+                reading.operatorName?.let { prefs[KEY_SMS_BALANCE_OPERATOR] = it } ?: prefs.remove(KEY_SMS_BALANCE_OPERATOR)
+                prefs[KEY_SMS_BALANCE_AT] = reading.atMillis
+            }
+        }
+    }
+
     override val savedPlans: Flow<List<SavedPlan>> = dataStore.data
         .map { prefs -> prefs[KEY_SAVED_PLANS]?.lineSequence()?.mapNotNull(::decodePlan)?.toList().orEmpty() }
         .distinctUntilChanged()
@@ -223,6 +246,9 @@ class QuotaRepositoryImpl @Inject constructor(
         val KEY_SIM_CHANGE_NAME = stringPreferencesKey("sim_change_operator_name")
         val KEY_SIM_CHANGE_AT = longPreferencesKey("sim_change_at_millis")
         val KEY_SIM_CHANGE_NOTIFIED = booleanPreferencesKey("sim_change_notified")
+        val KEY_SMS_BALANCE_BYTES = longPreferencesKey("sms_balance_remaining_bytes")
+        val KEY_SMS_BALANCE_OPERATOR = stringPreferencesKey("sms_balance_operator_name")
+        val KEY_SMS_BALANCE_AT = longPreferencesKey("sms_balance_at_millis")
         val KEY_ALERT_ENABLED = booleanPreferencesKey("quota_alert_enabled")
         val KEY_LAST_ALERTED_MONTH = stringPreferencesKey("last_alerted_month")
         val KEY_CYCLE_START_DAY = intPreferencesKey("cycle_start_day")
