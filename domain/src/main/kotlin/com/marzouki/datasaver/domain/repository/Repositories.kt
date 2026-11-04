@@ -9,6 +9,7 @@ import com.marzouki.datasaver.domain.model.AppDataUsage
 import com.marzouki.datasaver.domain.model.DataQuota
 import com.marzouki.datasaver.domain.model.DataUsage
 import com.marzouki.datasaver.domain.model.DayUsage
+import com.marzouki.datasaver.domain.model.ForfaitSnapshot
 import com.marzouki.datasaver.domain.model.MobileOperator
 import com.marzouki.datasaver.domain.model.MonthPeriod
 import com.marzouki.datasaver.domain.model.PlanValidity
@@ -117,6 +118,22 @@ interface OperatorRepository {
 
     /** 2G à 5G pour la SIM des données, mise à jour en continu ; null sans permission ou hors réseau. */
     fun observeDataNetworkGeneration(): Flow<NetworkGeneration?>
+}
+
+/**
+ * Récupère le forfait en cours auprès d'une API forfait, pour éviter la saisie manuelle.
+ *
+ * L'implémentation vise un serveur **maison** (démo de PFE), dont l'URL se règle par
+ * `BuildConfig.FORFAIT_API_URL` ; URL vide, elle renvoie un forfait de démonstration. Elle ne
+ * s'adresse jamais au backend privé d'un opérateur : l'utilisateur garde toujours la saisie manuelle.
+ */
+interface ForfaitRepository {
+    /**
+     * Interroge l'API pour l'opérateur [operatorKey] (code MCC/MNC de la SIM, ex. « 60503 » pour
+     * Ooredoo). Renvoie le forfait courant, ou null si l'API ne couvre pas cet opérateur.
+     * @throws java.io.IOException si le réseau ou le serveur fait défaut.
+     */
+    suspend fun fetchForfait(operatorKey: String?): ForfaitSnapshot?
 }
 
 interface LanguageRepository {

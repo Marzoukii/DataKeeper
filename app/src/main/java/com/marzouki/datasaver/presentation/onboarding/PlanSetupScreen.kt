@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -26,7 +27,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.CloudDownload
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -34,6 +37,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -119,6 +123,14 @@ private fun PlanSetupContent(state: PlanSetupState, onIntent: (PlanSetupIntent) 
                     stringResource(if (state.operatorChanged) R.string.setup_body_operator_changed else R.string.setup_body),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+
+                // Récupération automatique via l'API forfait : évite de tout taper. La saisie reste disponible.
+                AutoFetchSection(
+                    isFetching = state.isFetching,
+                    enabled = state.canAutoFetch,
+                    notice = state.fetchNotice,
+                    onClick = { onIntent(PlanSetupIntent.AutoFetch) },
                 )
 
                 val chipColors = FilterChipDefaults.filterChipColors(
@@ -325,6 +337,60 @@ private fun GigabyteField(
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
         modifier = Modifier.fillMaxWidth(),
     )
+}
+
+/**
+ * Bouton « Récupérer automatiquement » : interroge l'API forfait et pré-remplit les champs. Montre
+ * un indicateur pendant l'appel, puis une ligne de retour (rempli, non couvert, ou échec).
+ */
+@Composable
+private fun AutoFetchSection(
+    isFetching: Boolean,
+    enabled: Boolean,
+    notice: ForfaitFetchNotice?,
+    onClick: () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        OutlinedButton(
+            onClick = onClick,
+            enabled = enabled,
+            shape = CircleShape,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            if (isFetching) {
+                CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+                Spacer(Modifier.width(12.dp))
+                Text(stringResource(R.string.setup_autofetch_loading), style = MaterialTheme.typography.labelLarge)
+            } else {
+                Icon(Icons.Rounded.CloudDownload, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(12.dp))
+                Text(stringResource(R.string.setup_autofetch_button), style = MaterialTheme.typography.labelLarge)
+            }
+        }
+        val noticeRes = when (notice) {
+            ForfaitFetchNotice.FILLED -> R.string.setup_autofetch_filled
+            ForfaitFetchNotice.UNSUPPORTED -> R.string.setup_autofetch_unsupported
+            ForfaitFetchNotice.FAILED -> R.string.setup_autofetch_failed
+            null -> null
+        }
+        if (noticeRes != null) {
+            Text(
+                stringResource(noticeRes),
+                style = MaterialTheme.typography.bodySmall,
+                color = when (notice) {
+                    ForfaitFetchNotice.FILLED -> MaterialTheme.colorScheme.primary
+                    ForfaitFetchNotice.FAILED -> MaterialTheme.colorScheme.error
+                    else -> MaterialTheme.colorScheme.onSurfaceVariant
+                },
+            )
+        } else {
+            Text(
+                stringResource(R.string.setup_autofetch_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
 }
 
 @ScreenPreviews

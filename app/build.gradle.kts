@@ -21,6 +21,11 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // URL de l'API forfait (serveur maison). Vide = forfait de démonstration intégré, pour que
+        // la récupération automatique marche sans serveur. Renseigne-la pour viser ton backend, ex.
+        // buildConfigField("String", "FORFAIT_API_URL", "\"https://10.0.2.2:8080/forfait\"")
+        buildConfigField("String", "FORFAIT_API_URL", "\"\"")
     }
 
     buildTypes {
@@ -36,6 +41,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

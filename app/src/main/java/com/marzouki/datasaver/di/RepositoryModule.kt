@@ -4,6 +4,7 @@ import com.marzouki.datasaver.data.analytics.FirebaseAnalyticsTracker
 import com.marzouki.datasaver.data.analytics.FirebaseCrashReporter
 import com.marzouki.datasaver.data.connectivity.ConnectivityRepositoryImpl
 import com.marzouki.datasaver.data.download.WorkManagerDownloadRepository
+import com.marzouki.datasaver.data.forfait.ForfaitApiRepositoryImpl
 import com.marzouki.datasaver.data.language.LanguageRepositoryImpl
 import com.marzouki.datasaver.data.operator.OperatorRepositoryImpl
 import com.marzouki.datasaver.data.quota.NotificationQuotaAlertNotifier
@@ -19,6 +20,7 @@ import com.marzouki.datasaver.domain.repository.AnalyticsTracker
 import com.marzouki.datasaver.domain.repository.ConnectivityRepository
 import com.marzouki.datasaver.domain.repository.CrashReporter
 import com.marzouki.datasaver.domain.repository.DownloadRepository
+import com.marzouki.datasaver.domain.repository.ForfaitRepository
 import com.marzouki.datasaver.domain.repository.LanguageRepository
 import com.marzouki.datasaver.domain.repository.OperatorRepository
 import com.marzouki.datasaver.domain.repository.QuotaAlertNotifier
@@ -68,6 +70,9 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindLanguageRepository(impl: LanguageRepositoryImpl): LanguageRepository
+
+    @Binds
+    abstract fun bindForfaitRepository(impl: ForfaitApiRepositoryImpl): ForfaitRepository
 
     @Binds
     abstract fun bindThemeRepository(impl: ThemeRepositoryImpl): ThemeRepository

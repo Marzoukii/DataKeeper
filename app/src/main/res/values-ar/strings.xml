@@ -68,6 +68,12 @@
     <string name="setup_saved_plans_hint">اضغط على باقة استعملتها من قبل لملء كل شيء. يمكنك تعديل السعر إذا تغيّر.</string>
     <string name="setup_saved_plan_forget">نسيان هذه الباقة</string>
     <string name="setup_validity_label">مدة الباقة</string>
+    <string name="setup_autofetch_button">جلب تلقائي</string>
+    <string name="setup_autofetch_loading">جارٍ الجلب…</string>
+    <string name="setup_autofetch_hint">يملأ باقتك عبر الـAPI. يمكنك دائمًا إدخال كل شيء يدويًا.</string>
+    <string name="setup_autofetch_filled">تم جلب الباقة. تحقّق وعدّل عند الحاجة.</string>
+    <string name="setup_autofetch_unsupported">لا توجد باقة قابلة للجلب لهذه الشريحة. أدخلها يدويًا.</string>
+    <string name="setup_autofetch_failed">تعذّر الجلب. أعد المحاولة أو أدخلها يدويًا.</string>
 
     <!-- دورة الباقة: يوم الشراء والصلاحية -->
     <string name="plan_cycle_purchase_title">اشتُريت يوم %1$s</string>
