@@ -3,7 +3,9 @@ package com.marzouki.datasaver.presentation
 import com.marzouki.datasaver.MainDispatcherRule
 import com.marzouki.datasaver.domain.enums.PlanStatus
 import com.marzouki.datasaver.domain.model.DataQuota
+import com.marzouki.datasaver.domain.model.ForfaitSnapshot
 import com.marzouki.datasaver.domain.usecase.CompletePlanSetupUseCase
+import com.marzouki.datasaver.domain.usecase.FetchForfaitUseCase
 import com.marzouki.datasaver.domain.usecase.ForgetSavedPlanUseCase
 import com.marzouki.datasaver.domain.usecase.ObserveDataOperatorUseCase
 import com.marzouki.datasaver.domain.usecase.ObservePlanStatusUseCase
@@ -15,6 +17,7 @@ import com.marzouki.datasaver.domain.usecase.SetPlanCycleUseCase
 import com.marzouki.datasaver.domain.usecase.SetPlanPriceUseCase
 import com.marzouki.datasaver.domain.usecase.SetQuotaUseCase
 import com.marzouki.datasaver.domain.usecase.SkipPlanSetupUseCase
+import com.marzouki.datasaver.presentation.onboarding.ForfaitFetchNotice
 import com.marzouki.datasaver.presentation.onboarding.PlanSetupIntent
 import com.marzouki.datasaver.presentation.onboarding.PlanSetupViewModel
 import kotlinx.coroutines.launch
@@ -37,6 +40,7 @@ class PlanSetupViewModelTest {
     }
     private val operators = FakeOperatorRepository(ooredoo)
     private val clock = FakeClock()
+    private val forfaits = FakeForfaitRepository()
 
     private fun viewModel(): PlanSetupViewModel {
         val setQuota = SetQuotaUseCase(quotas, NoopQuotaScheduler)
@@ -56,6 +60,7 @@ class PlanSetupViewModelTest {
             ),
             skipPlanSetup = SkipPlanSetupUseCase(quotas, operators, setQuota),
             forgetSavedPlan = ForgetSavedPlanUseCase(quotas),
+            fetchForfait = FetchForfaitUseCase(forfaits),
         )
     }
 
@@ -89,5 +94,42 @@ class PlanSetupViewModelTest {
         assertEquals(PlanStatus.MISSING, state.planStatus)
         assertFalse(state.operatorChanged)
         assertEquals("10", state.planInput)
+    }
+
+    @Test
+    fun `la recuperation auto remplit les champs du forfait`() = runTest(main.dispatcher) {
+        forfaits.snapshot = ForfaitSnapshot(
+            limitBytes = 25 * GB,
+            remainingBytes = 19 * GB,
+            validityDays = 30,
+            priceMillimes = 28_500,
+        )
+        val viewModel = viewModel()
+        backgroundScope.launch { viewModel.state.collect {} }
+
+        viewModel.onIntent(PlanSetupIntent.AutoFetch)
+
+        val state = viewModel.state.value
+        assertFalse(state.isFetching)
+        assertEquals(ForfaitFetchNotice.FILLED, state.fetchNotice)
+        assertEquals("25", state.planInput)
+        assertEquals("19", state.remainingInput)
+        assertEquals("28,5", state.priceInput)
+        assertEquals("30", state.cycle.validityInput)
+    }
+
+    @Test
+    fun `une panne reseau laisse la saisie intacte`() = runTest(main.dispatcher) {
+        forfaits.error = java.io.IOException("réseau coupé")
+        val viewModel = viewModel()
+        backgroundScope.launch { viewModel.state.collect {} }
+        viewModel.onIntent(PlanSetupIntent.PlanChanged("12"))
+
+        viewModel.onIntent(PlanSetupIntent.AutoFetch)
+
+        val state = viewModel.state.value
+        assertFalse(state.isFetching)
+        assertEquals(ForfaitFetchNotice.FAILED, state.fetchNotice)
+        assertEquals("12", state.planInput)
     }
 }

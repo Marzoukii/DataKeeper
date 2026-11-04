@@ -23,6 +23,12 @@ data class PlanSetupState(
     val cycle: PlanCycleInput = PlanCycleInput(),
     /** Opérateur de la SIM des données, pour personnaliser le titre. */
     val operatorName: String? = null,
+    /** [com.marzouki.datasaver.domain.model.MobileOperator.key] de la SIM, pour interroger l'API forfait. */
+    val operatorKey: String? = null,
+    /** Appel à l'API forfait en cours : le bouton « Récupérer automatiquement » montre un indicateur. */
+    val isFetching: Boolean = false,
+    /** Issue de la dernière récupération auto, affichée brièvement ; effacée dès que l'utilisateur modifie un champ. */
+    val fetchNotice: ForfaitFetchNotice? = null,
     /** Nouvelle SIM des données : le forfait saisi pour l'ancienne ne vaut plus. */
     val operatorChanged: Boolean = false,
     /** Forfaits déjà saisis pour cet opérateur, proposés en un appui. */
@@ -53,6 +59,21 @@ data class PlanSetupState(
     val priceError: Boolean get() = priceInput.isNotBlank() && planBytes != null && pricePerGb == null
 
     val canSubmit: Boolean get() = !planError && !remainingError && !priceError && cycle.isValid && !isSaving
+
+    /** Récupération auto possible tant qu'aucune autre opération n'est en cours. */
+    val canAutoFetch: Boolean get() = !isFetching && !isSaving
+}
+
+/** Issue d'une récupération automatique du forfait, montrée brièvement sous le bouton dédié. */
+enum class ForfaitFetchNotice {
+    /** Forfait récupéré et champs pré-remplis. */
+    FILLED,
+
+    /** API sans forfait pour cette SIM : on reste sur la saisie manuelle. */
+    UNSUPPORTED,
+
+    /** Réseau ou serveur injoignable. */
+    FAILED,
 }
 
 sealed interface PlanSetupIntent {
@@ -66,6 +87,8 @@ sealed interface PlanSetupIntent {
     /** Remplit taille, prix et validité d'un forfait déjà utilisé ; le jour d'achat reste aujourd'hui. */
     data class SavedPlanSelected(val plan: SavedPlan) : PlanSetupIntent
     data class SavedPlanForgotten(val plan: SavedPlan) : PlanSetupIntent
+    /** « Récupérer automatiquement » : interroge l'API forfait et pré-remplit les champs. */
+    data object AutoFetch : PlanSetupIntent
     data object Submit : PlanSetupIntent
     /** « Je n'ai pas de forfait mobile ». */
     data object Skip : PlanSetupIntent

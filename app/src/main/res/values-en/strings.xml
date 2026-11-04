@@ -64,6 +64,12 @@
     <string name="setup_saved_plans_hint">Tap a plan you’ve used before to fill everything in. You can adjust the price if it changed.</string>
     <string name="setup_saved_plan_forget">Forget this plan</string>
     <string name="setup_validity_label">Plan duration</string>
+    <string name="setup_autofetch_button">Fetch automatically</string>
+    <string name="setup_autofetch_loading">Fetching…</string>
+    <string name="setup_autofetch_hint">Fills your plan from the API. You can still enter everything by hand.</string>
+    <string name="setup_autofetch_filled">Plan fetched. Check and adjust if needed.</string>
+    <string name="setup_autofetch_unsupported">No plan to fetch for this SIM. Enter it by hand.</string>
+    <string name="setup_autofetch_failed">Couldn’t fetch. Try again or enter it by hand.</string>
 
     <!-- Plan cycle: purchase day and validity -->
     <string name="plan_cycle_purchase_title">Bought on %1$s</string>

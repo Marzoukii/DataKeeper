@@ -65,6 +65,12 @@
     <string name="setup_saved_plans_hint">Touche un forfait déjà utilisé pour tout remplir. Tu peux ajuster le prix s’il a changé.</string>
     <string name="setup_saved_plan_forget">Oublier ce forfait</string>
     <string name="setup_validity_label">Durée du forfait</string>
+    <string name="setup_autofetch_button">Récupérer automatiquement</string>
+    <string name="setup_autofetch_loading">Récupération…</string>
+    <string name="setup_autofetch_hint">Remplit ton forfait depuis l’API. Tu peux toujours tout saisir à la main.</string>
+    <string name="setup_autofetch_filled">Forfait récupéré. Vérifie et ajuste si besoin.</string>
+    <string name="setup_autofetch_unsupported">Pas de forfait récupérable pour cette SIM. Saisis-le à la main.</string>
+    <string name="setup_autofetch_failed">Récupération impossible. Réessaie ou saisis à la main.</string>
 
     <!-- Cycle du forfait : jour d'achat et validité -->
     <string name="plan_cycle_purchase_title">Acheté le %1$s</string>

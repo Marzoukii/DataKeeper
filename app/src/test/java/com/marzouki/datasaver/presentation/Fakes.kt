@@ -6,6 +6,7 @@ import com.marzouki.datasaver.domain.model.AppDataUsage
 import com.marzouki.datasaver.domain.model.DataQuota
 import com.marzouki.datasaver.domain.model.DataUsage
 import com.marzouki.datasaver.domain.model.DayUsage
+import com.marzouki.datasaver.domain.model.ForfaitSnapshot
 import com.marzouki.datasaver.domain.model.MobileOperator
 import com.marzouki.datasaver.domain.model.MonthPeriod
 import com.marzouki.datasaver.domain.model.PlanValidity
@@ -15,6 +16,7 @@ import com.marzouki.datasaver.domain.model.TetheringAlert
 import com.marzouki.datasaver.domain.model.TetheringSession
 import com.marzouki.datasaver.domain.model.WifiScan
 import com.marzouki.datasaver.domain.repository.Clock
+import com.marzouki.datasaver.domain.repository.ForfaitRepository
 import com.marzouki.datasaver.domain.repository.OperatorRepository
 import com.marzouki.datasaver.domain.repository.QuotaMonitorScheduler
 import com.marzouki.datasaver.domain.repository.QuotaRepository
@@ -107,6 +109,17 @@ class FakeWifiRepository : WifiRepository {
     override fun availability() = availability
     override fun observeOpenNetworks() = scans
     override fun requestScan() = true
+}
+
+/** API forfait simulée : renvoie [snapshot], ou lève [error] (panne réseau) s'il est non nul. */
+class FakeForfaitRepository(
+    var snapshot: ForfaitSnapshot? = null,
+    var error: Throwable? = null,
+) : ForfaitRepository {
+    override suspend fun fetchForfait(operatorKey: String?): ForfaitSnapshot? {
+        error?.let { throw it }
+        return snapshot
+    }
 }
 
 object NoopQuotaScheduler : QuotaMonitorScheduler {
